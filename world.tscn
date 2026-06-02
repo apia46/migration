@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://8kb2bxnmkwwe"]
+
+[ext_resource type="TileSet" uid="uid://b3ppdjlci4abh" path="res://assets/tiles.tres" id="1_f3sb7"]
+[ext_resource type="Script" uid="uid://cvng00nf67piy" path="res://world.gd" id="1_tlwt5"]
+[ext_resource type="Script" uid="uid://cs08cdsysceqr" path="res://procedural_generation/generator.gd" id="3_aqk2v"]
+[ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
+
+[node name="world" type="Node2D"]
+texture_filter = 1
+script = ExtResource("1_tlwt5")
+
+[node name="tiles" type="TileMapLayer" parent="."]
+unique_name_in_owner = true
+tile_set = ExtResource("1_f3sb7")
+
+[node name="ProceduralGenerator" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_aqk2v")
+metadata/_custom_type_script = "uid://cs08cdsysceqr"
+
+[node name="player" parent="." instance=ExtResource("4_aqk2v")]
+position = Vector2(40, -100)
