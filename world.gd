@@ -19,5 +19,5 @@ func next_chunk() -> void:
 		generator.queue.append(chunk_at(Vector2i(x-l,l)))
 
 func chunk_at(pos:Vector2i) -> Rect2i:
-	print(pos)
+	#print(pos)
 	return Rect2i(pos*6, Vector2i.ONE*8)

@@ -1,0 +1,199 @@
+[gd_resource type="Resource" script_class="ProceduralModel" load_steps=65 format=3 uid="uid://6udssr6f2b62"]
+
+[ext_resource type="Script" uid="uid://buridstny8y6k" path="res://procedural_generation/model.gd" id="1_ul7qp"]
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_4y1vt"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_g177b"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_0o0jd"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 0, -65536, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_cdcpb"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65535, 65537, 131072, -65536, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_b5hxe"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 131072, -65536, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_vcc42"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 131072, -65536, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_jobwd"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65534, 65536, 0, -65536, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_en5wk"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_a5cn7"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_rb0dx"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 0, -65536, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_6epfo"]
+tile_data = PackedInt32Array(0, 131072, -65536, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_pdbwe"]
+tile_data = PackedInt32Array(0, 0, -65536, 1, 65536, -65535, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_ma85a"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 0, -65536)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_cskko"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_x6ti7"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_ruemg"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_bu2u2"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_ojmtq"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_swfyf"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_falt5"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_wy8a4"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_k4pgb"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_0rqhg"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 0, -65536, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_atetd"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 0, -65536, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_yutph"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 131072, -65536, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_j7q4b"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65535, 131073, 131072, -65536, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_nprmu"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 131072, -65536)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_qx0ot"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 131072, -65536, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_bvrrn"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 131072, -65536, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_w8if2"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_lyeru"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_fro7a"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_mvkof"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_c0oeu"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_eh7im"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_23glj"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 0, -65536, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_cln2d"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_upnul"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 0, -65536, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_mu1ux"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65535, 131072, 65536, -65535, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_jwjgh"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65535, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_l8f4r"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_rs2g6"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65535, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_1e0ud"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 131072, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_deyly"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 131072, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_q8cmh"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 65536, -65535, 131074, 131072, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_mrv42"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 131072, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_ocjct"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 131072, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_byxaa"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 131072, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_uwa27"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 131072, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_22i77"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65535, 131073, 131072, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_p2ti1"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 131072, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_vonvy"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 131072, -65535, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_4ys2j"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 131072, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_gxbon"]
+tile_data = PackedInt32Array(0, 131072, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_43rpx"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 131072, -65535, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_64xcl"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 131072, -65535, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_vr2gd"]
+tile_data = PackedInt32Array(0, 131072, -65535, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_81wo0"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 131072, -65535, 131073, 65536, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_skmgg"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 131072, -65535, 131074, 65536, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_17u7e"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65534, 65537, 65536, -65534, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65534, 131074, 131072, -65535)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_5ss6d"]
+tile_data = PackedInt32Array(0, 65536, -65534, 1, 65536, -65534, 2, 65536, -65534, 65536, 65536, -65535, 65537, 65536, -65535, 65538, 65536, -65535, 131072, 0, -65536, 131073, 65536, -65535, 131074, 131072, -65536)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_k3tg3"]
+tile_data = PackedInt32Array(0, 65536, -65535, 1, 65536, -65535, 2, 65536, -65535, 65536, 0, -65536, 65537, 65536, -65535, 65538, 131072, -65536, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[sub_resource type="TileMapPattern" id="TileMapPattern_8usvw"]
+tile_data = PackedInt32Array(0, 0, -65536, 1, 65536, -65535, 2, 131072, -65536, 65536, 65536, -65534, 65537, 65536, -65535, 65538, 65536, -65534, 131072, 65536, -65534, 131073, 65536, -65535, 131074, 65536, -65534)
+
+[resource]
+script = ExtResource("1_ul7qp")
+base_patterns = Array[TileMapPattern]([SubResource("TileMapPattern_4y1vt"), SubResource("TileMapPattern_g177b"), SubResource("TileMapPattern_0o0jd"), SubResource("TileMapPattern_cdcpb"), SubResource("TileMapPattern_b5hxe"), SubResource("TileMapPattern_vcc42"), SubResource("TileMapPattern_jobwd"), SubResource("TileMapPattern_en5wk"), SubResource("TileMapPattern_a5cn7"), SubResource("TileMapPattern_rb0dx"), SubResource("TileMapPattern_6epfo"), SubResource("TileMapPattern_pdbwe"), SubResource("TileMapPattern_ma85a"), SubResource("TileMapPattern_cskko"), SubResource("TileMapPattern_x6ti7"), SubResource("TileMapPattern_ruemg"), SubResource("TileMapPattern_bu2u2"), SubResource("TileMapPattern_ojmtq"), SubResource("TileMapPattern_swfyf"), SubResource("TileMapPattern_falt5"), SubResource("TileMapPattern_wy8a4"), SubResource("TileMapPattern_k4pgb"), SubResource("TileMapPattern_0rqhg"), SubResource("TileMapPattern_atetd"), SubResource("TileMapPattern_yutph"), SubResource("TileMapPattern_j7q4b"), SubResource("TileMapPattern_nprmu"), SubResource("TileMapPattern_qx0ot"), SubResource("TileMapPattern_bvrrn"), SubResource("TileMapPattern_w8if2"), SubResource("TileMapPattern_lyeru"), SubResource("TileMapPattern_fro7a"), SubResource("TileMapPattern_mvkof"), SubResource("TileMapPattern_c0oeu"), SubResource("TileMapPattern_eh7im"), SubResource("TileMapPattern_23glj"), SubResource("TileMapPattern_cln2d"), SubResource("TileMapPattern_upnul"), SubResource("TileMapPattern_mu1ux"), SubResource("TileMapPattern_jwjgh"), SubResource("TileMapPattern_l8f4r"), SubResource("TileMapPattern_rs2g6"), SubResource("TileMapPattern_1e0ud"), SubResource("TileMapPattern_deyly"), SubResource("TileMapPattern_q8cmh"), SubResource("TileMapPattern_mrv42"), SubResource("TileMapPattern_ocjct"), SubResource("TileMapPattern_byxaa"), SubResource("TileMapPattern_uwa27"), SubResource("TileMapPattern_22i77"), SubResource("TileMapPattern_p2ti1"), SubResource("TileMapPattern_vonvy"), SubResource("TileMapPattern_4ys2j"), SubResource("TileMapPattern_gxbon"), SubResource("TileMapPattern_43rpx"), SubResource("TileMapPattern_64xcl"), SubResource("TileMapPattern_vr2gd"), SubResource("TileMapPattern_81wo0"), SubResource("TileMapPattern_skmgg"), SubResource("TileMapPattern_17u7e"), SubResource("TileMapPattern_5ss6d"), SubResource("TileMapPattern_k3tg3"), SubResource("TileMapPattern_8usvw")])
+base_pattern_frequencies = Array[int]([2, 6, 3, 3, 3, 3, 1, 5, 2, 3, 3, 1, 3, 16, 1, 1, 1, 1, 1, 6, 10, 1, 1, 3, 3, 3, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2])
+base_pattern_size = Vector2i(3, 3)
+tile_atlas_coords = Array[Vector2i]([Vector2i(1, 1), Vector2i(1, 2), Vector2i(0, 0), Vector2i(2, 0), Vector2i(-1, -1), Vector2i(2, 1)])

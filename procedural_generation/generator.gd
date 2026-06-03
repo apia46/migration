@@ -8,10 +8,12 @@ var model:ProceduralModel
 
 var queue:Array[Rect2i] = []
 
+var initial_gen_rect:Rect2i
 var gen_rect:Rect2i
 var tile_possibilities:Array[Array]
 var entropies:Array[int]
 var failed:bool = false
+var fails:int = 0
 var tiles_changed:Array[bool]
 var tiles_completed:int
 
@@ -21,11 +23,17 @@ var lowest_position:Vector2i
 var next_tick:Result = Result.NEXT
 enum Result { NEXT, RETRY, ADVANCE }
 
-var ticks:int = 10
+var ticks:float = 10
 
-func _process(_delta: float) -> void:
-	for i in ticks:
+var setupped:bool = false
+
+func _process(delta: float) -> void:
+	print(delta," ", ticks)
+	setupped = false
+	for i in ceil(ticks):
 		tick()
+	if delta > 0.1 and ticks > 1 and !setupped: ticks -= 0.25
+	if delta < 0.03 and ticks < 10 and !setupped: ticks += 0.25
 
 func set_context(_tile_map_layer:TileMapLayer, _model:ProceduralModel) -> void:
 	tile_map_layer = _tile_map_layer
@@ -38,8 +46,16 @@ func tick() -> void:
 			if !next:
 				queue_empty.emit()
 				return
+			fails = 0
+			initial_gen_rect = next
 			next_tick = setup(next)
-		Result.RETRY: next_tick = setup(gen_rect)
+		Result.RETRY:
+			fails += 1
+			@warning_ignore("integer_division")
+			var size_increase:int = min(3, fails/6)
+			var rect:Rect2i = Rect2i(initial_gen_rect.position-Vector2i.ONE*size_increase, initial_gen_rect.size+Vector2i.ONE*size_increase*2)
+			print(rect)
+			next_tick = setup(rect)
 		Result.ADVANCE: next_tick = advance()
 
 func setup(rect:Rect2i) -> Result:
@@ -50,6 +66,7 @@ func setup(rect:Rect2i) -> Result:
 	entropies = []
 	tiles_changed = []
 	tiles_completed = 0
+	setupped = true
 
 	for y in rect.size.y:
 		for x in rect.size.x:
