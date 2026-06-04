@@ -20,4 +20,4 @@ func next_chunk() -> void:
 
 func chunk_at(pos:Vector2i) -> Rect2i:
 	#print(pos)
-	return Rect2i(pos*6, Vector2i.ONE*8)
+	return Rect2i(pos*5, Vector2i.ONE*6)
