@@ -29,11 +29,13 @@ var setupped:bool = false
 
 func _process(delta: float) -> void:
 	print(delta," ", ticks)
-	setupped = false
-	for i in ceil(ticks):
+	# setupped = false
+	# for i in ceil(ticks):
+	# 	tick()
+	# if delta > 0.1 and ticks > 1 and !setupped: ticks -= 0.25
+	# if delta < 0.03 and ticks < 10 and !setupped: ticks += 0.25
+	for i in 10:
 		tick()
-	if delta > 0.1 and ticks > 1 and !setupped: ticks -= 0.25
-	if delta < 0.03 and ticks < 10 and !setupped: ticks += 0.25
 
 func set_context(_tile_map_layer:TileMapLayer, _model:ProceduralModel) -> void:
 	tile_map_layer = _tile_map_layer
@@ -52,7 +54,7 @@ func tick() -> void:
 		Result.RETRY:
 			fails += 1
 			@warning_ignore("integer_division")
-			var size_increase:int = min(3, fails/6)
+			var size_increase:int = min(4, (fails+5)/6)
 			var rect:Rect2i = Rect2i(initial_gen_rect.position-Vector2i.ONE*size_increase, initial_gen_rect.size+Vector2i.ONE*size_increase*2)
 			print(rect)
 			next_tick = setup(rect)
@@ -106,7 +108,7 @@ func setup(rect:Rect2i) -> Result:
 	tiles_completed += 1
 	return Result.ADVANCE
 
-# O(p s^4 k^2) for patterns p, pattern size s, kernel size k... pretty bad
+# O(p s^2 k) for patterns p, pattern size s, kernel size k... pretty bad
 func advance() -> Result:
 	# we have just completed a tile, and need to propagate the effects
 	var pattern_index:int = 0
@@ -173,7 +175,7 @@ func collect_possibilities(possibilities_set:Array[Dictionary]) -> Dictionary[Ve
 func matches(pattern:TileMapPattern, pos:Vector2i) -> bool:
 	for x in pattern.get_size().x: for y in pattern.get_size().y:
 		var check_cell:Vector2i = tile_map_layer.get_cell_atlas_coords(pos + Vector2i(x,y))
-		if check_cell == Vector2i(-1, -1): continue
+		if check_cell == Vector2i(-1, -1): continue # tile doesnt exist yet; could match
 		if check_cell != pattern.get_cell_atlas_coords(Vector2i(x,y)): return false
 	return true
 
