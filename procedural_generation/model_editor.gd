@@ -5,7 +5,7 @@ extends TileMapLayer
 @export_tool_button("Generate Model") var g = generate
 
 func generate() -> void:
-	var model = ProceduralModel.new()
+	var model:ProceduralModel = ProceduralModel.new()
 	model.base_pattern_size = base_pattern_size
 	for pos in get_used_cells():
 		var pattern:TileMapPattern = TileMapPattern.new()
@@ -30,6 +30,21 @@ func generate() -> void:
 		if !matched:
 			model.base_patterns.append(pattern)
 			model.base_pattern_frequencies.append(1)
+	
+	model.tile_atlas_coords.remove_at(model.tile_atlas_coords.find(Vector2i(-1, -1)))
+
+	for tile in model.tile_atlas_coords:
+		for x in model.base_pattern_size.x:
+			for y in model.base_pattern_size.y:
+				var base_patterns_without_tile_at_position:Array[int] = []
+				var pattern_index:int = 0
+				for pattern in model.base_patterns:
+					if pattern.get_cell_atlas_coords(Vector2i(x,y)) != tile:
+						base_patterns_without_tile_at_position.append(pattern_index)
+					pattern_index += 1
+				model.base_patterns_without_tile_at_position[Vector4i(tile.x, tile.y, x, y)] = base_patterns_without_tile_at_position
+
+
 	ResourceSaver.save(model, "res://model.tres")
 
 func matches(pattern:TileMapPattern, check_pattern:TileMapPattern) -> int:

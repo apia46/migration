@@ -11,6 +11,7 @@ func _ready() -> void:
 	generator.queue_empty.connect(next_chunk)
 
 func next_chunk() -> void:
+	if l == 6: return
 	l += 1
 	for x in l*2:
 		generator.queue.append(chunk_at(Vector2i(l,l-x)))
@@ -19,5 +20,4 @@ func next_chunk() -> void:
 		generator.queue.append(chunk_at(Vector2i(x-l,l)))
 
 func chunk_at(pos:Vector2i) -> Rect2i:
-	#print(pos)
-	return Rect2i(pos*5, Vector2i.ONE*6)
+	return Rect2i(pos*8, Vector2i.ONE*8)
