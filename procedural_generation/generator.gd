@@ -37,11 +37,7 @@ func _process(delta: float) -> void:
 	# 	tick()
 	# if delta > 0.1 and ticks > 1 and !setupped: ticks -= 0.25
 	# if delta < 0.03 and ticks < 10 and !setupped: ticks += 0.25
-<<<<<<< HEAD
-	for i in ticks:
-=======
 	for i in 10:
->>>>>>> temp
 		tick()
 
 func set_context(_tile_map_layer:TileMapLayer, _model:ProceduralModel) -> void:
@@ -187,13 +183,8 @@ func collect_possibilities(possibilities_set:Array[Dictionary]) -> Dictionary[Ve
 
 func matches(pattern:TileMapPattern, pos:Vector2i) -> bool:
 	for x in pattern.get_size().x: for y in pattern.get_size().y:
-<<<<<<< HEAD
-		var check_cell:Vector2i = read_cache(pos + Vector2i(x,y) - gen_rect.position)
-		if check_cell == Vector2i(-1, -1): continue
-=======
 		var check_cell:Vector2i = tile_map_layer.get_cell_atlas_coords(pos + Vector2i(x,y))
 		if check_cell == Vector2i(-1, -1): continue # tile doesnt exist yet; could match
->>>>>>> temp
 		if check_cell != pattern.get_cell_atlas_coords(Vector2i(x,y)): return false
 	return true
 
