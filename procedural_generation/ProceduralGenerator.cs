@@ -40,7 +40,7 @@ public partial class ProceduralGenerator : Node
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		Tick();
+		for (int i = 0; i < 30; i++) Tick();
 	}
 
 	void Tick()

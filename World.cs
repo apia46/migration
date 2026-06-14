@@ -18,7 +18,7 @@ public partial class World : Node2D
 
 	void NextChunks()
 	{
-		if (layer == 6) return;
+		//if (layer == 6) return;
 		layer++;
 		for (int x = 0; x < layer*2; x++) {
 			generator.Queue.Push(ChunkAt(new Vector2I(layer,layer-x)));
