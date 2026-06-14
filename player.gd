@@ -21,7 +21,7 @@ func _physics_process(delta: float) -> void:
 			double_jump_available = true
 		elif (is_on_floor() or double_jump_available):
 			if !is_on_floor():
-				if !coyote_time: double_jump_available = false
+				#if !coyote_time: double_jump_available = false
 				if direction and direction * velocity.x < DOUBLE_JUMP_REDIRECT: velocity.x = direction * DOUBLE_JUMP_REDIRECT
 			velocity.y = JUMP_VELOCITY
 

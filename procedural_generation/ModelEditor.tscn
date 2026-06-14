@@ -1,0 +1,11 @@
+[gd_scene format=4 uid="uid://cwhq2wvx53e7u"]
+
+[ext_resource type="TileSet" uid="uid://b3ppdjlci4abh" path="res://assets/tiles.tres" id="1_8gkpl"]
+[ext_resource type="Script" uid="uid://b2ef0pwgy86my" path="res://procedural_generation/ModelEditor.cs" id="2_pbn7k"]
+
+[node name="ModelEditor" type="TileMapLayer" unique_id=75075194]
+tile_map_data = PackedByteArray("AAABAP3/AAABAAIAAAACAP3/AAABAAIAAAABAPz/AAABAAIAAAACAPz/AAABAAEAAAADAP3/AAABAAIAAAADAPz/AAABAAIAAAADAPv/AAABAAIAAAACAPv/AAABAAIAAAABAPv/AAABAAIAAAA=")
+tile_set = ExtResource("1_8gkpl")
+script = ExtResource("2_pbn7k")
+BasePatternSize = Vector2i(2, 2)
+metadata/_custom_type_script = "uid://b2ef0pwgy86my"

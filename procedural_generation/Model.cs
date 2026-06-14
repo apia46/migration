@@ -40,6 +40,6 @@ public partial class Model : Resource {
 			TileAtlasCoordsMap[TileAtlasCoords[i]] = i;
 		}
 		TileAtlasCoordsMap[Vector2I.One * -1] = -1;
-		TilesCount = TileAtlasCoords.Count - 1;
+		TilesCount = ExportedTileAtlasCoords.Count;
 	}
 }
