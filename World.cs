@@ -11,7 +11,7 @@ public partial class World : Node2D
 	public override void _Ready()
 	{
 		generator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
-		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GD.Load<Model>("res://procedural_generation/model.tres"));
+		generator.SetContext(GetNode<TileMapLayer>("%AbstractLayer"), GetNode<TileMapLayer>("%ConcreteLayer"), GD.Load<Model>("res://procedural_generation/model.tres"));
 		generator.Queue.Push(ChunkAt(Vector2I.Zero));
 		generator.QueueEmpty += NextChunks;
 	}

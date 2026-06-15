@@ -11,13 +11,15 @@ public partial class ProceduralGenerator : Node
 
 	readonly Random RNG = new();
 
-	TileMapLayer tileMapLayer;
+	TileMapLayer abstractLayer;
+	TileMapLayer concreteLayer;
 	Model model;
 
 	public Stack<Rect2I> Queue = [];
 	
 	Rect2I genRect;
-	TileCache tileCache;
+	TileCache abstractTileCache;
+	TileCache concreteTileCache;
 	int[,,,,] tilePossibilities; // position, overlap, tile
 	int[,] entropies; // position
 	int fails = 0;
@@ -30,9 +32,10 @@ public partial class ProceduralGenerator : Node
 	enum Result { Next, Retry, Advance }
 	Result nextTick = Result.Next;
 
-	public void SetContext(TileMapLayer tileMapLayer, Model model)
+	public void SetContext(TileMapLayer abstractLayer, TileMapLayer concreteLayer, Model model)
 	{
-		this.tileMapLayer = tileMapLayer;
+		this.abstractLayer = abstractLayer;
+		this.concreteLayer = concreteLayer;
 		this.model = model;
 		model.ImportProperties();
 	}
@@ -50,9 +53,13 @@ public partial class ProceduralGenerator : Node
 				if (Queue.Count > 0) {
 					Rect2I nextRect = Queue.Pop();
 					fails = 0;
-					tileCache = new(
-						nextRect, model.BasePatternSize-Vector2I.One,
-						tileMapLayer, model.TileAtlasCoordsMap);
+					abstractTileCache = new(
+						nextRect, model.BasePatternSize-Vector2I.One, true,
+						abstractLayer, model.TileAtlasCoordsMapAbstract);
+					Rect2I nextConcreteRect = new(nextRect.Position * 2, nextRect.Size * 2);
+					concreteTileCache = new(
+						nextConcreteRect, Vector2I.Zero, false,
+						concreteLayer, model.TileAtlasCoordsMapConcrete);
 					genRect = nextRect;
 					nextTick = Setup();
 				} else EmitSignalQueueEmpty();
@@ -62,7 +69,8 @@ public partial class ProceduralGenerator : Node
 				if (fails % 6 == 3) {
 					genRect.Position -= Vector2I.One;
 					genRect.Size += Vector2I.One * 2;
-					tileCache = new(tileCache, Vector2I.One, tileMapLayer, model.TileAtlasCoordsMap);
+					abstractTileCache = new(abstractTileCache, Vector2I.One, true, abstractLayer, model.TileAtlasCoordsMapAbstract);
+					concreteTileCache = new(concreteTileCache, Vector2I.One * 2, false, concreteLayer, model.TileAtlasCoordsMapConcrete);
 				}
 				nextTick = Setup();
 			break;
@@ -79,7 +87,7 @@ public partial class ProceduralGenerator : Node
 			genRect.Size.Y,
 			model.BasePatternSize.X,
 			model.BasePatternSize.Y,
-			model.TileAtlasCoords.Count
+			model.TileAtlasCoordsAbstract.Count
 		];
 		entropies = new int[genRect.Size.X, genRect.Size.Y];
 		tilesChanged = new bool[genRect.Size.X, genRect.Size.Y];
@@ -88,7 +96,7 @@ public partial class ProceduralGenerator : Node
 		for (int y = 0; y < genRect.Size.Y; y++) {
 			for (int x = 0; x < genRect.Size.X; x++) {
 				Vector2I position = new(x, y);
-				if (tileCache.GetTile(position + genRect.Position) != -1) {
+				if (abstractTileCache.GetTile(position + genRect.Position) != -1) {
 					// tile already filled
 					entropies[x, y] = -1;
 					tilesCompleted++;
@@ -98,8 +106,8 @@ public partial class ProceduralGenerator : Node
 				for (int py = 0; py < model.BasePatternSize.Y; py++) {
 					for (int px = 0; px < model.BasePatternSize.X; px++) {
 						Vector2I checkPatternPosition = position - new Vector2I(px, py);
-						for (int p = 0; p < model.BasePatterns.Count; p++) {
-							int[,] pattern = model.BasePatterns[p];
+						for (int p = 0; p < model.BasePatternsAbstract.Count; p++) {
+							int[,] pattern = model.BasePatternsAbstract[p];
 							if (Matches(pattern, checkPatternPosition+genRect.Position)) {
 								int tile = pattern[px, py];
 								Vector2I offset = model.BasePatternSize - Vector2I.One - new Vector2I(px, py);
@@ -124,10 +132,10 @@ public partial class ProceduralGenerator : Node
 		Vector2I lowestPosition = GetLowestEntropy();
 		
 		if (SelectPossibility(lowestPosition)) {
-			tileCache.WriteCache(tileMapLayer, model.BasePatternSize-Vector2I.One, model.TileAtlasCoords);
+			abstractTileCache.WriteCache(abstractLayer, model.BasePatternSize-Vector2I.One, model.TileAtlasCoordsAbstract);
 			for (int cy = 0; cy < genRect.Size.Y; cy++) {
 				for (int cx = 0; cx < genRect.Size.X; cx++) {
-					tileCache.SetTile(new Vector2I(cx, cy) + genRect.Position, -1);
+					abstractTileCache.SetTile(new Vector2I(cx, cy) + genRect.Position, -1);
 				}
 			}
 			GD.Print("FAILED");
@@ -138,13 +146,13 @@ public partial class ProceduralGenerator : Node
 		tilesCompleted++;
 
 		if (tilesCompleted == genRect.Area) {
-			tileCache.WriteCache(tileMapLayer, model.BasePatternSize-Vector2I.One, model.TileAtlasCoords);
+			abstractTileCache.WriteCache(abstractLayer, model.BasePatternSize-Vector2I.One, model.TileAtlasCoordsAbstract);
 			return Result.Next;
 		}
 
 		// for each pattern
-		for (int p = 0; p < model.BasePatterns.Count; p++) {
-			int[,] pattern = model.BasePatterns[p];
+		for (int p = 0; p < model.BasePatternsAbstract.Count; p++) {
+			int[,] pattern = model.BasePatternsAbstract[p];
 			// at each overlap with the new cell
 			for (int py = 0; py < model.BasePatternSize.Y; py++) {
 				for (int px = 0; px < model.BasePatternSize.X; px++) {
@@ -211,8 +219,8 @@ public partial class ProceduralGenerator : Node
 
 	double[] CollectPossibilities(Vector2I relativePosition)
 	{
-		double[] frequencies = new double[model.TilesCount];
-		for (int tile = 0; tile < model.TilesCount; tile++) {
+		double[] frequencies = new double[model.TilesCountAbstract];
+		for (int tile = 0; tile < model.TilesCountAbstract; tile++) {
 			frequencies[tile] = 1.0;
 			for (int py = 0; py < model.BasePatternSize.Y; py++) {
 				for (int px = 0; px < model.BasePatternSize.X; px++) {
@@ -232,10 +240,10 @@ public partial class ProceduralGenerator : Node
 		if (totalFrequency == 0) return true;
 		double randomValue = RNG.NextDouble() * totalFrequency;
 		double slidingWindow = 0;
-		for (int tile = 0; tile < model.TilesCount; tile++) {
+		for (int tile = 0; tile < model.TilesCountAbstract; tile++) {
 			double slidingWindowNext = slidingWindow + possibilities[tile];
 			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) {
-				tileCache.SetTile(relativePosition + genRect.Position, tile);
+				abstractTileCache.SetTile(relativePosition + genRect.Position, tile);
 				return false;
 			}
 			slidingWindow = slidingWindowNext;
@@ -249,7 +257,7 @@ public partial class ProceduralGenerator : Node
 		for (int y = 0; y < model.BasePatternSize.Y; y++) {
 			for (int x = 0; x < model.BasePatternSize.X; x++)
 			{
-				int checkTile = tileCache.GetTile(absolutePosition + new Vector2I(x,y));
+				int checkTile = abstractTileCache.GetTile(absolutePosition + new Vector2I(x,y));
 				if (checkTile != -1 && checkTile != pattern[x,y]) return false;
 			}
 		}
@@ -262,7 +270,7 @@ public partial class ProceduralGenerator : Node
 			for (int x = 0; x < model.BasePatternSize.X; x++)
 			{ 
 				Vector2I cellPosition = relativePatternPosition + new Vector2I(x,y);
-				int checkTile = tileCache.GetTile(cellPosition+genRect.Position);
+				int checkTile = abstractTileCache.GetTile(cellPosition+genRect.Position);
 				if (checkTile == -1) continue;
 				if (checkTile == pattern[x,y] == (cellPosition.X == relativeNewCell.X && cellPosition.Y == relativeNewCell.Y)) {
 					return false;
@@ -277,7 +285,7 @@ public partial class ProceduralGenerator : Node
 		double[] possibilities = CollectPossibilities(relativePosition);
 		double scaling = 1/possibilities.Sum();
 		double totalEntropy = 0;
-		for (int tile = 0; tile < model.TilesCount; tile++) {
+		for (int tile = 0; tile < model.TilesCountAbstract; tile++) {
 			double chance = possibilities[tile] * scaling;
 			if (chance < 0.01) continue;
 			totalEntropy -= chance * Math.Log(chance);
@@ -292,28 +300,32 @@ class TileCache
 	readonly Rect2I Bounds;
     int[,] Tiles;
 
-	public TileCache(Rect2I rect, Vector2I expand, TileMapLayer tileMapLayer, Dictionary<Vector2I, int> tileAtlasCoordsMap)
+	public TileCache(Rect2I rect, Vector2I expand, bool ReadTiles, TileMapLayer abstractLayer, Dictionary<Vector2I, int> tileAtlasCoordsMap)
 	{
 		Bounds = new Rect2I(rect.Position - expand, rect.Size + 2*expand);
 		Tiles = new int[Bounds.Size.X, Bounds.Size.Y];
-		for (int y = 0; y < Bounds.Size.Y; y++) {
-			for (int x = 0; x < Bounds.Size.X; x++) {
-				Vector2I relativePosition = new(x, y);
-				Tiles[x, y] = tileAtlasCoordsMap[tileMapLayer.GetCellAtlasCoords(relativePosition + Bounds.Position)];
+		if (ReadTiles) {
+			for (int y = 0; y < Bounds.Size.Y; y++) {
+				for (int x = 0; x < Bounds.Size.X; x++) {
+					Vector2I relativePosition = new(x, y);
+					Tiles[x, y] = tileAtlasCoordsMap[abstractLayer.GetCellAtlasCoords(relativePosition + Bounds.Position)];
+				}
 			}
 		}
 	}
 
-	public TileCache(TileCache current, Vector2I expand, TileMapLayer tileMapLayer, Dictionary<Vector2I, int> tileAtlasCoordsMap)
+	public TileCache(TileCache current, Vector2I expand, bool ReadTiles, TileMapLayer abstractLayer, Dictionary<Vector2I, int> tileAtlasCoordsMap)
 	{
 		Bounds = new Rect2I(current.Bounds.Position - expand, current.Bounds.Size + 2*expand);
 		Tiles = new int[Bounds.Size.X, Bounds.Size.Y];
-		for (int y = 0; y < Bounds.Size.Y; y++) {
-			for (int x = 0; x < Bounds.Size.X; x++) {
-				Vector2I relativePosition = new(x, y);
-				if (current.Bounds.HasPoint(relativePosition + Bounds.Position))
-					Tiles[x, y] = current.Tiles[x-expand.X, y-expand.Y];
-				else Tiles[x, y] = tileAtlasCoordsMap[tileMapLayer.GetCellAtlasCoords(relativePosition + Bounds.Position)];
+		if (ReadTiles) {
+			for (int y = 0; y < Bounds.Size.Y; y++) {
+				for (int x = 0; x < Bounds.Size.X; x++) {
+					Vector2I relativePosition = new(x, y);
+					if (current.Bounds.HasPoint(relativePosition + Bounds.Position))
+						Tiles[x, y] = current.Tiles[x-expand.X, y-expand.Y];
+					else Tiles[x, y] = tileAtlasCoordsMap[abstractLayer.GetCellAtlasCoords(relativePosition + Bounds.Position)];
+				}
 			}
 		}
 	}
@@ -328,12 +340,12 @@ class TileCache
 		Tiles[position.X-Bounds.Position.X, position.Y-Bounds.Position.Y] = tile; 
 	}
 
-	public void WriteCache(TileMapLayer tileMapLayer, Vector2I expand, List<Vector2I> tileAtlasCoords)
+	public void WriteCache(TileMapLayer abstractLayer, Vector2I expand, List<Vector2I> tileAtlasCoords)
 	{
 		for (int y = expand.Y; y < Bounds.Size.Y - expand.Y; y++) {
 			for (int x = expand.X; x < Bounds.Size.X - expand.X; x++) {
 				Vector2I relativePosition = new(x, y);
-				tileMapLayer.SetCell(Bounds.Position+relativePosition, 0, Tiles[x, y] == -1 ? Vector2I.One * -1 : tileAtlasCoords[Tiles[x, y]]);
+				abstractLayer.SetCell(Bounds.Position+relativePosition, 0, Tiles[x, y] == -1 ? Vector2I.One * -1 : tileAtlasCoords[Tiles[x, y]]);
 			}
 		}
 	}

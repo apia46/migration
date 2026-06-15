@@ -9,9 +9,9 @@
 script = ExtResource("1_aqk2v")
 metadata/_custom_type_script = "uid://djuyflrxhl2xr"
 
-[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=2100362068]
+[node name="AbstractLayer" type="TileMapLayer" parent="." unique_id=2100362068]
 unique_name_in_owner = true
-scale = Vector2(0.5, 0.5)
+scale = Vector2(2, 2)
 tile_set = ExtResource("1_f3sb7")
 
 [node name="player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
@@ -21,3 +21,6 @@ position = Vector2(40, -100)
 unique_name_in_owner = true
 script = ExtResource("4_036b0")
 metadata/_custom_type_script = "uid://d2j8xwqp52t78"
+
+[node name="ConcreteLayer" type="TileMapLayer" parent="." unique_id=1209543109]
+unique_name_in_owner = true
