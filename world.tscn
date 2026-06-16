@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://8kb2bxnmkwwe"]
+[gd_scene format=4 uid="uid://8kb2bxnmkwwe"]
 
 [ext_resource type="Script" uid="uid://djuyflrxhl2xr" path="res://World.cs" id="1_aqk2v"]
 [ext_resource type="TileSet" uid="uid://b3ppdjlci4abh" path="res://assets/tiles.tres" id="1_f3sb7"]
@@ -11,13 +11,22 @@ metadata/_custom_type_script = "uid://djuyflrxhl2xr"
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=2100362068]
 unique_name_in_owner = true
-scale = Vector2(0.5, 0.5)
+texture_filter = 1
+scale = Vector2(2, 2)
+tile_map_data = PackedByteArray("AAAAAAAAAwAFAAAAAAD//wAAAwAFAAAAAAAAAP//AwABAAAAAAD/////AwABAAAAAAAAAAEAAwABAAIAAAD//wEAAwABAAIAAAD+////AwABAAAAAAD+/wAAAwAFAAAAAAD+/wEAAwABAAIAAAABAP//AwABAAAAAAABAAAAAwAFAAAAAAABAAEAAwABAAIAAAA=")
 tile_set = ExtResource("1_f3sb7")
 
 [node name="player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
-position = Vector2(40, -100)
+unique_name_in_owner = true
 
 [node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112]
 unique_name_in_owner = true
 script = ExtResource("4_036b0")
 metadata/_custom_type_script = "uid://d2j8xwqp52t78"
+
+[node name="Line2D" type="Line2D" parent="." unique_id=488708432]
+unique_name_in_owner = true
+visible = false
+points = PackedVector2Array(89, 50, -32, 136, -77, 45, 0, 0)
+closed = true
+width = 4.0

@@ -1,20 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://bsak233nboe7d"]
+[gd_scene format=3 uid="uid://bsak233nboe7d"]
 
 [ext_resource type="Script" uid="uid://cg187yuskv3iw" path="res://player.gd" id="1_onrkg"]
 [ext_resource type="Texture2D" uid="uid://oaibwbfon52x" path="res://assets/moth.jpg" id="2_onrkg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_onrkg"]
-size = Vector2(0, 0)
+size = Vector2(16, 16)
 
-[node name="player" type="CharacterBody2D"]
+[node name="player" type="CharacterBody2D" unique_id=951441720]
 script = ExtResource("1_onrkg")
 
-[node name="collision" type="CollisionShape2D" parent="."]
+[node name="collision" type="CollisionShape2D" parent="." unique_id=780854719]
 shape = SubResource("RectangleShape2D_onrkg")
 
-[node name="sprite" type="Sprite2D" parent="."]
+[node name="sprite" type="Sprite2D" parent="." unique_id=1141303818]
 scale = Vector2(0.085, 0.085)
 texture = ExtResource("2_onrkg")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1460147725]
 zoom = Vector2(2, 2)
