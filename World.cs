@@ -9,6 +9,8 @@ public partial class World : Node2D
 	Line2D debugDraw;
 	public CharacterBody2D player;
 
+	PackedScene AawagaScene = GD.Load<PackedScene>("aawaga.tscn");
+
 	public override void _Ready()
 	{
 		generator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
@@ -49,5 +51,25 @@ public partial class World : Node2D
 		debugDraw.SetPointPosition(1, new Vector2(rect.End.X, rect.Position.Y) * TILE_SIZE);
 		debugDraw.SetPointPosition(2, rect.End * TILE_SIZE);
 		debugDraw.SetPointPosition(3, new Vector2(rect.Position.X, rect.End.Y) * TILE_SIZE);
+	}
+
+    public override void _Input(InputEvent @event)
+    {
+        if (@event is InputEventKey key) {
+			if (key.IsActionPressed("spawn")) {
+				Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
+				aawaga.player = player;
+				AddChild(aawaga);
+				aawaga.Position = player.Position + new Vector2(30, -30);
+			}
+		}
+    }
+
+	public void SpawnCreature(Vector2I position)
+	{
+		Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
+		aawaga.player = player;
+		AddChild(aawaga);
+		aawaga.Position = position * TILE_SIZE;
 	}
 }

@@ -265,6 +265,7 @@ public partial class ProceduralGenerator : Node
 			double slidingWindowNext = slidingWindow + possibilities[tile];
 			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) {
 				tileCache.SetTile(relativePosition + task.rect.Position, tile);
+				if (tile == 2 && RNG.NextSingle() < 0.02) world.SpawnCreature(relativePosition + task.rect.Position);
 				return false;
 			}
 			slidingWindow = slidingWindowNext;
@@ -354,7 +355,7 @@ class TileCache
 
 	public void SetTile(Vector2I position, int tile)
 	{
-		Tiles[position.X-Bounds.Position.X, position.Y-Bounds.Position.Y] = tile; 
+		Tiles[position.X-Bounds.Position.X, position.Y-Bounds.Position.Y] = tile;
 	}
 
 	public void WriteCache(TileMapLayer tileMapLayer, Vector2I expand, List<Vector2I> tileAtlasCoords)
