@@ -34,7 +34,8 @@ public partial class Aawaga : RigidBody2D
 	public override void _IntegrateForces(PhysicsDirectBodyState2D state)
     {
 		Vector2 diff = player.Position - Position;
-        if (Math.Abs(diff.X) < 100 && mood < 0.4) state.ApplyTorque(20000 * -Math.Sign(diff.X));
+		if (diff.LengthSquared() > 1e7 && RNG.NextDouble() < 0.01) QueueFree();
+        if (diff.LengthSquared() < 10000 && mood < 0.4) state.ApplyTorque(20000 * -Math.Sign(diff.X));
 		else if (walkTimer > 0) {
 			state.ApplyTorque(15000 * walkDirection);
 		}
