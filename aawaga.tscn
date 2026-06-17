@@ -3,32 +3,38 @@
 [ext_resource type="Script" uid="uid://dumynspmutnna" path="res://Aawaga.cs" id="1_0otjq"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_rf46k"]
+resource_local_to_scene = true
 radius = 5.0
 height = 28.0
 
 [node name="Aawaga" type="RigidBody2D" unique_id=340863666]
 script = ExtResource("1_0otjq")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=546704125]
+[node name="CollideTop" type="CollisionShape2D" parent="." unique_id=546704125]
+unique_name_in_owner = true
 position = Vector2(0, -9)
 shape = SubResource("CapsuleShape2D_rf46k")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="." unique_id=1026737616]
+[node name="CollideRight" type="CollisionShape2D" parent="." unique_id=1026737616]
+unique_name_in_owner = true
 position = Vector2(7.795, 4.495)
 rotation = 2.0943952
 shape = SubResource("CapsuleShape2D_rf46k")
 
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="." unique_id=566286254]
+[node name="CollideLeft" type="CollisionShape2D" parent="." unique_id=566286254]
+unique_name_in_owner = true
 position = Vector2(-7.795, 4.495)
 rotation = 4.1887903
 shape = SubResource("CapsuleShape2D_rf46k")
 
-[node name="Line2D" type="Line2D" parent="." unique_id=1319695916]
+[node name="LineRight" type="Line2D" parent="." unique_id=1319695916]
+unique_name_in_owner = true
 points = PackedVector2Array(0, 0, 15.56, 9)
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="Line2D2" type="Line2D" parent="." unique_id=1571602795]
+[node name="LineLeftTop" type="Line2D" parent="." unique_id=1571602795]
+unique_name_in_owner = true
 points = PackedVector2Array(0, -18, 0, 0, -15.56, 9)
 begin_cap_mode = 2
 end_cap_mode = 2

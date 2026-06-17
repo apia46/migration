@@ -9,6 +9,8 @@ public partial class World : Node2D
 	Line2D debugDraw;
 	public CharacterBody2D player;
 
+	readonly Random RNG = new();
+
 	PackedScene AawagaScene = GD.Load<PackedScene>("aawaga.tscn");
 
 	public override void _Ready()
@@ -57,18 +59,16 @@ public partial class World : Node2D
     {
         if (@event is InputEventKey key) {
 			if (key.IsActionPressed("spawn")) {
-				Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
-				aawaga.player = player;
-				AddChild(aawaga);
-				aawaga.Position = player.Position + new Vector2(30, -30);
+				SpawnCreature(player.Position/TILE_SIZE + new Vector2(30, -30));
 			}
 		}
     }
 
-	public void SpawnCreature(Vector2I position)
+	public void SpawnCreature(Vector2 position)
 	{
 		Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
-		aawaga.player = player;
+		float size = RNG.NextSingle() * 5 + 1;
+		aawaga.Initiate(size, size * 3 + RNG.NextSingle() * 3, player);
 		AddChild(aawaga);
 		aawaga.Position = position * TILE_SIZE;
 	}
