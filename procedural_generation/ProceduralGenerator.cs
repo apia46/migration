@@ -159,7 +159,6 @@ public partial class ProceduralGenerator : Node
 					tileCache.SetTile(new Vector2I(cx, cy) + task.rect.Position, -1);
 				}
 			}
-			GD.Print("FAILED");
 			return Result.Retry;
 		}
 

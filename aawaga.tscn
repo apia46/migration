@@ -8,6 +8,9 @@ radius = 5.0
 height = 28.0
 
 [node name="Aawaga" type="RigidBody2D" unique_id=340863666]
+can_sleep = false
+contact_monitor = true
+max_contacts_reported = 1
 script = ExtResource("1_0otjq")
 
 [node name="CollideTop" type="CollisionShape2D" parent="." unique_id=546704125]

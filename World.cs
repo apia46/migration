@@ -67,8 +67,7 @@ public partial class World : Node2D
 	public void SpawnCreature(Vector2 position)
 	{
 		Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
-		float size = RNG.NextSingle() * 5 + 1;
-		aawaga.Initiate(size, size * 3 + RNG.NextSingle() * 3, player);
+		aawaga.Player = player;
 		AddChild(aawaga);
 		aawaga.Position = position * TILE_SIZE;
 	}
