@@ -58,3 +58,21 @@ zoom = Vector2(0.015, 0.015)
 layout_mode = 2
 text = "                LIVE WFC REACTION"
 horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="." unique_id=1287930487]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 48.0
+offset_bottom = 29.0
+text = "Food"
+
+[node name="HungerBar" type="ProgressBar" parent="." unique_id=791942884]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 55.0
+offset_top = 6.0
+offset_right = 290.0
+offset_bottom = 33.0
+max_value = 1.0
+allow_greater = true

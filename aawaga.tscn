@@ -7,11 +7,12 @@ resource_local_to_scene = true
 radius = 5.0
 height = 28.0
 
-[node name="Aawaga" type="RigidBody2D" unique_id=340863666]
+[node name="Aawaga" type="RigidBody2D" unique_id=1058037109]
 can_sleep = false
 contact_monitor = true
 max_contacts_reported = 1
 script = ExtResource("1_0otjq")
+metadata/_custom_type_script = "uid://dumynspmutnna"
 
 [node name="CollideTop" type="CollisionShape2D" parent="." unique_id=546704125]
 unique_name_in_owner = true
@@ -27,7 +28,7 @@ shape = SubResource("CapsuleShape2D_rf46k")
 [node name="CollideLeft" type="CollisionShape2D" parent="." unique_id=566286254]
 unique_name_in_owner = true
 position = Vector2(-7.795, 4.495)
-rotation = 4.1887903
+rotation = -2.094395
 shape = SubResource("CapsuleShape2D_rf46k")
 
 [node name="LineRight" type="Line2D" parent="." unique_id=1319695916]

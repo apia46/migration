@@ -1,14 +1,18 @@
 using Godot;
 using System;
 
-public partial class Aawaga : RigidBody2D
+[GlobalClass]
+public partial class Aawaga : RigidBody2D, IGrabbable
 {
 	static readonly Random RNG = new();
 
-	public CharacterBody2D Player;
+	public CharacterBody2D? Player;
 
-	Line2D lineRight;
-	Line2D lineLeftTop;
+	Line2D? lineRight;
+	Line2D? lineLeftTop;
+	CollisionShape2D? collideTop;
+	CollisionShape2D? collideRight;
+	CollisionShape2D? collideLeft;
 
 	double jumpTimer = 2;
 
@@ -18,14 +22,17 @@ public partial class Aawaga : RigidBody2D
 	float radius = 5;
 	float length = 18;
 
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
+	private bool grabbed;
+    public bool Grabbed {get=>grabbed;set=>grabbed=value;}
+
+    // Called when the node enters the scene tree for the first time.
+    public override void _Ready()
 	{
 		radius = RNG.NextSingle() * 5 + 0.8f;
 		length = radius * 3 + RNG.NextSingle() * 3;
-		CollisionShape2D collideTop = GetNode<CollisionShape2D>("%CollideTop");
-		CollisionShape2D collideRight = GetNode<CollisionShape2D>("%CollideRight");
-		CollisionShape2D collideLeft = GetNode<CollisionShape2D>("%CollideLeft");
+		collideTop = GetNode<CollisionShape2D>("%CollideTop");
+		collideRight = GetNode<CollisionShape2D>("%CollideRight");
+		collideLeft = GetNode<CollisionShape2D>("%CollideLeft");
 		if (collideTop.Shape is CapsuleShape2D collideShape) {
 			collideShape.Radius = radius;
 			collideShape.Height = length + radius*2;
@@ -48,12 +55,13 @@ public partial class Aawaga : RigidBody2D
     public override void _Process(double delta)
     {
         Color color = new Color("#ffffff").Blend(new Color("#0066ff", (float)jumpTimer));
-		lineRight.DefaultColor = color;
-		lineLeftTop.DefaultColor = color;
+		lineRight!.DefaultColor = color;
+		lineLeftTop!.DefaultColor = color;
 	}
 
     public override void _PhysicsProcess(double delta)
     {
+		if (grabbed) return;
         jumpTimer -= delta;
         if (walkTimer > 0) walkTimer -= delta;
 		else if (RNG.NextDouble()*3 < delta)
@@ -62,11 +70,13 @@ public partial class Aawaga : RigidBody2D
 			walkDirection = RNG.NextSingle() > 0.5 ? 1 : -1;
 		}
     }
-	
+
 	public override void _IntegrateForces(PhysicsDirectBodyState2D state)
     {
-		if (jumpTimer < -1) GD.Print("here");
-		Vector2 diff = Player.Position - Position;
+		// if (grabbed) {
+		// 	state.Transform.Origin = Player.Position;
+		// }
+		Vector2 diff = Player!.Position - Position;
 
 		if (jumpTimer < 0) {
 			jumpTimer = RNG.NextDouble() * 6 + 1;
@@ -76,8 +86,36 @@ public partial class Aawaga : RigidBody2D
 		if (diff.LengthSquared() > 1e7 && RNG.NextDouble() < 0.01) QueueFree();
 		if (GetContactCount() > 0) {
 			float torque = 7000 * radius;
-			if (radius < 2 && diff.LengthSquared() < 10000) state.ApplyTorque(torque * -Math.Sign(diff.X));
+			if (Grabbable() && diff.LengthSquared() < 10000) state.ApplyTorque(torque * -Math.Sign(diff.X));
 			else if (walkTimer > 0) state.ApplyTorque(torque * walkDirection);
 		}
 	}
+
+	public bool Grabbable()
+	{
+		return radius < 2.5;
+	}
+
+	public void Grab()
+	{
+		collideTop!.Disabled = true;
+		collideRight!.Disabled = true;
+		collideLeft!.Disabled = true;
+		Freeze = true;
+	}
+	public void Ungrab()
+	{
+		collideTop!.Disabled = false;
+		collideRight!.Disabled = false;
+		collideLeft!.Disabled = false;
+		Freeze = false;
+	}
+}
+
+public interface IGrabbable
+{
+	bool Grabbed {get; set;}
+	public bool Grabbable();
+	public void Grab();
+	public void Ungrab();
 }
