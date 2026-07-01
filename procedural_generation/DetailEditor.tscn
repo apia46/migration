@@ -1,0 +1,16 @@
+[gd_scene format=4 uid="uid://cselgaet33dak"]
+
+[ext_resource type="Script" uid="uid://dseory2w3eke5" path="res://procedural_generation/DetailEditor.cs" id="1_vq6bm"]
+[ext_resource type="TileSet" uid="uid://b3ppdjlci4abh" path="res://assets/tiles.tres" id="2_0yu0y"]
+
+[node name="DetailEditor" type="Node2D" unique_id=405901662]
+script = ExtResource("1_vq6bm")
+metadata/_custom_type_script = "uid://dseory2w3eke5"
+
+[node name="Before" type="TileMapLayer" parent="." unique_id=1076938195]
+unique_name_in_owner = true
+tile_map_data = PackedByteArray("AAAAAAAAAwABAAAAAAABAAAAAwABAAAAAAACAAAAAwABAAAAAAAAAAEAAwAFAAAAAAABAAEAAwAFAAAAAAACAAEAAwAFAAAAAAACAAIAAwABAAIAAAABAAIAAwABAAIAAAAAAAIAAwABAAIAAAA=")
+tile_set = ExtResource("2_0yu0y")
+
+[node name="After" type="TileMapLayer" parent="." unique_id=239652751]
+unique_name_in_owner = true

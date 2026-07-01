@@ -12,6 +12,7 @@ public partial class ProceduralGenerator : Node
 	readonly Random RNG = new();
 
 	TileMapLayer tileMapLayer;
+	TileMapLayer? ConvertedTileMapLayer;
 	Model model;
 
 	public World world;
@@ -38,9 +39,10 @@ public partial class ProceduralGenerator : Node
 		Queue.Push(new Task(rect, true));
 	}
 
-	public void SetContext(TileMapLayer tileMapLayer, Model model)
+	public void SetContext(TileMapLayer tileMapLayer, TileMapLayer convertedTileMapLayer, Model model)
 	{
 		this.tileMapLayer = tileMapLayer;
+		ConvertedTileMapLayer = convertedTileMapLayer;
 		this.model = model;
 		model.ImportProperties();
 	}
@@ -167,6 +169,7 @@ public partial class ProceduralGenerator : Node
 
 		if (tilesCompleted == task.rect.Area) {
 			tileCache.WriteCache(tileMapLayer, model.BasePatternSize-Vector2I.One, model.TileAtlasCoords);
+			WriteConverted();
 			return Result.Next;
 		}
 
@@ -264,7 +267,7 @@ public partial class ProceduralGenerator : Node
 			double slidingWindowNext = slidingWindow + possibilities[tile];
 			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) {
 				tileCache.SetTile(relativePosition + task.rect.Position, tile);
-				if (tile == 2 && RNG.NextSingle() < 0.02) world.SpawnCreature(relativePosition + task.rect.Position);
+				if (tile == 1 && RNG.NextSingle() < 0.02) world.SpawnCreature(relativePosition + task.rect.Position);
 				return false;
 			}
 			slidingWindow = slidingWindowNext;
@@ -314,6 +317,32 @@ public partial class ProceduralGenerator : Node
 		int entropy = (int)(totalEntropy * 1000 + RNG.NextDouble() * 8);
 		return entropy;
 	}
+
+	void WriteConverted()
+	{
+		for (int y = -1; y < task.rect.Size.Y; y++) {
+			for (int x = -1; x < task.rect.Size.X; x++) {
+				Vector2I tilePosition = task.rect.Position + new Vector2I(x,y);
+				int[,] pattern = new int[2,2];
+				for (int cy = 0; cy < 2; cy++) {
+					for (int cx = 0; cx < 2; cx++) {
+						int tile = tileCache.GetTile(tilePosition + new Vector2I(cx,cy));
+						if (tile == -1) goto next;
+						pattern[cx,cy] = tile;
+					}
+				}
+				try {
+					int[,] result = model.ConversionMap[pattern];
+					for (int cy = 0; cy < 2; cy++) {
+						for (int cx = 0; cx < 2; cx++) {
+							ConvertedTileMapLayer!.SetCell(tilePosition * 2 + Vector2I.One + new Vector2I(cx,cy), 0, model.ConvertedTileAtlasCoords[result[cx,cy]]);
+						}
+					}
+				} catch {}
+				next: continue;
+			}
+		}
+	}
 }
 
 class TileCache
@@ -362,7 +391,7 @@ class TileCache
 		for (int y = expand.Y; y < Bounds.Size.Y - expand.Y; y++) {
 			for (int x = expand.X; x < Bounds.Size.X - expand.X; x++) {
 				Vector2I relativePosition = new(x, y);
-				tileMapLayer.SetCell(Bounds.Position+relativePosition, 3, Tiles[x, y] == -1 ? Vector2I.One * -1 : tileAtlasCoords[Tiles[x, y]]);
+				tileMapLayer.SetCell(Bounds.Position+relativePosition, 0, Tiles[x, y] == -1 ? Vector2I.One * -1 : tileAtlasCoords[Tiles[x, y]]);
 			}
 		}
 	}

@@ -19,7 +19,7 @@ public partial class World : Node2D
 		debugDraw = GetNode<Line2D>("%Line2D");
 		player = GetNode<Player>("%player");
 		generator.world = this;
-		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GD.Load<Model>("res://procedural_generation/model.tres"));
+		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<Model>("res://procedural_generation/model.tres"));
 		generator.AddToQueue(ChunkAt(Vector2I.Zero));
 		generator.QueueEmpty += NextChunks;
 	}
@@ -61,5 +61,14 @@ public partial class World : Node2D
 		aawaga.Player = player;
 		AddChild(aawaga);
 		aawaga.Position = position * TILE_SIZE;
+	}
+
+	public override void _Input(InputEvent @event)
+    {
+        if (@event.IsActionPressed("toggle")) {	
+			GetNode<TileMapLayer>("%TileMapLayer").Enabled = !GetNode<TileMapLayer>("%TileMapLayer").Enabled;
+		} else if (@event.IsActionPressed("toggle2")) {
+			GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
+		}
 	}
 }

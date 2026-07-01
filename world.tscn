@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://8kb2bxnmkwwe"]
 
 [ext_resource type="Script" uid="uid://djuyflrxhl2xr" path="res://World.cs" id="1_aqk2v"]
-[ext_resource type="TileSet" uid="uid://b3ppdjlci4abh" path="res://assets/tiles.tres" id="1_f3sb7"]
+[ext_resource type="TileSet" uid="uid://b76oagfblrj2u" path="res://assets/tiles_converted.tres" id="3_036b0"]
 [ext_resource type="Script" uid="uid://d2j8xwqp52t78" path="res://procedural_generation/ProceduralGenerator.cs" id="4_036b0"]
 [ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
 
@@ -12,9 +12,15 @@ metadata/_custom_type_script = "uid://djuyflrxhl2xr"
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=2100362068]
 unique_name_in_owner = true
 texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAABAP//AAABAAEAAAAAAP//AAABAAEAAAD/////AAABAAEAAAD+////AAABAAEAAAD+/wEAAAABAAEAAAD//wEAAAABAAEAAAAAAAEAAAABAAEAAAABAAEAAAABAAEAAAABAAAAAAACAAEAAAAAAAAAAAACAAEAAAD//wAAAAACAAEAAAD+/wAAAAACAAEAAAA=")
+tile_set = ExtResource("3_036b0")
+
+[node name="ConvertedTileMapLayer" type="TileMapLayer" parent="." unique_id=271356281]
+unique_name_in_owner = true
+texture_filter = 1
 scale = Vector2(2, 2)
-tile_map_data = PackedByteArray("AAAAAAAAAwAFAAAAAAD//wAAAwAFAAAAAAAAAP//AwABAAAAAAD/////AwABAAAAAAAAAAEAAwABAAIAAAD//wEAAwABAAIAAAD+////AwABAAAAAAD+/wAAAwAFAAAAAAD+/wEAAwABAAIAAAABAP//AwABAAAAAAABAAAAAwAFAAAAAAABAAEAAwABAAIAAAA=")
-tile_set = ExtResource("1_f3sb7")
+tile_set = ExtResource("3_036b0")
 
 [node name="player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
 unique_name_in_owner = true
