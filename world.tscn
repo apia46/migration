@@ -14,6 +14,7 @@ unique_name_in_owner = true
 texture_filter = 1
 scale = Vector2(4, 4)
 tile_map_data = PackedByteArray("AAABAP//AAABAAEAAAAAAP//AAABAAEAAAD/////AAABAAEAAAD+////AAABAAEAAAD+/wEAAAABAAEAAAD//wEAAAABAAEAAAAAAAEAAAABAAEAAAABAAEAAAABAAEAAAABAAAAAAACAAEAAAAAAAAAAAACAAEAAAD//wAAAAACAAEAAAD+/wAAAAACAAEAAAA=")
+enabled = false
 tile_set = ExtResource("3_036b0")
 
 [node name="ConvertedTileMapLayer" type="TileMapLayer" parent="." unique_id=271356281]
