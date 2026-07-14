@@ -1,105 +1,75 @@
-using System.Linq;
-using System.Collections.Generic;
-using Godot;
-using System.Diagnostics.CodeAnalysis;
+public class Model
+{
+	public Vector2I PatternSize;
+    public Vector2I ConversionScale;
+	public List<Pattern> Patterns = [];
+	public EnumeratedTileSet PatternTiles = new();
+	public EnumeratedTileSet ConvertedTiles = new();
 
-[GlobalClass]
-public partial class Model : Resource {
-	[Export] public Godot.Collections.Array<Godot.Collections.Array> ExportedBasePatterns = [];
-	[Export] public int[] BasePatternFrequencies = [];
-	[Export] public Vector2I BasePatternSize;
-	[Export] public Godot.Collections.Array<Vector2I> ExportedTileAtlasCoords = [];
-	[Export] public Godot.Collections.Array<Vector2I> ExportedConvertedTileAtlasCoords = [];
-	[Export] public Godot.Collections.Dictionary<int[], int[]> ExportedConversionMap = [];
+	public Model(Vector2I patternSize, Vector2I conversionScale)
+    {
+        PatternSize = patternSize;
+        ConversionScale = conversionScale;
+    }
 
-	public List<int[,]> BasePatterns = [];
-	public List<Vector2I> TileAtlasCoords = [];
-	public List<Vector2I> ConvertedTileAtlasCoords = [];
-	public Dictionary<Vector2I, int> TileAtlasCoordsMap = [];
-	public Dictionary<Vector2I, int> ConvertedTileAtlasCoordsMap = [];
-	public int TilesCount;
-	public Dictionary<int[,], int[,]> ConversionMap = new(4, new ArrayComparer());
+    public Pattern? MatchPattern(int[] tiles)
+    {
+        foreach (Pattern pattern in Patterns) if (pattern.Matches(tiles)) return pattern;
+        return null;
+    }
 
-	public void ExportProperties()
-	{
-		ExportedBasePatterns = [.. BasePatterns.ConvertAll(
-			pattern=>new Godot.Collections.Array(pattern.Cast<int>().Select(
-				tile=>Variant.From(tile))))];
-		ExportedTileAtlasCoords = [.. TileAtlasCoords];
-		ExportedConvertedTileAtlasCoords = [.. ConvertedTileAtlasCoords];
-		// foreach (KeyValuePair<int[,],int[,]> pair in ConversionMap) {
-		// 	ExportedConversionMap[[..pair.Key.Cast<int>()]] = [..pair.Value.Cast<int>()];
-		// }
-		foreach (KeyValuePair<int[,],int[,]> pair in ConversionMap)
-		{
-			int[] key = new int[4];
-			int[] value = new int[4];
-			for (int y = 0; y < 2; y++) {
-				for (int x = 0; x < 2; x++) {
-					int index = y*2 + x;
-					key[index] = pair.Key[x,y];
-					value[index] = pair.Value[x,y];
-				}
-			}
-			ExportedConversionMap[key] = value;
-		}
-	}
-
-	public void ImportProperties()
-	{
-		BasePatterns = [.. ExportedBasePatterns.Select(
-			pattern=>{
-				int[,] result = new int[BasePatternSize.X, BasePatternSize.Y];
-				for (int y = 0; y < BasePatternSize.Y; y++) {
-					for (int x = 0; x < BasePatternSize.Y; x++) {
-						int index = x*BasePatternSize.Y + y;
-						result[x,y] = (int)pattern[index];
-					}
-				}
-				return result;
-			})];
-		TileAtlasCoords = [.. ExportedTileAtlasCoords, Vector2I.One * -1];
-		ConvertedTileAtlasCoords = [.. ExportedConvertedTileAtlasCoords, Vector2I.One * -1];
-		for (int i = 0; i < TileAtlasCoords.Count; i++) {
-			TileAtlasCoordsMap[TileAtlasCoords[i]] = i;
-		}
-		for (int i = 0; i < ConvertedTileAtlasCoords.Count; i++) {
-			ConvertedTileAtlasCoordsMap[ConvertedTileAtlasCoords[i]] = i;
-		}
-		TileAtlasCoordsMap[Vector2I.One * -1] = -1;
-		ConvertedTileAtlasCoordsMap[Vector2I.One * -1] = -1;
-		TilesCount = ExportedTileAtlasCoords.Count;
-		foreach (KeyValuePair<int[],int[]> pair in ExportedConversionMap)
-		{
-			int[,] key = new int[2,2];
-			int[,] value = new int[2,2];
-			for (int y = 0; y < 2; y++) {
-				for (int x = 0; x < 2; x++) {
-					int index = y*2 + x;
-					key[x,y] = pair.Key[index];
-					value[x,y] = pair.Value[index];
-				}
-			}
-			ConversionMap[key] = value;
-		}
-	}
+    public List<Pattern> MatchPatterns(int[] tiles)
+    {
+        List<Pattern> patterns = [];
+        foreach (Pattern pattern in Patterns) if (pattern.Matches(tiles)) patterns.Add(pattern);
+        return patterns;
+    }
 }
 
-class ArrayComparer : IEqualityComparer<int[,]>
+public class Pattern
 {
-    public bool Equals(int[,]? x, int[,]? y)
+    public int Frequency;
+    public int[] Tiles;
+    public int[] Conversion;
+
+    public Pattern(int[] tiles, int[] conversion)
     {
-		if (x is not null && y is not null) return Enumerable.SequenceEqual(x.Cast<int>(), y.Cast<int>());
-		else if (x is null && y is null) return true;
-		return false;
+        Frequency = 1;
+        Tiles = tiles;
+        Conversion = conversion;
     }
 
-    public int GetHashCode([DisallowNull] int[,] array)
+    public Pattern(int frequency, int[] tiles, int[] conversion)
     {
-		int hc = 0;
-		foreach (int val in array.Cast<int>()) {
-			hc = unchecked(hc * 314159 + val);
-		}
-        return hc;
+        Frequency = frequency;
+        Tiles = tiles;
+        Conversion = conversion;
     }
+
+    public bool Matches(int[] tiles)
+    {
+        for (int i = 0; i < tiles.Length; i++) if (tiles[i] != -1 && tiles[i] != Tiles[i]) return false;
+        return true;
+    }
+}
+
+public class EnumeratedTileSet
+{
+    readonly Vector2I EMPTY = new(-1, -1);
+    
+	public int Count = 0;
+    public readonly Dictionary<Vector2I, int> CoordsMap = [];
+	public readonly List<Vector2I> CoordsList = [];
+
+	public void RegisterTile(Vector2I TileCoords)
+	{
+        if (TileCoords == EMPTY) return;
+        if (CoordsList.Contains(TileCoords)) return;
+		CoordsMap[TileCoords] = Count;
+		CoordsList.Add(TileCoords);
+		Count++;
+	}
+
+    public int Convert(Vector2I tile) { return tile == EMPTY ? -1 : CoordsMap[tile]; }
+    public Vector2I Convert(int tile) { return tile == -1 ? EMPTY : CoordsList[tile]; }
 }

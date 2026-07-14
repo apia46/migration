@@ -1,94 +1,53 @@
-using System.Linq;
-using System.Collections.Generic;
-using Godot;
-
 [Tool]
 [GlobalClass]
-public partial class ModelEditor : TileMapLayer
+public partial class ModelEditor : Node2D
 {
-	[Export] public Vector2I BasePatternSize;
+	[Export] public Vector2I PatternSize;
+	[Export] public Vector2I ConversionScale;
+	[Export(PropertyHint.File, "*.tres")] public string Path { get; set; } = "";
 
 	[ExportToolButton("Generate Model")]
 	public Callable GenerateButton => Callable.From(Generate);
 
+	TileMapLayer? PatternLayer;
 	TileMapLayer? ConversionLayer;
 
 	public void Generate() {
+		PatternLayer = GetNode<TileMapLayer>("%PatternLayer");
 		ConversionLayer = GetNode<TileMapLayer>("%ConversionLayer");
 
-        Model model = new() { BasePatternSize = BasePatternSize };
-		List<int> frequencies = [];
+        Model model = new(PatternSize, ConversionScale);
 
-		foreach (Vector2I position in GetUsedCells()) {
-			Vector2I tile = GetCellAtlasCoords(position);
-			if (tile != Vector2I.One * -1 && !model.TileAtlasCoords.Contains(tile)) model.TileAtlasCoords.Add(tile);
-		}
-		foreach (Vector2I position in ConversionLayer.GetUsedCells()) {
-			Vector2I tile = ConversionLayer.GetCellAtlasCoords(position);
-			if (tile != Vector2I.One * -1 && !model.ConvertedTileAtlasCoords.Contains(tile)) model.ConvertedTileAtlasCoords.Add(tile);
-		}
-		
-		Dictionary<Vector2I, int> tileAtlasCoordsMap = [];
-		for (int i = 0; i < model.TileAtlasCoords.Count; i++) {
-			tileAtlasCoordsMap[model.TileAtlasCoords[i]] = i;
-		}
-		Dictionary<Vector2I, int> convertedTileAtlasCoordsMap = [];
-		for (int i = 0; i < model.ConvertedTileAtlasCoords.Count; i++) {
-			convertedTileAtlasCoordsMap[model.ConvertedTileAtlasCoords[i]] = i;
-		}
+		foreach (Vector2I position in PatternLayer.GetUsedCells()) model.PatternTiles.RegisterTile(PatternLayer.GetCellAtlasCoords(position));
+		foreach (Vector2I position in ConversionLayer.GetUsedCells()) model.ConvertedTiles.RegisterTile(ConversionLayer.GetCellAtlasCoords(position));
 
-		foreach (Vector2I position in GetUsedCells()) {
-			int[,] pattern = new int[BasePatternSize.X, BasePatternSize.Y];
-			GenerateConversion(position, model.ConversionMap, tileAtlasCoordsMap, convertedTileAtlasCoordsMap);
-			if (IterateAtCell(pattern, position, tileAtlasCoordsMap)) continue;
-			for (int i = 0; i < model.BasePatterns.Count; i++) {
-				if (pattern.Cast<int>().SequenceEqual(model.BasePatterns[i].Cast<int>())) {
-					frequencies[i]++;
-					goto cont;
-				}
+		foreach (Vector2I position in PatternLayer.GetUsedCells()) {
+			if (GetTilesAtCell(position, PatternSize, PatternLayer, model.PatternTiles) is int[] tiles) {
+				if (model.MatchPattern(tiles) is Pattern pattern) pattern.Frequency++;
+				else model.Patterns.Add(new Pattern(tiles, GetTilesAtCell(
+						position*ConversionScale+(PatternSize-new Vector2I(1,1))*ConversionScale/2,
+						ConversionScale, ConversionLayer, model.ConvertedTiles)!));
 			}
-			model.BasePatterns.Add(pattern);
-			frequencies.Add(1);
-			cont: continue;
 		}
-		model.BasePatternFrequencies = [.. frequencies];
-		model.ExportProperties();
-		GD.Print(ResourceSaver.Save(model, "res://model.tres"));
+
+		ModelResource resource = new(model);
+		resource.TakeOverPath(Path);
+		ResourceSaver.Save(resource);
+		EditorInterface.Singleton.CallDeferred("edit_resource", resource);
     }
 
-	int ConvertTile(Vector2I tile)
+	// returns whether or not to 
+	int[]? GetTilesAtCell(Vector2I position, Vector2I size, TileMapLayer layer, EnumeratedTileSet tileset)
 	{
-		return 0;
-	}
-
-	// returns whether or not to cancel
-	bool IterateAtCell(int[,] pattern, Vector2I position, Dictionary<Vector2I, int> tileAtlasCoordsMap) {
-		for (int x = 0; x < BasePatternSize.Y; x++) {
-			for (int y = 0; y < BasePatternSize.X; y++) {
+		int[] pattern = new int[size.X*size.Y];
+		for (int x = 0; x < size.Y; x++) {
+			for (int y = 0; y < size.X; y++) {
 				Vector2I tilePosition = position + new Vector2I(x, y);
-				Vector2I tile = GetCellAtlasCoords(tilePosition);
-				if (tile == Vector2I.One * -1) return true;
-				pattern[x,y] = tileAtlasCoordsMap[tile];
+				Vector2I tile = layer.GetCellAtlasCoords(tilePosition);
+				if (tile == Vector2I.One * -1) return null;
+				pattern[Fold(x,y,size)] = tileset.Convert(tile);
 			}
 		}
-		return false;
-	}
-
-	void GenerateConversion(Vector2I position, Dictionary<int[,], int[,]> ConversionMap, Dictionary<Vector2I, int> tileAtlasCoordsMap, Dictionary<Vector2I, int> convertedTileAtlasCoordsMap) {
-		int[,] pattern = new int[2,2];
-		int[,] result = new int[2,2];
-		for (int x = 0; x < 2; x++) {
-			for (int y = 0; y < 2; y++) {
-				Vector2I tilePosition = position + new Vector2I(x, y);
-				Vector2I tile = GetCellAtlasCoords(tilePosition);
-				if (tile == Vector2I.One * -1) return;
-				pattern[x,y] = tileAtlasCoordsMap[tile];
-				Vector2I resultPosition = position * 2 + Vector2I.One + new Vector2I(x, y);
-				Vector2I resultTile = ConversionLayer!.GetCellAtlasCoords(resultPosition);
-				if (resultTile == Vector2I.One * -1) return;
-				result[x,y] = convertedTileAtlasCoordsMap[resultTile];
-				}
-		}
-		ConversionMap[pattern] = result;
+		return pattern;
 	}
 }
