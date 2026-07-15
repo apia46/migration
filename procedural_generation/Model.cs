@@ -18,11 +18,20 @@ public class Model
         return null;
     }
 
-    public List<Pattern> MatchPatterns(int[] tiles)
+    public List<Pattern> MatchPatterns(int[] tiles) { return MatchPatterns(tiles, Patterns); }
+
+    public List<Pattern> MatchPatterns(int[] tiles, List<Pattern> patterns)
     {
-        List<Pattern> patterns = [];
-        foreach (Pattern pattern in Patterns) if (pattern.Matches(tiles)) patterns.Add(pattern);
-        return patterns;
+        static bool IsEmpty(int[] tiles)
+        {
+            foreach (int tile in tiles) if (tile != -1) return false;
+            return true;
+        }
+
+        if (IsEmpty(tiles)) return patterns;
+        List<Pattern> result = [];
+        foreach (Pattern pattern in Patterns) if (pattern.Matches(tiles)) result.Add(pattern);
+        return result;
     }
 }
 

@@ -7,7 +7,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Godot" />
+    <Using Include="System" />
     <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
     <Using Include="migration.Util" Static="True" />
   </ItemGroup>
 </Project>

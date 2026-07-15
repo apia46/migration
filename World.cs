@@ -18,33 +18,29 @@ public partial class World : Node2D
 		generator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
 		debugDraw = GetNode<Line2D>("%Line2D");
 		player = GetNode<Player>("%player");
-		generator.world = this;
+		// generator.world = this;
 		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
-		generator.AddToQueue(ChunkAt(Vector2I.Zero));
+		generator.world = this;
+		generator.AddToQueue(Vector2I.Zero);
 		generator.QueueEmpty += NextChunks;
 	}
 
-	const int CHUNKS_AROUND_PLAYER = 4;
+	const int CHUNKS_AROUND_PLAYER = 8;
 	const int TILE_SIZE = 64;
-	const int CHUNK_SIZE = 8;
 
 	void NextChunks()
 	{
-		Vector2I position = (Vector2I)(player!.Position / CHUNK_SIZE / TILE_SIZE);
+		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
+		Vector2I position = (Vector2I)(player!.Position / CHUNK_SIZE / TILE_SIZE).Round();
 		for (int layer = CHUNKS_AROUND_PLAYER; layer > 0; layer--) {
 			for (int x = 0; x < layer*2; x++) {
-				generator!.AddToQueue(ChunkAt(position + new Vector2I(layer,layer-x)));
-				generator.AddToQueue(ChunkAt(position + new Vector2I(layer-x,-layer)));
-				generator.AddToQueue(ChunkAt(position + new Vector2I(-layer,x-layer)));
-				generator.AddToQueue(ChunkAt(position + new Vector2I(x-layer,layer)));
+				generator!.AddToQueue(position + new Vector2I(layer,layer-x));
+				generator.AddToQueue(position + new Vector2I(layer-x,-layer));
+				generator.AddToQueue(position + new Vector2I(-layer,x-layer));
+				generator.AddToQueue(position + new Vector2I(x-layer,layer));
 			}
 		}
-		generator!.AddToQueue(ChunkAt(position));
-	}
-
-	Rect2I ChunkAt(Vector2I position)
-	{
-		return new Rect2I(position * CHUNK_SIZE, Vector2I.One * CHUNK_SIZE);
+		generator!.AddToQueue(position);
 	}
 
 	public void DrawDebug(Rect2I rect)

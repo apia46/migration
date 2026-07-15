@@ -1,3 +1,5 @@
+using Microsoft.VisualBasic;
+
 [Tool]
 [GlobalClass]
 public partial class ModelEditor : Node2D
@@ -24,9 +26,10 @@ public partial class ModelEditor : Node2D
 		foreach (Vector2I position in PatternLayer.GetUsedCells()) {
 			if (GetTilesAtCell(position, PatternSize, PatternLayer, model.PatternTiles) is int[] tiles) {
 				if (model.MatchPattern(tiles) is Pattern pattern) pattern.Frequency++;
-				else model.Patterns.Add(new Pattern(tiles, GetTilesAtCell(
-						position*ConversionScale+(PatternSize-new Vector2I(1,1))*ConversionScale/2,
-						ConversionScale, ConversionLayer, model.ConvertedTiles)!));
+				else if (GetTilesAtCell(position*ConversionScale+(PatternSize-new Vector2I(1,1))*ConversionScale/2,
+					ConversionScale, ConversionLayer, model.ConvertedTiles
+					) is int[] conversion) model.Patterns.Add(new Pattern(tiles, conversion));
+				else GD.Print($"position {position} has no conversion!");
 			}
 		}
 

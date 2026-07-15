@@ -1,264 +1,239 @@
-using Godot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
+using System.Numerics;
 
 [GlobalClass]
 public partial class ProceduralGenerator : Node
 {
+	public const int CHUNK_SIZE = 8;
+	const double INVERSE_TEMPERATURE = 0.25;
+	const int EXPAND_RADIUS = 1;
+	public const int SIZE_THRESHOLD = 12;
+
 	[Signal]
 	public delegate void QueueEmptyEventHandler();
 
 	readonly Random RNG = new();
+	readonly GodotThread Thread = new();
+	readonly Mutex Mutex = new();
 
 	#nullable disable
-	TileMapLayer TileMapLayer;
-	TileMapLayer ConvertedTileMapLayer;
-	Model model;
-
 	public World world;
 
-	Stack<Task> Queue = [];
+	TileMapLayer PatternLayer;
+	TileMapLayer ConvertedLayer;
 	
-	Task task;
-	TileCache tileCache;
-	TileCache convertedTileCache;
-	int[,,,,] tilePossibilities; // position, overlap, tile
-	int[,] entropies; // position
-	int fails = 0;
-	bool[,] tilesChanged;
-	int tilesCompleted;
+	// MUTEXED
+	Model Model;
+	// MUTEXED
+	TileCache PatternTiles;
+	// MUTEXED
+	TileCache ConvertedTiles;
+	#nullable enable
 
-	int lowestIndex;
-	Vector2I lowestPosition;
+	// MUTEXED
+	readonly Stack<Task> Queue = [];
 
-	enum Result { Next, Retry, Advance }
-	Result nextTick = Result.Next;
-
-	const double INVERSE_TEMPERATURE = 0.25;
-
-	public void AddToQueue(Rect2I rect) {
-		Queue.Push(new Task(rect, true));
+	public void SetContext(TileMapLayer patternLayer, TileMapLayer convertedLayer, Model model)
+	{
+		PatternLayer = patternLayer;
+		ConvertedLayer = convertedLayer;
+		Model = model;
 	}
 
-	public void SetContext(TileMapLayer TileMapLayer, TileMapLayer convertedTileMapLayer, Model model)
+	public void AddToQueue(Vector2I position)
 	{
-		this.TileMapLayer = TileMapLayer;
-		ConvertedTileMapLayer = convertedTileMapLayer;
-		this.model = model;
+		Mutex.Lock();
+		Queue.Push(new(position, false, true));
+		Mutex.Unlock();
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
+    public override void _Process(double delta)
 	{
-		for (int i = 0; i < 60; i++) Tick();
-		world.DrawDebug(task.rect);
-	}
-
-	void Tick()
-	{
-		switch (nextTick) {
-			case Result.Next:
-				if (Queue.Count > 0) {
-					Task nextTask = Queue.Pop();
-					fails = 0;
-					tileCache = new(
-						nextTask.rect, model.PatternSize-Vector2I.One,
-						TileMapLayer, model.PatternTiles);
-					convertedTileCache = new(
-						new Rect2I(nextTask.rect.Position*2, nextTask.rect.Size*2), Vector2I.Zero,
-						ConvertedTileMapLayer, model.ConvertedTiles);
-					task = nextTask;
-					nextTick = Setup();
-				} else EmitSignalQueueEmpty();
-			break;
-			case Result.Retry:
-				fails++;
-				if (!task.increaseSize) {
-					nextTick = Result.Next;
-					return;
+		int runs = 0;
+		Mutex.Lock();
+		while (runs++ < 30 && !Thread.IsAlive()) {
+			if (Queue.Count == 0) EmitSignalQueueEmpty();
+			else {
+				if (Thread.IsStarted()) {
+					if ((bool)Thread.WaitToFinish()) {
+						ConvertedTiles.WriteTileMap();
+						PatternTiles.WriteTileMap();
+					}
 				}
-				if (fails % 12 == 3) {
-					task.rect.Position -= Vector2I.One;
-					task.rect.Size += Vector2I.One * 2;
-					tileCache = new(tileCache, Vector2I.One, TileMapLayer, model.PatternTiles);
-					convertedTileCache = new(convertedTileCache, Vector2I.One*2, ConvertedTileMapLayer, model.ConvertedTiles);
-					if (task.rect.Size.X > 14) task.increaseSize = false;
-				}
-				nextTick = Setup();
-			break;
-			case Result.Advance:
-				nextTick = Advance();
-			break;
+				Task task = Queue.Peek();
+				if (task.IsNew() && task.ClearBefore)
+					for (int x = task.Rect.Position.X; x < task.Rect.End.X; x++)
+						for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
+							PatternLayer.SetCell(new Vector2I(x,y));
+				Rect2I rect = task.Next();
+				world.DrawDebug(rect);
+				if (task.IsEmpty()) Queue.Pop();
+				Rect2I convertedRect = new(rect.Position*Model.ConversionScale, rect.Size*Model.ConversionScale);
+				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
+				if (!PatternTiles.AnyEmpty()) continue;
+				ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
+				Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
+			}
 		}
+		Mutex.Unlock();
+    }
+
+	// returns if successful
+	bool Generate(Rect2I rect, bool canRetry)
+	{
+		Mutex.Lock();
+		int tries = 0;
+		while (TryGenerate(rect)) {
+			tries++;
+			for (int x = 0; x < rect.Size.X; x++)
+				for (int y = 0; y < rect.Size.Y; y++)
+					PatternTiles.SetTile(rect.Position + new Vector2I(x,y), -1);
+			if (tries > 3) {
+				if (canRetry) {
+					Task retry = new(new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
+					Queue.Push(retry);
+				}
+				Mutex.Unlock();
+				return false;
+			}
+		}
+		Mutex.Unlock();
+		return true;
 	}
 
-	Result Setup()
+	// returns true if failed
+	bool TryGenerate(Rect2I rect)
 	{
-		tilePossibilities = new int[
-			task.rect.Size.X,
-			task.rect.Size.Y,
-			model.PatternSize.X,
-			model.PatternSize.Y,
-			model.PatternTiles.Count
-		];
-		entropies = new int[task.rect.Size.X, task.rect.Size.Y];
-		tilesChanged = new bool[task.rect.Size.X, task.rect.Size.Y];
-		tilesCompleted = 0;
+		Vector2I patternsMargin = Model.PatternSize - Vector2I.One;
+		Vector2I patternsRectSize = rect.Size + patternsMargin;
+		// setup
+		List<Pattern>[] patterns = new List<Pattern>[patternsRectSize.X*patternsRectSize.Y];
+		double[] entropies = new double[rect.Size.X*rect.Size.Y];
+		int tilesCompleted = 0;
 
-		for (int y = 0; y < task.rect.Size.Y; y++) {
-			for (int x = 0; x < task.rect.Size.X; x++) {
-				Vector2I position = new(x, y);
-				if (tileCache.GetTile(position + task.rect.Position) != -1) {
-					// tile already filled
-					entropies[x, y] = -1;
+		for (int x = 0; x < patternsRectSize.X; x++)
+			for (int y = 0; y < patternsRectSize.Y; y++)
+				patterns[Fold(x,y,patternsRectSize)] = Model.MatchPatterns(GetTiles(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize));
+		for (int x = 0; x < rect.Size.X; x++)
+			for (int y = 0; y < rect.Size.Y; y++) {
+				Vector2I position = new(x,y);
+				if (PatternTiles.GetTile(position+rect.Position) != -1) {
+					entropies[Fold(x,y,rect.Size)] = -1;
 					tilesCompleted++;
-					continue;
 				}
-				
-				for (int py = 0; py < model.PatternSize.Y; py++) {
-					for (int px = 0; px < model.PatternSize.X; px++) {
-						Vector2I checkPatternPosition = position - new Vector2I(px, py);
-						foreach (Pattern pattern in model.MatchPatterns(GetTiles(checkPatternPosition+task.rect.Position, model.PatternSize))) {
-							int tile = pattern.Tiles[Fold(px, py, model.PatternSize)];
-							Vector2I offset = model.PatternSize - Vector2I.One - new Vector2I(px, py);
-							tilePossibilities[
-								x, y, offset.X, offset.Y, tile
-							] += pattern.Frequency;
-						}
-					}
-				}
-				entropies[x, y] = GetEntropy(position);
+				else entropies[Fold(x,y,rect.Size)] = GetEntropy(GetNearbyPatterns(position, patterns, patternsRectSize));
 			}
+		// loop
+		while (tilesCompleted < rect.Area) {
+			Vector2I collapsePosition = GetLowestEntropy(rect, entropies);
+			if (SelectPossibility(GetNearbyPatterns(collapsePosition, patterns, patternsRectSize)) is int tile) {
+				tilesCompleted++;
+				PatternTiles.SetTile(collapsePosition + rect.Position, tile);
+				entropies[Fold(collapsePosition,rect.Size)] = -1;
+				for (int px = 0; px < Model.PatternSize.X; px++)
+					for (int py = 0; py < Model.PatternSize.Y; py++) {
+						Vector2I updatePatternPosition = collapsePosition + new Vector2I(px,py);
+						patterns[Fold(updatePatternPosition,patternsRectSize)] = Model.MatchPatterns(
+							GetTiles(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
+							patterns[Fold(updatePatternPosition,patternsRectSize)]
+						);
+					}
+				for (int px = 1-Model.PatternSize.X; px < Model.PatternSize.X; px++)
+					for (int py = 1-Model.PatternSize.Y; py < Model.PatternSize.Y; py++) {
+						Vector2I updateEntropyPosition = collapsePosition + new Vector2I(px,py);
+						if (!rect.HasPoint(rect.Position + updateEntropyPosition)) continue;
+						if (entropies[Fold(updateEntropyPosition,rect.Size)] == -1) continue;
+						entropies[Fold(updateEntropyPosition,rect.Size)] = GetEntropy(GetNearbyPatterns(updateEntropyPosition, patterns, patternsRectSize));
+					}
+			} else return true;
 		}
-
-		if (tilesCompleted == task.rect.Area) return Result.Next;
-
-		return Result.Advance;
+		for (int x = 0; x < rect.Size.X; x++)
+			for (int y = 0; y < rect.Size.Y; y++) {
+				Vector2I position = new(x,y);
+				Pattern convertPattern = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)][0];
+				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
+					for (int cy = 0; cy < Model.ConversionScale.Y; cy++)
+						ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), convertPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
+			}
+		return false;
 	}
 
-	Result Advance()
+	List<Pattern>[] GetNearbyPatterns(Vector2I relativePosition, List<Pattern>[] patterns, Vector2I patternsRectSize)
 	{
-		Vector2I lowestPosition = GetLowestEntropy();
-		
-		if (SelectPossibility(lowestPosition)) {
-			tileCache.WriteCache(TileMapLayer, model.PatternSize-Vector2I.One, model.PatternTiles);
-			for (int cy = 0; cy < task.rect.Size.Y; cy++) {
-				for (int cx = 0; cx < task.rect.Size.X; cx++) {
-					tileCache.SetTile(new Vector2I(cx, cy) + task.rect.Position, -1);
-				}
+		List<Pattern>[] result = new List<Pattern>[Model.PatternSize.X*Model.PatternSize.Y];
+		for (int x = 0; x < Model.PatternSize.X; x++)
+			for (int y = 0; y < Model.PatternSize.Y; y++) {
+				Vector2I position = relativePosition + new Vector2I(x,y);
+				result[Fold(x,y,Model.PatternSize)] = patterns[Fold(position,patternsRectSize)];
 			}
-			return Result.Retry;
-		}
-
-		entropies[lowestPosition.X, lowestPosition.Y] = -1;
-		tilesCompleted++;
-
-		if (tilesCompleted == task.rect.Area) {
-			tileCache.WriteCache(TileMapLayer, model.PatternSize-Vector2I.One, model.PatternTiles);
-			return Result.Next;
-		}
-
-		// for each pattern
-		foreach (Pattern pattern in model.Patterns) {
-			// at each overlap with the new cell
-			for (int py = 0; py < model.PatternSize.Y; py++) {
-				for (int px = 0; px < model.PatternSize.X; px++) {
-					Vector2I checkPatternPosition = lowestPosition - new Vector2I(px, py);
-					// if it has just unmatched as a result of that cell being added
-					if (NewlyUnmatches(pattern, checkPatternPosition, lowestPosition)) {
-						// update each affected cell
-						for (int cy = 0; cy < model.PatternSize.Y; cy++) {
-							for (int cx = 0; cx < model.PatternSize.X; cx++) {
-								Vector2I cellPosition = checkPatternPosition + new Vector2I(cx, cy);
-								// skip if cell outside task.rect
-								if (!task.rect.HasPoint(task.rect.Position + cellPosition)) continue;
-								// skip if cell is already added
-								if (entropies[cellPosition.X, cellPosition.Y] == -1) continue;
-								int tile = pattern.Tiles[Fold(cx, cy,model.PatternSize)];
-								Vector2I offset = model.PatternSize - Vector2I.One - new Vector2I(cx, cy);
-								tilePossibilities[
-									cellPosition.X, cellPosition.Y,
-									offset.X, offset.Y, tile
-								] -= pattern.Frequency;
-								int result = tilePossibilities[
-									cellPosition.X, cellPosition.Y,
-									offset.X, offset.Y, tile
-								];
-								tilesChanged[cellPosition.X, cellPosition.Y] = true;
-								System.Diagnostics.Debug.Assert(result >= 0);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		for (int y = 0; y < task.rect.Size.Y; y++) {
-			for (int x = 0; x < task.rect.Size.X; x++){	
-				if (tilesChanged[x,y]) {
-					tilesChanged[x,y] = false;
-					entropies[x,y] = GetEntropy(new(x,y));
-				}
-			}
-		}
-
-		return Result.Advance;
+		return result;
 	}
 
-	Vector2I GetLowestEntropy()
+	Vector2I GetLowestEntropy(Rect2I rect, double[] entropies)
 	{
-		int lowest = -1;
+		double lowest = -1;
 		Vector2I lowestPosition = Vector2I.One * -1;
-		for (int y = 0; y < task.rect.Size.Y; y++) {
-			for (int x = 0; x < task.rect.Size.X; x++){
-				int entropy = entropies[x,y];
-				if (entropy != -1 && (lowest == -1 || entropy < lowest)) {
+		for (int x = 0; x < rect.Size.X; x++)
+			for (int y = 0; y < rect.Size.Y; y++) {
+				double entropy = entropies[Fold(x,y,rect.Size)];
+				if (lowest == -1 || (entropy < lowest && entropy != -1)) {
 					lowest = entropy;
-					lowestPosition = new(x,y);
+					lowestPosition = new Vector2I(x,y);
 				}
 			}
-		}
-		System.Diagnostics.Debug.Assert(
-			lowestPosition != Vector2I.One * -1
-		);
+		System.Diagnostics.Debug.Assert(lowestPosition != Vector2I.One * -1);
 		return lowestPosition;
 	}
 
-	double[] CollectPossibilities(Vector2I relativePosition)
+	int[] CountTiles(List<Pattern> patterns, Vector2I at)
 	{
-		double[] frequencies = new double[model.PatternTiles.Count];
-		for (int tile = 0; tile < model.PatternTiles.Count; tile++) {
-			frequencies[tile] = 1.0;
-			for (int py = 0; py < model.PatternSize.Y; py++) {
-				for (int px = 0; px < model.PatternSize.X; px++) {
-					frequencies[tile] *= tilePossibilities[relativePosition.X, relativePosition.Y, px, py, tile];
-				}
+		int[] counts = new int[Model.PatternTiles.Count];
+		foreach (Pattern pattern in patterns) counts[pattern.Tiles[Fold(at,Model.PatternSize)]]++;
+		return counts;
+	}
+	
+	double[] CollectPossibilities(List<Pattern>[] patterns)
+	{
+		double[] possibilities = new double[Model.PatternTiles.Count];
+		for (int i = 0; i < Model.PatternTiles.Count; i++) possibilities[i] = 1.0;
+		for (int x = 0; x < Model.PatternSize.X; x++)
+			for (int y = 0; y < Model.PatternSize.Y; y++) {
+				int[] tiles = CountTiles(patterns[Fold(x,y,Model.PatternSize)], Model.PatternSize - new Vector2I(x,y) - Vector2I.One);
+				for (int i = 0; i < Model.PatternTiles.Count; i++)
+					possibilities[i] *= tiles[i];
 			}
-			frequencies[tile] = Math.Pow(frequencies[tile], INVERSE_TEMPERATURE);
-			
-		}
-		return frequencies;
+		for (int i = 0; i < Model.PatternTiles.Count; i++) possibilities[i] = Math.Pow(possibilities[i], INVERSE_TEMPERATURE);
+		return possibilities;
 	}
 
-	bool SelectPossibility(Vector2I relativePosition)
+	int? SelectPossibility(List<Pattern>[] patterns)
 	{
-		double[] possibilities = CollectPossibilities(relativePosition);
+		double[] possibilities = CollectPossibilities(patterns);
 		double totalFrequency = possibilities.Sum();
-		if (totalFrequency == 0) return true;
+		if (totalFrequency == 0) return null;
 		double randomValue = RNG.NextDouble() * totalFrequency;
 		double slidingWindow = 0;
-		for (int tile = 0; tile < model.PatternTiles.Count; tile++) {
+		for (int tile = 0; tile < Model.PatternTiles.Count; tile++) {
 			double slidingWindowNext = slidingWindow + possibilities[tile];
-			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) {
-				tileCache.SetTile(relativePosition + task.rect.Position, tile);
-				if (tile == 1 && RNG.NextSingle() < 0.02) world.SpawnCreature(relativePosition + task.rect.Position);
-				return false;
-			}
+			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) return tile;
 			slidingWindow = slidingWindowNext;
 		}
 		GD.Print($"this shouldnt happen! [{string.Join(", ", possibilities)}], {randomValue}");
-		return true;
+		return null;
+	}
+
+	double GetEntropy(List<Pattern>[] patterns)
+	{
+		double entropy = 0;
+		double[] possibilities = CollectPossibilities(patterns);
+		double scale = 1/possibilities.Sum();
+		foreach (double possibility in possibilities)
+		{
+			double chance = possibility*scale;
+			if (chance < 0.01) continue;
+			entropy -= chance * Math.Log(chance);
+		}
+		return entropy * 1000 + RNG.NextDouble() * 8;
 	}
 
 	int[] GetTiles(Vector2I absolutePosition, Vector2I size)
@@ -266,100 +241,101 @@ public partial class ProceduralGenerator : Node
 		int[] tiles = new int[size.X*size.Y];
 		for (int y = 0; y < size.Y; y++)
 			for (int x = 0; x < size.X; x++)
-				tiles[Fold(x,y,size)] = tileCache.GetTile(absolutePosition+new Vector2I(x,y));
+				tiles[Fold(x,y,size)] = PatternTiles.GetTile(absolutePosition+new Vector2I(x,y));
 		return tiles;
 	}
-	
-	bool NewlyUnmatches(Pattern pattern, Vector2I relativePatternPosition, Vector2I relativeNewCell)
+}
+
+class Task
+{
+	public bool ClearBefore;
+	public bool CanRetry;
+	public Rect2I Rect;
+	readonly List<Rect2I> Subtasks;
+	int pointer = 0;
+
+	const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
+
+	public Task(Vector2I position, bool clearBefore, bool canRetry)
 	{
-		for (int y = 0; y < model.PatternSize.Y; y++) {
-			for (int x = 0; x < model.PatternSize.X; x++)
-			{ 
-				Vector2I cellPosition = relativePatternPosition + new Vector2I(x,y);
-				int checkTile = tileCache.GetTile(cellPosition+task.rect.Position);
-				if (checkTile == -1) continue;
-				if (checkTile == pattern.Tiles[Fold(x,y,model.PatternSize)] == (cellPosition.X == relativeNewCell.X && cellPosition.Y == relativeNewCell.Y)) {
-					return false;
-				}
-			}
-		}
-		return true;
+		ClearBefore = clearBefore;
+		CanRetry = canRetry;
+		Rect = new (position*CHUNK_SIZE, Vector2I.One * CHUNK_SIZE);
+		Subtasks = [Rect];
 	}
 
-	int GetEntropy(Vector2I relativePosition)
+	// public Task (Rect2I rect, bool clearBefore, bool canRetry)
+	// {
+	// 	ClearBefore = clearBefore;
+	// 	CanRetry = canRetry;
+	// 	Rect = rect;
+	// 	Subtasks = [Rect];
+	// }
+
+	public Task (Rect2I rect, bool clearBefore)
 	{
-		double[] possibilities = CollectPossibilities(relativePosition);
-		double scaling = 1/possibilities.Sum();
-		double totalEntropy = 0;
-		for (int tile = 0; tile < model.PatternTiles.Count; tile++) {
-			double chance = possibilities[tile] * scaling;
-			if (chance < 0.01) continue;
-			totalEntropy -= chance * Math.Log(chance);
+		ClearBefore = clearBefore;
+		Rect = rect;
+		Subtasks = [];
+		if (rect.Size.X <= ProceduralGenerator.SIZE_THRESHOLD) {
+			CanRetry = true;
+			Subtasks.Add(Rect);
+		} else {
+			CanRetry = false;
+			Vector2I flooredStart = (Vector2I)(((Godot.Vector2)rect.Position)/CHUNK_SIZE).Floor();
+			Vector2I ceiledEnd = (Vector2I)((Godot.Vector2)rect.End/CHUNK_SIZE).Ceil();
+			for (int x = flooredStart.X; x < ceiledEnd.X; x++)
+				for (int y = flooredStart.Y; y < ceiledEnd.Y; y++) {
+					Vector2I start = rect.Position.Max(new Vector2I(x,y)*CHUNK_SIZE);
+					Vector2I end = rect.End.Min(new Vector2I(x+1,y+1)*CHUNK_SIZE);
+					Subtasks.Add(new(start, end-start));
+				}
 		}
-		int entropy = (int)(totalEntropy * 1000 + RNG.NextDouble() * 8);
-		return entropy;
 	}
+
+	public Rect2I Next() { return Subtasks[pointer++]; }
+	public bool IsEmpty() { return pointer == Subtasks.Count; }
+	public bool IsNew() { return pointer == 0; }
 }
 
 class TileCache
 {
-	public Rect2I Bounds;
-    int[] Tiles;
+	readonly public Rect2I Rect;
+	readonly public Vector2I Margin;
+	readonly public EnumeratedTileSet TileSet;
+	readonly public TileMapLayer TileMap;
+	readonly Vector2I TotalSize;
+	readonly int SourceId;
+	
+	int[] Tiles;
 
-	public TileCache(Rect2I rect, Vector2I expand, TileMapLayer TileMapLayer, EnumeratedTileSet tileSet)
+	public TileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
 	{
-		Bounds = new Rect2I(rect.Position - expand, rect.Size + 2*expand);
-		Tiles = new int[Bounds.Size.X*Bounds.Size.Y];
-		for (int y = 0; y < Bounds.Size.Y; y++) {
-			for (int x = 0; x < Bounds.Size.X; x++) {
-				Vector2I relativePosition = new(x, y);
-				Tiles[x+y*Bounds.Size.X] = tileSet.Convert(TileMapLayer.GetCellAtlasCoords(relativePosition + Bounds.Position));
-			}
-		}
+		Rect = rect;
+		Margin = margin;
+		TileSet = tileSet;
+		TileMap = tileMap;
+		SourceId = sourceId;
+		TotalSize = new(Rect.Size.X+2*Margin.X, Rect.Size.Y+2*Margin.Y);
+		Tiles = new int[TotalSize.X*TotalSize.Y];
+		for (int x = 0; x < TotalSize.X; x++)
+			for (int y = 0; y < TotalSize.Y; y++)
+				Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
 	}
 
-	public TileCache(TileCache current, Vector2I expand, TileMapLayer TileMapLayer, EnumeratedTileSet tileSet)
+	public bool AnyEmpty()
 	{
-		Bounds = new Rect2I(current.Bounds.Position - expand, current.Bounds.Size + 2*expand);
-		Tiles = new int[Bounds.Size.X*Bounds.Size.Y];
-		for (int y = 0; y < Bounds.Size.Y; y++) {
-			for (int x = 0; x < Bounds.Size.X; x++) {
-				Vector2I relativePosition = new(x, y);
-				if (current.Bounds.HasPoint(relativePosition + Bounds.Position))
-					Tiles[Fold(x,y,Bounds.Size)] = current.Tiles[Fold(x-expand.X,y-expand.Y,current.Bounds.Size)];
-				else Tiles[Fold(x,y,Bounds.Size)] = tileSet.Convert(TileMapLayer.GetCellAtlasCoords(relativePosition + Bounds.Position));
-			}
-		}
+		foreach (int tile in Tiles) if (tile == -1) return true;
+		return false;
 	}
 
-	public int GetTile(Vector2I position)
-	{
-		return Tiles[Fold(position-Bounds.Position, Bounds.Size)];
-	}
+	public int GetTile(Vector2I absolutePosition) { return Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)]; }
+	public void SetTile(Vector2I absolutePosition, int to) { Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to; }
 
-	public void SetTile(Vector2I position, int tile)
+	public void WriteTileMap()
 	{
-		Tiles[Fold(position-Bounds.Position, Bounds.Size)] = tile;
-	}
-
-	public void WriteCache(TileMapLayer TileMapLayer, Vector2I expand, EnumeratedTileSet tileSet)
-	{
-		for (int y = expand.Y; y < Bounds.Size.Y - expand.Y; y++) {
-			for (int x = expand.X; x < Bounds.Size.X - expand.X; x++) {
-				Vector2I relativePosition = new(x, y);
-				TileMapLayer.SetCell(Bounds.Position+relativePosition, 0, Tiles[Fold(x, y, Bounds.Size)] == -1 ? Vector2I.One * -1 : tileSet.Convert(Tiles[Fold(x, y, Bounds.Size)]));
-			}
-		}
-	}
-}
-
-class Task {
-	public Rect2I rect;
-	public bool increaseSize;
-
-	public Task(Rect2I rect, bool increaseSize)
-	{
-		this.rect = rect;
-		this.increaseSize = increaseSize;
+		for (int x = 0; x < Rect.Size.X; x++)
+			for (int y = 0; y < Rect.Size.Y; y++)
+				TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]));
 	}
 }
