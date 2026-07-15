@@ -8,7 +8,6 @@ public partial class World : Node2D
 	ProceduralGenerator? generator;
 	Line2D? debugDraw;
 	public Player? player;
-
 	readonly Random RNG = new();
 
 	PackedScene AawagaScene = GD.Load<PackedScene>("aawaga.tscn");
@@ -21,26 +20,28 @@ public partial class World : Node2D
 		// generator.world = this;
 		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
 		generator.world = this;
-		generator.AddToQueue(Vector2I.Zero);
+		generator.AddToQueue(Vector2I.Zero, false);
 		generator.QueueEmpty += NextChunks;
 	}
 
-	const int CHUNKS_AROUND_PLAYER = 8;
+	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
+	const int UNSTABLE_CHUNKS_THRESHOLD = 7;
 	const int TILE_SIZE = 64;
 
 	void NextChunks()
 	{
 		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
 		Vector2I position = (Vector2I)(player!.Position / CHUNK_SIZE / TILE_SIZE).Round();
-		for (int layer = CHUNKS_AROUND_PLAYER; layer > 0; layer--) {
+		for (int layer = GENERATE_CHUNKS_AROUND_PLAYER; layer > 0; layer--) {
+			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
-				generator!.AddToQueue(position + new Vector2I(layer,layer-x));
-				generator.AddToQueue(position + new Vector2I(layer-x,-layer));
-				generator.AddToQueue(position + new Vector2I(-layer,x-layer));
-				generator.AddToQueue(position + new Vector2I(x-layer,layer));
+				generator!.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble() < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble() < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble() < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble() < player.Stillness);
 			}
 		}
-		generator!.AddToQueue(position);
+		generator!.AddToQueue(position, false);
 	}
 
 	public void DrawDebug(Rect2I rect)

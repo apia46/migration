@@ -17,6 +17,11 @@ public partial class Player : CharacterBody2D
     Aawaga? grabbed = null;
 
     public double Hunger = 1.0;
+    public double Stillness = 0.0;
+    const double STILLNESS_CUTOFF = 600000;
+    const float STILLNESS_DECAY = 0.998f;
+
+    Vector2 distanceAccum = new();
 
     public override void _Ready()
     {
@@ -61,7 +66,11 @@ public partial class Player : CharacterBody2D
         }
 
         Velocity = newVelocity;
+        Vector2 previousPosition = Position;
         MoveAndSlide();
+        distanceAccum += previousPosition-Position;
+        distanceAccum *= STILLNESS_DECAY;
+        Stillness = Math.Max(STILLNESS_CUTOFF - distanceAccum.LengthSquared(), 0) / STILLNESS_CUTOFF;
 
         if (grabbed is not null) {
             Transform2D grabTransform = grabbed.GlobalTransform;

@@ -21,5 +21,6 @@ public partial class Game : Control
 	{
 		minimapCamera!.Position = world!.player!.Position;
 		hungerBar!.Value = world.player.Hunger;
+		GetNode<Label>("%Label2").Text = world.player.Stillness.ToString();
 	}
 }

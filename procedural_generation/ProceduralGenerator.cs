@@ -40,10 +40,10 @@ public partial class ProceduralGenerator : Node
 		Model = model;
 	}
 
-	public void AddToQueue(Vector2I position)
+	public void AddToQueue(Vector2I position, bool clearBefore)
 	{
 		Mutex.Lock();
-		Queue.Push(new(position, false, true));
+		Queue.Push(new(position, clearBefore, true));
 		Mutex.Unlock();
 	}
 
@@ -66,7 +66,7 @@ public partial class ProceduralGenerator : Node
 						for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
 							PatternLayer.SetCell(new Vector2I(x,y));
 				Rect2I rect = task.Next();
-				world.DrawDebug(rect);
+				// world.DrawDebug(rect);
 				if (task.IsEmpty()) Queue.Pop();
 				Rect2I convertedRect = new(rect.Position*Model.ConversionScale, rect.Size*Model.ConversionScale);
 				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);

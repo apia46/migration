@@ -33,6 +33,7 @@ metadata/_custom_type_script = "uid://d2j8xwqp52t78"
 
 [node name="Line2D" type="Line2D" parent="." unique_id=488708432]
 unique_name_in_owner = true
+visible = false
 points = PackedVector2Array(89, 50, -32, 136, -77, 45, 0, 0)
 closed = true
 width = 4.0
