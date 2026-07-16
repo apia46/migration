@@ -150,10 +150,11 @@ public partial class ProceduralGenerator : Node
 		for (int x = -1; x < rect.Size.X+1; x++)
 			for (int y = -1; y < rect.Size.Y+1; y++) {
 				Vector2I position = new(x,y);
-				Pattern convertPattern = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)][0];
+				List<Pattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
+				Pattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
 				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
 					for (int cy = 0; cy < Model.ConversionScale.Y; cy++)
-						ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), convertPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
+						ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
 			}
 		return false;
 	}
