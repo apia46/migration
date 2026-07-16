@@ -6,7 +6,7 @@ public partial class ModelEditor : Node2D
 {
 	[Export] public Vector2I PatternSize;
 	[Export] public Vector2I ConversionScale;
-	[Export(PropertyHint.File, "*.tres")] public string Path { get; set; } = "";
+	const string PATH = "res://procedural_generation/model.tres";
 
 	[ExportToolButton("Generate Model")]
 	public Callable GenerateButton => Callable.From(Generate);
@@ -34,7 +34,7 @@ public partial class ModelEditor : Node2D
 		}
 
 		ModelResource resource = new(model);
-		resource.TakeOverPath(Path);
+		resource.TakeOverPath(PATH);
 		ResourceSaver.Save(resource);
 		EditorInterface.Singleton.CallDeferred("edit_resource", resource);
     }

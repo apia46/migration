@@ -68,7 +68,7 @@ public partial class ProceduralGenerator : Node
 				Rect2I rect = task.Next();
 				// world.DrawDebug(rect);
 				if (task.IsEmpty()) Queue.Pop();
-				Rect2I convertedRect = new(rect.Position*Model.ConversionScale, rect.Size*Model.ConversionScale);
+				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
 				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
 				if (!PatternTiles.AnyEmpty()) continue;
 				ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
@@ -147,8 +147,8 @@ public partial class ProceduralGenerator : Node
 					}
 			} else return true;
 		}
-		for (int x = 0; x < rect.Size.X; x++)
-			for (int y = 0; y < rect.Size.Y; y++) {
+		for (int x = -1; x < rect.Size.X+1; x++)
+			for (int y = -1; y < rect.Size.Y+1; y++) {
 				Vector2I position = new(x,y);
 				Pattern convertPattern = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)][0];
 				for (int cx = 0; cx < Model.ConversionScale.X; cx++)

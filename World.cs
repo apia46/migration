@@ -35,10 +35,10 @@ public partial class World : Node2D
 		for (int layer = GENERATE_CHUNKS_AROUND_PLAYER; layer > 0; layer--) {
 			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
-				generator!.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble() < player.Stillness);
-				generator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble() < player.Stillness);
-				generator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble() < player.Stillness);
-				generator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble() < player.Stillness);
+				generator!.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble()*4 < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble()*4 < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble()*4 < player.Stillness);
 			}
 		}
 		generator!.AddToQueue(position, false);
