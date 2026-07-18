@@ -8,30 +8,6 @@ public partial class ModelResource : Resource {
 	[Export] public Godot.Collections.Array<Vector2I> PatternTilesCoordsList = [];
 	[Export] public Godot.Collections.Array<Vector2I> ConvertedTilesCoordsList =[];
 
-	// public void ExportProperties()
-	// {
-	// 	ExportedBasePatterns = [.. BasePatterns.ConvertAll(pattern=>pattern.Cast<int>().ToArray())];
-	// 	ExportedBasePatternConversions = [.. BasePatternConversions.ConvertAll(pattern=>pattern.Cast<int>().ToArray())];
-	// 	ExportedTileAtlasCoords = [.. TileAtlasCoords];
-	// 	ExportedConvertedTileAtlasCoords = [.. ConvertedTileAtlasCoords];
-	// }
-
-	// public void ImportProperties()
-	// {
-	// 	BasePatterns = [.. ExportedBasePatterns.Select(pattern=>{return FoldArray(pattern,BasePatternSize);})];
-	// 	TileAtlasCoords = [.. ExportedTileAtlasCoords, Vector2I.One * -1];
-	// 	ConvertedTileAtlasCoords = [.. ExportedConvertedTileAtlasCoords, Vector2I.One * -1];
-	// 	for (int i = 0; i < TileAtlasCoords.Count; i++) {
-	// 		TileAtlasCoordsMap[TileAtlasCoords[i]] = i;
-	// 	}
-	// 	for (int i = 0; i < ConvertedTileAtlasCoords.Count; i++) {
-	// 		ConvertedTileAtlasCoordsMap[ConvertedTileAtlasCoords[i]] = i;
-	// 	}
-	// 	TileAtlasCoordsMap[Vector2I.One * -1] = -1;
-	// 	ConvertedTileAtlasCoordsMap[Vector2I.One * -1] = -1;
-	// 	TilesCount = ExportedTileAtlasCoords.Count;
-	// }
-
 	public ModelResource() {}
 
 	public ModelResource(Model model)

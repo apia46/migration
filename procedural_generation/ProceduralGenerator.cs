@@ -1,6 +1,3 @@
-using System.ComponentModel;
-using System.Numerics;
-
 [GlobalClass]
 public partial class ProceduralGenerator : Node
 {

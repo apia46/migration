@@ -1,6 +1,3 @@
-using Godot;
-using System;
-
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;

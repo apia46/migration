@@ -1,5 +1,3 @@
-using Microsoft.VisualBasic;
-
 [Tool]
 [GlobalClass]
 public partial class ModelEditor : Node2D

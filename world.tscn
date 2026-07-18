@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
 
 [node name="World" type="Node2D" unique_id=203491962]
+position = Vector2(63, -9)
 script = ExtResource("1_aqk2v")
 metadata/_custom_type_script = "uid://djuyflrxhl2xr"
 

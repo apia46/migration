@@ -1,7 +1,3 @@
-using Godot;
-using System;
-using System.Linq;
-
 [GlobalClass]
 public partial class World : Node2D
 {
