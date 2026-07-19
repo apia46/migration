@@ -10,7 +10,7 @@ public partial class ProceduralGenerator : Node
 	[Signal]
 	public delegate void QueueEmptyEventHandler();
 
-	readonly Random RNG = new();
+	readonly GameRandom RNG = new();
 	readonly GodotThread Thread = new();
 	readonly Mutex Mutex = new();
 

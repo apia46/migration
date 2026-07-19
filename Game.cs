@@ -1,8 +1,10 @@
 public partial class Game : Control
 {
-	World? world;
-	Camera2D? minimapCamera;
-	ProgressBar? hungerBar;
+	#nullable disable
+	World world;
+	Camera2D minimapCamera;
+	ProgressBar hungerBar;
+	#nullable enable
 	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -16,8 +18,8 @@ public partial class Game : Control
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		minimapCamera!.Position = world!.player!.Position;
-		hungerBar!.Value = world.player.Hunger;
+		minimapCamera.Position = world.player.Position;
+		hungerBar.Value = world.player.Hunger;
 		GetNode<Label>("%Label2").Text = world.player.Stillness.ToString();
 	}
 }

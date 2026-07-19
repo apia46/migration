@@ -6,7 +6,9 @@ public partial class Player : CharacterBody2D
     const float GRAVITY = 1000.0f;
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
 
-    Area2D? grabArea;
+    #nullable disable
+    Area2D grabArea;
+    #nullable enable
 
     bool doubleJumpAvailable = false;
     double coyoteTime = 0.0f;
@@ -84,7 +86,6 @@ public partial class Player : CharacterBody2D
             if (grabbed is null) TryGrab();
             else {
                 grabbed.Ungrab();
-                grabbed.Grabbed = false;
                 grabbed.ApplyImpulse(GetLocalMousePosition().Normalized() * 500);
                 grabbed = null;
             }
@@ -104,12 +105,11 @@ public partial class Player : CharacterBody2D
 
     void TryGrab()
     {
-        foreach (Node2D node in grabArea!.GetOverlappingBodies()) {
+        foreach (Node2D node in grabArea.GetOverlappingBodies()) {
             if (node is Aawaga creature) {
                 if (creature.Grabbable()) {
                     grabbed = creature;
                     creature.Grab();
-                    creature.Grabbed = true;
                     return;
                 }
             }

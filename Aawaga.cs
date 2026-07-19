@@ -1,117 +1,138 @@
+using System.Text.RegularExpressions;
+
 [GlobalClass]
 public partial class Aawaga : RigidBody2D, IGrabbable
 {
-	static readonly Random RNG = new();
+	static readonly GameRandom RNG = new();
 
-	public CharacterBody2D? Player;
+	#nullable disable
+	public CharacterBody2D Player;
+	CollisionPolygon2D Collision;
+	Node2D Visuals;
+	#nullable enable
 
-	Line2D? lineRight;
-	Line2D? lineLeftTop;
-	CollisionShape2D? collideTop;
-	CollisionShape2D? collideRight;
-	CollisionShape2D? collideLeft;
+	float Size;
 
-	double jumpTimer = 2;
-
-	double walkTimer = 0;
-	float walkDirection = 1;
-
-	float radius = 5;
-	float length = 18;
-
-	private bool grabbed;
+	bool grabbed;
     public bool Grabbed {get=>grabbed;set=>grabbed=value;}
+	
+	public enum AIState {Idle, Wander, Evade, Grabbed};
+	AIState State = AIState.Idle;
+	float WalkDirection;
+	double BoredomTimer;
+	double WanderTimer;
+	double JumpTimer;
 
-    // Called when the node enters the scene tree for the first time.
     public override void _Ready()
 	{
-		radius = RNG.NextSingle() * 5 + 0.8f;
-		length = radius * 3 + RNG.NextSingle() * 3;
-		collideTop = GetNode<CollisionShape2D>("%CollideTop");
-		collideRight = GetNode<CollisionShape2D>("%CollideRight");
-		collideLeft = GetNode<CollisionShape2D>("%CollideLeft");
-		if (collideTop.Shape is CapsuleShape2D collideShape) {
-			collideShape.Radius = radius;
-			collideShape.Height = length + radius*2;
+		Size = RNG.Range(1.0f, 1.0f);
+		Collision = GetNode<CollisionPolygon2D>("%Collision");
+		Visuals = GetNode<Node2D>("%Visuals");
+		Visuals.Scale *= Size;
+		Collision.Scale *= Size;
+		SetState(AIState.Idle);
+	}
+
+	void SetState(AIState to)
+	{
+		State = to;
+		switch (State) {
+			case AIState.Idle: {
+				BoredomTimer = RNG.Range(5.0, 20.0);
+			} break;
+			case AIState.Wander: {
+				WalkDirection = RNG.FlipCoin() ? 1.0f : -1.0f;
+				WanderTimer = RNG.Range(2.0, 4.0);
+			} break;
+			case AIState.Evade: {
+				
+			} break;
+			case AIState.Grabbed: break;
 		}
-		Vector2 top = new Vector2(0, -length);
-		Vector2 right = top.Rotated((float)(Math.PI * 2.0/3.0));
-		Vector2 left = top.Rotated((float)(Math.PI * 4.0/3.0));
-		collideTop.Position = top/2;
-		collideRight.Position = right/2;
-		collideLeft.Position = left/2;
-		lineRight = GetNode<Line2D>("%LineRight");
-		lineLeftTop = GetNode<Line2D>("%LineLeftTop");
-		lineRight.SetPointPosition(1, right);
-		lineLeftTop.SetPointPosition(0, top);
-		lineLeftTop.SetPointPosition(2, left);
-		lineRight.Width = radius * 2;
-		lineLeftTop.Width = radius * 2;
 	}
 
     public override void _Process(double delta)
-    {
-        Color color = new Color("#ffffff").Blend(new Color("#0066ff", (float)jumpTimer));
-		lineRight!.DefaultColor = color;
-		lineLeftTop!.DefaultColor = color;
+	{
+		
 	}
 
     public override void _PhysicsProcess(double delta)
     {
-		if (grabbed) return;
-        jumpTimer -= delta;
-        if (walkTimer > 0) walkTimer -= delta;
-		else if (RNG.NextDouble()*3 < delta)
-		{
-			walkTimer = (RNG.NextDouble() + 0.5) * 2;
-			walkDirection = RNG.NextSingle() > 0.5 ? 1 : -1;
+		switch (State) {
+			case AIState.Idle: {
+				BoredomTimer -= delta;
+				if (BoredomTimer <= 0) SetState(AIState.Wander);
+				if (Danger() > 50) SetState(AIState.Evade);
+			} break;
+			case AIState.Wander: {
+				WanderTimer -= delta;
+				if (WanderTimer <= 0) SetState(AIState.Idle);
+				if (Danger() > 100) SetState(AIState.Evade);
+			} break;
+			case AIState.Evade: {
+				if (Danger() < 5) SetState(AIState.Idle);
+			} break;
+			case AIState.Grabbed: break;
 		}
+		JumpTimer -= delta;
     }
+
+	float Danger() {
+		return 100000/(Player.Position - Position).LengthSquared();
+	}
 
 	public override void _IntegrateForces(PhysicsDirectBodyState2D state)
     {
-		// if (grabbed) {
-		// 	state.Transform.Origin = Player.Position;
-		// }
-		Vector2 diff = Player!.Position - Position;
+		float torque = 0.0f;
+		float wallStick = 0.0f;
+		switch (State) {
+			case AIState.Idle: break;
+			case AIState.Wander: {
+				torque = WalkDirection;
+			} break;
+			case AIState.Evade: {
+				torque = Math.Sign(Position.X - Player.Position.X);
+			} break;
+			case AIState.Grabbed: return;
+		}
+		int contactCount = GetContactCount();
 
-		if (jumpTimer < 0) {
-			jumpTimer = RNG.NextDouble() * 6 + 1;
-			state.ApplyImpulse(new Vector2(0, (RNG.NextSingle() + 0.5f) * -200));
+		for (int contact = 0; contact < contactCount; contact++) {
+			Vector2 normal = state.GetContactLocalNormal(contact);
+			if (normal.Y < 0.5 && normal.Y > -0.5) wallStick = Math.Sign(normal.X);
 		}
 
-		if (diff.LengthSquared() > 1e7 && RNG.NextDouble() < 0.01) QueueFree();
-		if (GetContactCount() > 0) {
-			float torque = 7000 * radius;
-			if (Grabbable() && diff.LengthSquared() < 10000) state.ApplyTorque(torque * -Math.Sign(diff.X));
-			else if (walkTimer > 0) state.ApplyTorque(torque * walkDirection);
+		if (contactCount > 0) {
+			if (JumpTimer < 0) {
+				JumpTimer = RNG.Range(3.0, 6.0);
+				state.ApplyImpulse(new(0, RNG.Range(-100f, -300f)));
+			}
+			state.ApplyCentralForce(new Vector2(-2000 * wallStick, -1200) * Scale);
+			
+			state.ApplyTorque(torque * Size * 18000);
 		}
 	}
 
-	public bool Grabbable()
-	{
-		return radius < 2.5;
-	}
+	public bool Grabbable() { return true; }
 
 	public void Grab()
 	{
-		collideTop!.Disabled = true;
-		collideRight!.Disabled = true;
-		collideLeft!.Disabled = true;
+		Collision.Disabled = true;
 		Freeze = true;
+		State = AIState.Grabbed;
+		GravityScale = 0.0f;
 	}
 	public void Ungrab()
 	{
-		collideTop!.Disabled = false;
-		collideRight!.Disabled = false;
-		collideLeft!.Disabled = false;
+		Collision.Disabled = false;
 		Freeze = false;
+		State = AIState.Idle;
+		GravityScale = 1.0f;
 	}
 }
 
 public interface IGrabbable
 {
-	bool Grabbed {get; set;}
 	public bool Grabbable();
 	public void Grab();
 	public void Ungrab();

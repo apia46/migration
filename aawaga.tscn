@@ -2,10 +2,8 @@
 
 [ext_resource type="Script" uid="uid://dumynspmutnna" path="res://Aawaga.cs" id="1_0otjq"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_rf46k"]
-resource_local_to_scene = true
-radius = 5.0
-height = 28.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_0otjq"]
+radius = 2.0
 
 [node name="Aawaga" type="RigidBody2D" unique_id=1058037109]
 can_sleep = false
@@ -14,31 +12,33 @@ max_contacts_reported = 1
 script = ExtResource("1_0otjq")
 metadata/_custom_type_script = "uid://dumynspmutnna"
 
-[node name="CollideTop" type="CollisionShape2D" parent="." unique_id=546704125]
+[node name="Visuals" type="Node2D" parent="." unique_id=858063739]
 unique_name_in_owner = true
-position = Vector2(0, -9)
-shape = SubResource("CapsuleShape2D_rf46k")
 
-[node name="CollideRight" type="CollisionShape2D" parent="." unique_id=1026737616]
-unique_name_in_owner = true
-position = Vector2(7.795, 4.495)
-rotation = 2.0943952
-shape = SubResource("CapsuleShape2D_rf46k")
-
-[node name="CollideLeft" type="CollisionShape2D" parent="." unique_id=566286254]
-unique_name_in_owner = true
-position = Vector2(-7.795, 4.495)
-rotation = -2.094395
-shape = SubResource("CapsuleShape2D_rf46k")
-
-[node name="LineRight" type="Line2D" parent="." unique_id=1319695916]
-unique_name_in_owner = true
-points = PackedVector2Array(0, 0, 15.56, 9)
+[node name="LineRight" type="Line2D" parent="Visuals" unique_id=1319695916]
+points = PackedVector2Array(0, 0, 6.928, 4)
+width = 4.0
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="LineLeftTop" type="Line2D" parent="." unique_id=1571602795]
-unique_name_in_owner = true
-points = PackedVector2Array(0, -18, 0, 0, -15.56, 9)
+[node name="LineLeftTop" type="Line2D" parent="Visuals" unique_id=1571602795]
+points = PackedVector2Array(0, -8, 0, -2.345829, 0, 0, -6.928, 4)
+width = 4.0
 begin_cap_mode = 2
 end_cap_mode = 2
+
+[node name="Collision" type="CollisionPolygon2D" parent="." unique_id=901352745]
+unique_name_in_owner = true
+polygon = PackedVector2Array(8.66, 3, 6.928, 6, -6.928, 6, -8.66, 3, -1.732, -9, 1.732, -9)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=477242208]
+position = Vector2(0, -8)
+shape = SubResource("CircleShape2D_0otjq")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="." unique_id=970590454]
+position = Vector2(6.928, 4)
+shape = SubResource("CircleShape2D_0otjq")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="." unique_id=784777839]
+position = Vector2(-6.928, 4)
+shape = SubResource("CircleShape2D_0otjq")

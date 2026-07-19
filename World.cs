@@ -1,10 +1,12 @@
 [GlobalClass]
 public partial class World : Node2D
 {
-	ProceduralGenerator? generator;
-	Line2D? debugDraw;
-	public Player? player;
-	readonly Random RNG = new();
+	#nullable disable
+	ProceduralGenerator generator;
+	Line2D debugDraw;
+	public Player player;
+	#nullable enable
+	readonly GameRandom RNG = new();
 
 	PackedScene AawagaScene = GD.Load<PackedScene>("aawaga.tscn");
 
@@ -29,22 +31,22 @@ public partial class World : Node2D
 	void NextChunks(int chunks)
 	{
 		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
-		Vector2I position = (Vector2I)(player!.Position / CHUNK_SIZE / TILE_SIZE).Round();
+		Vector2I position = (Vector2I)(player.Position / CHUNK_SIZE / TILE_SIZE).Round();
 		for (int layer = chunks; layer > 0; layer--) {
 			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
-				generator!.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < player.Stillness);
+				generator.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < player.Stillness);
 				generator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble()*4 < player.Stillness);
 				generator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble()*4 < player.Stillness);
 				generator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble()*4 < player.Stillness);
 			}
 		}
-		generator!.AddToQueue(position, false);
+		generator.AddToQueue(position, false);
 	}
 
 	public void DrawDebug(Rect2I rect)
 	{
-		debugDraw!.SetPointPosition(0, rect.Position * TILE_SIZE);
+		debugDraw.SetPointPosition(0, rect.Position * TILE_SIZE);
 		debugDraw.SetPointPosition(1, new Vector2(rect.End.X, rect.Position.Y) * TILE_SIZE);
 		debugDraw.SetPointPosition(2, rect.End * TILE_SIZE);
 		debugDraw.SetPointPosition(3, new Vector2(rect.Position.X, rect.End.Y) * TILE_SIZE);
@@ -55,7 +57,7 @@ public partial class World : Node2D
 		Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
 		aawaga.Player = player;
 		AddChild(aawaga);
-		aawaga.Position = position * TILE_SIZE;
+		aawaga.Position = position;
 	}
 
 	public override void _Input(InputEvent @event)
@@ -63,6 +65,8 @@ public partial class World : Node2D
         if (@event.IsActionPressed("toggle")) {	
 			GetNode<TileMapLayer>("%TileMapLayer").Enabled = !GetNode<TileMapLayer>("%TileMapLayer").Enabled;
 			GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
+		} else if (@event.IsActionPressed("spawn")) {	
+			SpawnCreature(player.Position + new Vector2(30,-30));
 		}
 	}
 }
