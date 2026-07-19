@@ -1,6 +1,7 @@
 [GlobalClass]
 public partial class ProceduralGenerator : Node
 {
+	readonly Rect2I STARTING_AREA = new(new(-7, -4), new(8, 4));
 	public const int CHUNK_SIZE = 8;
 	const double INVERSE_TEMPERATURE = 0.25;
 	const int EXPAND_RADIUS = 1;
@@ -61,7 +62,7 @@ public partial class ProceduralGenerator : Node
 				if (task.IsNew() && task.ClearBefore)
 					for (int x = task.Rect.Position.X; x < task.Rect.End.X; x++)
 						for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
-							PatternLayer.SetCell(new Vector2I(x,y));
+							if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
 				Rect2I rect = task.Next();
 				// world.DrawDebug(rect);
 				if (task.IsEmpty()) Queue.Pop();
@@ -82,9 +83,9 @@ public partial class ProceduralGenerator : Node
 		int tries = 0;
 		while (TryGenerate(rect)) {
 			tries++;
-			for (int x = 0; x < rect.Size.X; x++)
-				for (int y = 0; y < rect.Size.Y; y++)
-					PatternTiles.SetTile(rect.Position + new Vector2I(x,y), -1);
+			for (int x = rect.Position.X; x < rect.End.X; x++)
+				for (int y = rect.Position.Y; y < rect.End.Y; y++)
+					if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
 			if (tries > 3) {
 				if (canRetry) {
 					Task retry = new(new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
@@ -275,20 +276,8 @@ class Task
 		ClearBefore = clearBefore;
 		Rect = rect;
 		Subtasks = [];
-		if (rect.Size.X <= ProceduralGenerator.SIZE_THRESHOLD) {
-			CanRetry = true;
-			Subtasks.Add(Rect);
-		} else {
-			CanRetry = false;
-			Vector2I flooredStart = (Vector2I)(((Godot.Vector2)rect.Position)/CHUNK_SIZE).Floor();
-			Vector2I ceiledEnd = (Vector2I)((Godot.Vector2)rect.End/CHUNK_SIZE).Ceil();
-			for (int x = flooredStart.X; x < ceiledEnd.X; x++)
-				for (int y = flooredStart.Y; y < ceiledEnd.Y; y++) {
-					Vector2I start = rect.Position.Max(new Vector2I(x,y)*CHUNK_SIZE);
-					Vector2I end = rect.End.Min(new Vector2I(x+1,y+1)*CHUNK_SIZE);
-					Subtasks.Add(new(start, end-start));
-				}
-		}
+		CanRetry = rect.Size.X <= ProceduralGenerator.SIZE_THRESHOLD;
+		Subtasks.Add(Rect);
 	}
 
 	public Rect2I Next() { return Subtasks[pointer++]; }
@@ -305,7 +294,7 @@ class TileCache
 	readonly Vector2I TotalSize;
 	readonly int SourceId;
 	
-	int[] Tiles;
+	readonly int[] Tiles;
 
 	public TileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
 	{

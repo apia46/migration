@@ -17,18 +17,20 @@ public partial class World : Node2D
 		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
 		generator.world = this;
 		generator.AddToQueue(Vector2I.Zero, false);
-		generator.QueueEmpty += NextChunks;
+		for (int i = 0; i < 4; i++) NextChunks(3);
+		for (int i = 0; i < 4; i++) NextChunks(5);
+		generator.QueueEmpty += ()=>{NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);};
 	}
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
 	const int UNSTABLE_CHUNKS_THRESHOLD = 7;
 	const int TILE_SIZE = 64;
 
-	void NextChunks()
+	void NextChunks(int chunks)
 	{
 		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
 		Vector2I position = (Vector2I)(player!.Position / CHUNK_SIZE / TILE_SIZE).Round();
-		for (int layer = GENERATE_CHUNKS_AROUND_PLAYER; layer > 0; layer--) {
+		for (int layer = chunks; layer > 0; layer--) {
 			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
 				generator!.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < player.Stillness);
