@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 
 [GlobalClass]
-public partial class Aawaga : RigidBody2D, IGrabbable
+public partial class Aawaga : CharacterBody2D, IGrabbable
 {
 	static readonly GameRandom RNG = new();
 
@@ -18,7 +18,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 	
 	public enum AIState {Idle, Wander, Evade, Grabbed};
 	AIState State = AIState.Idle;
-	float WalkDirection;
+	float WanderDirection;
 	double BoredomTimer;
 	double WanderTimer;
 	double JumpTimer;
@@ -41,7 +41,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 				BoredomTimer = RNG.Range(5.0, 20.0);
 			} break;
 			case AIState.Wander: {
-				WalkDirection = RNG.FlipCoin() ? 1.0f : -1.0f;
+				WanderDirection = RNG.FlipCoin() ? 1.0f : -1.0f;
 				WanderTimer = RNG.Range(2.0, 4.0);
 			} break;
 			case AIState.Evade: {
@@ -58,59 +58,53 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 
     public override void _PhysicsProcess(double delta)
     {
+		Vector2 newVelocity = Velocity;
+
+		float moveDirection = 0f;
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer -= delta;
 				if (BoredomTimer <= 0) SetState(AIState.Wander);
 				if (Danger() > 50) SetState(AIState.Evade);
+				Rotation -= Rotation % (float)(Math.Tau/3);
 			} break;
 			case AIState.Wander: {
+				moveDirection = WanderDirection;
+
 				WanderTimer -= delta;
 				if (WanderTimer <= 0) SetState(AIState.Idle);
 				if (Danger() > 100) SetState(AIState.Evade);
 			} break;
 			case AIState.Evade: {
-				if (Danger() < 5) SetState(AIState.Idle);
+				moveDirection = Math.Sign(Position.X - Player.Position.X);
+
+				if (Danger() < 5 && RNG.FlipCoin() && IsOnFloorOnly()) SetState(AIState.Idle);
 			} break;
 			case AIState.Grabbed: break;
 		}
 		JumpTimer -= delta;
+		if (IsOnFloor()) {
+			if (JumpTimer < 0) {
+				JumpTimer = RNG.Range(6.0, 12.0);
+				newVelocity += new Vector2(0f, RNG.Range(-100f, -300f));
+			}
+			Rotation += moveDirection * 12 * (float)delta;
+			newVelocity.X = moveDirection * 60;
+		}
+		if (IsOnWall()) {
+			float wallDirection = GetWallNormal().X > 0 ? 1 : -1;
+			newVelocity.Y = wallDirection * moveDirection * 60;
+			newVelocity.X = wallDirection * -30;
+			Rotation += moveDirection * 12 * (float)delta;
+		} else {
+			newVelocity.Y += (float)delta * Game.GRAVITY;
+		}
+		Velocity = newVelocity;
+		MoveAndSlide();
     }
 
 	float Danger() {
 		return 100000/(Player.Position - Position).LengthSquared();
-	}
-
-	public override void _IntegrateForces(PhysicsDirectBodyState2D state)
-    {
-		float torque = 0.0f;
-		float wallStick = 0.0f;
-		switch (State) {
-			case AIState.Idle: break;
-			case AIState.Wander: {
-				torque = WalkDirection;
-			} break;
-			case AIState.Evade: {
-				torque = Math.Sign(Position.X - Player.Position.X);
-			} break;
-			case AIState.Grabbed: return;
-		}
-		int contactCount = GetContactCount();
-
-		for (int contact = 0; contact < contactCount; contact++) {
-			Vector2 normal = state.GetContactLocalNormal(contact);
-			if (normal.Y < 0.5 && normal.Y > -0.5) wallStick = Math.Sign(normal.X);
-		}
-
-		if (contactCount > 0) {
-			if (JumpTimer < 0) {
-				JumpTimer = RNG.Range(3.0, 6.0);
-				state.ApplyImpulse(new(0, RNG.Range(-100f, -300f)));
-			}
-			state.ApplyCentralForce(new Vector2(-2000 * wallStick, -1200) * Scale);
-			
-			state.ApplyTorque(torque * Size * 18000);
-		}
 	}
 
 	public bool Grabbable() { return true; }
@@ -118,16 +112,16 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 	public void Grab()
 	{
 		Collision.Disabled = true;
-		Freeze = true;
 		State = AIState.Grabbed;
-		GravityScale = 0.0f;
 	}
 	public void Ungrab()
 	{
 		Collision.Disabled = false;
-		Freeze = false;
 		State = AIState.Idle;
-		GravityScale = 1.0f;
+	}
+	public void ApplyForce(Vector2 force)
+	{
+		Velocity += force;
 	}
 }
 
@@ -136,4 +130,5 @@ public interface IGrabbable
 	public bool Grabbable();
 	public void Grab();
 	public void Ungrab();
+	public void ApplyForce(Vector2 force);
 }

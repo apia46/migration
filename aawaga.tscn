@@ -5,10 +5,9 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_0otjq"]
 radius = 2.0
 
-[node name="Aawaga" type="RigidBody2D" unique_id=1058037109]
-can_sleep = false
-contact_monitor = true
-max_contacts_reported = 1
+[node name="Aawaga" type="CharacterBody2D" unique_id=127908960]
+collision_layer = 2
+collision_mask = 3
 script = ExtResource("1_0otjq")
 metadata/_custom_type_script = "uid://dumynspmutnna"
 

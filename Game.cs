@@ -1,5 +1,6 @@
 public partial class Game : Control
 {
+	public const float GRAVITY = 1000.0f;
 	#nullable disable
 	World world;
 	Camera2D minimapCamera;

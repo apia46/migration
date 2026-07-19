@@ -3,7 +3,6 @@ public partial class Player : CharacterBody2D
     const float MOVE_SPEED = 3000.0f;
     const float JUMP_VELOCITY = -350.0f;
     const float WALL_JUMP_IMPULSE = 300.0f;
-    const float GRAVITY = 1000.0f;
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
 
     #nullable disable
@@ -59,7 +58,7 @@ public partial class Player : CharacterBody2D
             coyoteTime = 0.2f;
             newVelocity.X *= 0.8f;
         } else {
-            newVelocity.Y += (float)delta * GRAVITY;
+            newVelocity.Y += (float)delta * Game.GRAVITY;
             coyoteTime = Math.Max(coyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
         }
@@ -86,7 +85,7 @@ public partial class Player : CharacterBody2D
             if (grabbed is null) TryGrab();
             else {
                 grabbed.Ungrab();
-                grabbed.ApplyImpulse(GetLocalMousePosition().Normalized() * 500);
+                grabbed.ApplyForce(GetLocalMousePosition().Normalized() * 500);
                 grabbed = null;
             }
         }
