@@ -85,7 +85,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 			case AIState.Evade: {
 				intendedDirection = Position - Player.Position;
 
-				if (Danger() < 5 && RNG.FlipCoin()) SetState(AIState.Idle);
+				if (Danger() < 3 && RNG.FlipCoin()) SetState(AIState.Idle);
 				// if (Danger() < 5 && RNG.FlipCoin() && IsOnFloorOnly()) SetState(AIState.Idle);
 			} break;
 			case AIState.Grabbed: return;
