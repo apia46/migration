@@ -79,6 +79,6 @@ public class EnumeratedTileSet
 		Count++;
 	}
 
-    public int Convert(Vector2I tile) { return tile == EMPTY ? -1 : CoordsMap[tile]; }
-    public Vector2I Convert(int tile) { return tile == -1 ? EMPTY : CoordsList[tile]; }
+    public int Convert(Vector2I tile) => tile == EMPTY ? -1 : CoordsMap[tile];
+    public Vector2I Convert(int tile) => tile == -1 ? EMPTY : CoordsList[tile];
 }

@@ -8,7 +8,7 @@ public partial class ModelResource : Resource {
 	[Export] public Godot.Collections.Array<Vector2I> PatternTilesCoordsList = [];
 	[Export] public Godot.Collections.Array<Vector2I> ConvertedTilesCoordsList =[];
 
-	public ModelResource() {}
+	public ModelResource() {} // godot initialises your resource with no arguments
 
 	public ModelResource(Model model)
 	{

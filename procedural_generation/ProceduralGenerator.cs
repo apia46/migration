@@ -280,9 +280,9 @@ class Task
 		Subtasks.Add(Rect);
 	}
 
-	public Rect2I Next() { return Subtasks[pointer++]; }
-	public bool IsEmpty() { return pointer == Subtasks.Count; }
-	public bool IsNew() { return pointer == 0; }
+	public Rect2I Next() => Subtasks[pointer++];
+	public bool IsEmpty() => pointer == Subtasks.Count;
+	public bool IsNew() => pointer == 0;
 }
 
 class TileCache
@@ -316,8 +316,8 @@ class TileCache
 		return false;
 	}
 
-	public int GetTile(Vector2I absolutePosition) { return Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)]; }
-	public void SetTile(Vector2I absolutePosition, int to) { Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to; }
+	public int GetTile(Vector2I absolutePosition) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
+	public void SetTile(Vector2I absolutePosition, int to) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
 
 	public void WriteTileMap()
 	{

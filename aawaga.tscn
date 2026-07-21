@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cr2785uuj40rx"]
 
 [ext_resource type="Script" uid="uid://dumynspmutnna" path="res://Aawaga.cs" id="1_0otjq"]
+[ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="2_3aftl"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0otjq"]
 radius = 2.0
@@ -8,9 +9,14 @@ radius = 2.0
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_0otjq"]
 points = PackedVector2Array(8.66, 3, 6.928, 6, -6.928, 6, -8.66, 3, -1.732, -9, 1.732, -9)
 
-[node name="Aawaga" type="CharacterBody2D" unique_id=127908960]
+[node name="Aawaga" type="RigidBody2D" unique_id=123141641]
+position = Vector2(1, 0)
 collision_layer = 2
 collision_mask = 3
+gravity_scale = 0.0
+can_sleep = false
+contact_monitor = true
+max_contacts_reported = 7
 script = ExtResource("1_0otjq")
 metadata/_custom_type_script = "uid://dumynspmutnna"
 
@@ -20,6 +26,7 @@ unique_name_in_owner = true
 [node name="LineRight" type="Line2D" parent="Visuals" unique_id=1319695916]
 points = PackedVector2Array(0, 0, 6.928, 4)
 width = 4.0
+default_color = Color(1, 1, 0, 1)
 begin_cap_mode = 2
 end_cap_mode = 2
 
@@ -28,6 +35,11 @@ points = PackedVector2Array(0, -8, 0, -2.345829, 0, 0, -6.928, 4)
 width = 4.0
 begin_cap_mode = 2
 end_cap_mode = 2
+
+[node name="DebugDrawer" type="Node2D" parent="Visuals" unique_id=291830704]
+unique_name_in_owner = true
+script = ExtResource("2_3aftl")
+metadata/_custom_type_script = "uid://dstfir57scngn"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=477242208]
 position = Vector2(0, -8)

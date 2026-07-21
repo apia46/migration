@@ -21,13 +21,14 @@ public partial class World : Node2D
 		generator.AddToQueue(Vector2I.Zero, false);
 		for (int i = 0; i < 4; i++) NextChunks(3);
 		for (int i = 0; i < 4; i++) NextChunks(5);
-		generator.QueueEmpty += ()=>{NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);};
+		generator.QueueEmpty += NextChunks;
 	}
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
 	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
 	const int TILE_SIZE = 64;
-
+	
+	void NextChunks() => NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
 	void NextChunks(int chunks)
 	{
 		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;

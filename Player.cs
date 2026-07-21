@@ -84,7 +84,6 @@ public partial class Player : CharacterBody2D
 		} else if (@event.IsActionPressed("grab")) {
             if (grabbed is null) TryGrab();
             else {
-                grabbed.Ungrab();
                 grabbed.Throw(GetLocalMousePosition().Normalized() * 500);
                 grabbed = null;
             }
