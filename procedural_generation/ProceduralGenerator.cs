@@ -68,7 +68,7 @@ public partial class ProceduralGenerator : Node
 				if (task.IsEmpty()) Queue.Pop();
 				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
 				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
-				if (!PatternTiles.AnyEmpty()) continue;
+				if (!PatternTiles.AnyEmpty()) {Mutex.Unlock(); continue;}
 				ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
 				Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
 			}
