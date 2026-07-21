@@ -7,7 +7,6 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 
 	#nullable disable
 	public CharacterBody2D Player;
-	CollisionPolygon2D Collision;
 	Node2D Visuals;
 	#nullable enable
 
@@ -16,20 +15,23 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 	bool grabbed;
     public bool Grabbed {get=>grabbed;set=>grabbed=value;}
 	
-	public enum AIState {Idle, Wander, Evade, Grabbed};
+	public enum AIState {Idle, Wander, Evade, Grabbed, Thrown};
 	AIState State = AIState.Idle;
 	float WanderDirection;
 	double BoredomTimer;
 	double WanderTimer;
 	double JumpTimer;
+	double ThrownTimer;
 
     public override void _Ready()
 	{
-		Size = RNG.Range(1.0f, 1.0f);
-		Collision = GetNode<CollisionPolygon2D>("%Collision");
+		Size = RNG.Range(0.8f, 1.2f);
 		Visuals = GetNode<Node2D>("%Visuals");
 		Visuals.Scale *= Size;
-		Collision.Scale *= Size;
+		foreach (CollisionShape2D shape in CollisionShapes()) {
+			shape.Scale *= Size;
+			shape.Position *= Size;
+		}
 		SetState(AIState.Idle);
 	}
 
@@ -47,7 +49,12 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 			case AIState.Evade: {
 				
 			} break;
-			case AIState.Grabbed: break;
+			case AIState.Grabbed: {
+				Velocity = Vector2.Zero;
+			} break;
+			case AIState.Thrown: {
+				ThrownTimer = 0.1;
+			} break;
 		}
 	}
 
@@ -80,10 +87,14 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 
 				if (Danger() < 5 && RNG.FlipCoin() && IsOnFloorOnly()) SetState(AIState.Idle);
 			} break;
-			case AIState.Grabbed: break;
+			case AIState.Grabbed: return;
+			case AIState.Thrown: {
+				ThrownTimer -= delta;
+				if (ThrownTimer <= 0) SetState(AIState.Idle);
+			} break;
 		}
 		JumpTimer -= delta;
-		if (IsOnFloor()) {
+		if (IsOnFloor() && State != AIState.Thrown) {
 			if (JumpTimer < 0) {
 				JumpTimer = RNG.Range(6.0, 12.0);
 				newVelocity += new Vector2(0f, RNG.Range(-100f, -300f));
@@ -91,7 +102,7 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 			Rotation += moveDirection * 12 * (float)delta;
 			newVelocity.X = moveDirection * 60;
 		}
-		if (IsOnWall()) {
+		if (IsOnWall() && State != AIState.Thrown) {
 			float wallDirection = GetWallNormal().X > 0 ? 1 : -1;
 			newVelocity.Y = wallDirection * moveDirection * 60;
 			newVelocity.X = wallDirection * -30;
@@ -103,6 +114,12 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 		MoveAndSlide();
     }
 
+	IEnumerable<CollisionShape2D> CollisionShapes() {
+		foreach (Node node in GetChildren()) {
+			if (node is CollisionShape2D shape) yield return shape;
+		}
+	}
+
 	float Danger() {
 		return 100000/(Player.Position - Position).LengthSquared();
 	}
@@ -111,17 +128,18 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 
 	public void Grab()
 	{
-		Collision.Disabled = true;
-		State = AIState.Grabbed;
+		foreach (CollisionShape2D shape in CollisionShapes()) shape.Disabled = true;
+		SetState(AIState.Grabbed);
 	}
 	public void Ungrab()
 	{
-		Collision.Disabled = false;
-		State = AIState.Idle;
+		foreach (CollisionShape2D shape in CollisionShapes()) shape.Disabled = false;
+		SetState(AIState.Idle);
 	}
-	public void ApplyForce(Vector2 force)
+	public void Throw(Vector2 force)
 	{
 		Velocity += force;
+		SetState(AIState.Thrown);
 	}
 }
 
@@ -130,5 +148,5 @@ public interface IGrabbable
 	public bool Grabbable();
 	public void Grab();
 	public void Ungrab();
-	public void ApplyForce(Vector2 force);
+	public void Throw(Vector2 force);
 }

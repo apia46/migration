@@ -25,7 +25,7 @@ public partial class World : Node2D
 	}
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
-	const int UNSTABLE_CHUNKS_THRESHOLD = 7;
+	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
 	const int TILE_SIZE = 64;
 
 	void NextChunks(int chunks)

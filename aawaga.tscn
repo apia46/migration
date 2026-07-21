@@ -5,6 +5,9 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_0otjq"]
 radius = 2.0
 
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_0otjq"]
+points = PackedVector2Array(8.66, 3, 6.928, 6, -6.928, 6, -8.66, 3, -1.732, -9, 1.732, -9)
+
 [node name="Aawaga" type="CharacterBody2D" unique_id=127908960]
 collision_layer = 2
 collision_mask = 3
@@ -26,10 +29,6 @@ width = 4.0
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="Collision" type="CollisionPolygon2D" parent="." unique_id=901352745]
-unique_name_in_owner = true
-polygon = PackedVector2Array(8.66, 3, 6.928, 6, -6.928, 6, -8.66, 3, -1.732, -9, 1.732, -9)
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=477242208]
 position = Vector2(0, -8)
 shape = SubResource("CircleShape2D_0otjq")
@@ -41,3 +40,6 @@ shape = SubResource("CircleShape2D_0otjq")
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="." unique_id=784777839]
 position = Vector2(-6.928, 4)
 shape = SubResource("CircleShape2D_0otjq")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="." unique_id=181594015]
+shape = SubResource("ConvexPolygonShape2D_0otjq")
