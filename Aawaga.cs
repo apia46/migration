@@ -11,13 +11,14 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 	#nullable enable
 
 	float Size;
+	float AngularVelocity;
 
 	bool grabbed;
     public bool Grabbed {get=>grabbed;set=>grabbed=value;}
 	
 	public enum AIState {Idle, Wander, Evade, Grabbed, Thrown};
 	AIState State = AIState.Idle;
-	float WanderDirection;
+	Vector2 WanderDirection;
 	double BoredomTimer;
 	double WanderTimer;
 	double JumpTimer;
@@ -43,7 +44,7 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 				BoredomTimer = RNG.Range(5.0, 20.0);
 			} break;
 			case AIState.Wander: {
-				WanderDirection = RNG.FlipCoin() ? 1.0f : -1.0f;
+				WanderDirection = new Vector2(RNG.FlipCoin() ? -1f : 1f, 1f);
 				WanderTimer = RNG.Range(2.0, 4.0);
 			} break;
 			case AIState.Evade: {
@@ -63,27 +64,35 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 		
 	}
 
+	Vector2 GetSurfaceDirection() {
+		if (IsOnWall()) return new(-Math.Sign(GetWallNormal().X), 0);
+		else if (IsOnFloor()) return new(0, 1);
+		else if (IsOnCeiling()) return new(0, -1);
+		else return Vector2.Zero;
+	}
+
     public override void _PhysicsProcess(double delta)
     {
 		Vector2 newVelocity = Velocity;
 
-		float moveDirection = 0f;
+		Vector2 intendedDirection = Vector2.Zero;
+		Vector2 surfaceDirection = GetSurfaceDirection();
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer -= delta;
 				if (BoredomTimer <= 0) SetState(AIState.Wander);
-				if (Danger() > 50) SetState(AIState.Evade);
+				if (Danger() > 40) SetState(AIState.Evade);
 				Rotation -= Rotation % (float)(Math.Tau/3);
 			} break;
 			case AIState.Wander: {
-				moveDirection = WanderDirection;
+				intendedDirection = WanderDirection;
 
 				WanderTimer -= delta;
 				if (WanderTimer <= 0) SetState(AIState.Idle);
-				if (Danger() > 100) SetState(AIState.Evade);
+				if (Danger() > 80) SetState(AIState.Evade);
 			} break;
 			case AIState.Evade: {
-				moveDirection = Math.Sign(Position.X - Player.Position.X);
+				intendedDirection = Position - Player.Position;
 
 				if (Danger() < 5 && RNG.FlipCoin() && IsOnFloorOnly()) SetState(AIState.Idle);
 			} break;
@@ -94,6 +103,7 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 			} break;
 		}
 		JumpTimer -= delta;
+		float moveDirection = Math.Sign(intendedDirection.AngleTo(surfaceDirection));
 		if (IsOnFloor() && State != AIState.Thrown) {
 			if (JumpTimer < 0) {
 				JumpTimer = RNG.Range(6.0, 12.0);
@@ -101,14 +111,18 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 			}
 			Rotation += moveDirection * 12 * (float)delta;
 			newVelocity.X = moveDirection * 60;
+			AngularVelocity = 0;
 		}
 		if (IsOnWall() && State != AIState.Thrown) {
-			float wallDirection = GetWallNormal().X > 0 ? 1 : -1;
-			newVelocity.Y = wallDirection * moveDirection * 60;
-			newVelocity.X = wallDirection * -30;
+			float wallDirection = surfaceDirection.X;
+			newVelocity.Y = -wallDirection * moveDirection * 60;
+			newVelocity.X = wallDirection * 30;
 			Rotation += moveDirection * 12 * (float)delta;
+			AngularVelocity = 0;
 		} else {
 			newVelocity.Y += (float)delta * Game.GRAVITY;
+			AngularVelocity += (newVelocity.Y * Math.Sign(newVelocity.X) - AngularVelocity) * 0.5f;
+			Rotation += AngularVelocity * (float)delta;
 		}
 		Velocity = newVelocity;
 		MoveAndSlide();
@@ -139,6 +153,7 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 	public void Throw(Vector2 force)
 	{
 		Velocity += force;
+		AngularVelocity = 20 * Math.Sign(force.X);
 		SetState(AIState.Thrown);
 	}
 }
