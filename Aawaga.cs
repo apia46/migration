@@ -11,7 +11,6 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 	#nullable enable
 
 	float Size;
-	float AngularVelocity;
 
 	bool grabbed;
     public bool Grabbed {get=>grabbed;set=>grabbed=value;}
@@ -111,18 +110,14 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 			}
 			Rotation += moveDirection * 12 * (float)delta;
 			newVelocity.X = moveDirection * 60;
-			AngularVelocity = 0;
 		}
 		if (IsOnWall() && State != AIState.Thrown) {
 			float wallDirection = surfaceDirection.X;
 			newVelocity.Y = -wallDirection * moveDirection * 60;
 			newVelocity.X = wallDirection * 30;
 			Rotation += moveDirection * 12 * (float)delta;
-			AngularVelocity = 0;
 		} else {
 			newVelocity.Y += (float)delta * Game.GRAVITY;
-			AngularVelocity += (newVelocity.Y * Math.Sign(newVelocity.X) - AngularVelocity) * 0.5f;
-			Rotation += AngularVelocity * (float)delta;
 		}
 		Velocity = newVelocity;
 		MoveAndSlide();
@@ -153,7 +148,6 @@ public partial class Aawaga : CharacterBody2D, IGrabbable
 	public void Throw(Vector2 force)
 	{
 		Velocity += force;
-		AngularVelocity = 20 * Math.Sign(force.X);
 		SetState(AIState.Thrown);
 	}
 }
