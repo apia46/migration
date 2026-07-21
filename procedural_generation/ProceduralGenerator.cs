@@ -48,8 +48,8 @@ public partial class ProceduralGenerator : Node
     public override void _Process(double delta)
 	{
 		int runs = 0;
-		Mutex.Lock();
 		while (runs++ < 30 && !Thread.IsAlive()) {
+			Mutex.Lock();
 			if (Queue.Count == 0) EmitSignalQueueEmpty();
 			else {
 				if (Thread.IsStarted()) {
@@ -72,8 +72,8 @@ public partial class ProceduralGenerator : Node
 				ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
 				Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
 			}
+			Mutex.Unlock();
 		}
-		Mutex.Unlock();
     }
 
 	// returns if successful
