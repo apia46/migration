@@ -73,14 +73,14 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 			case AIState.Idle: {
 				BoredomTimer -= delta;
 				if (BoredomTimer <= 0) SetState(AIState.Wander);
-				if (Danger() > 10) SetState(AIState.Evade);
+				if (Danger() > 8) SetState(AIState.Evade);
 			} break;
 			case AIState.Wander: {
 				intendedDirection = WanderDirection;
 
 				WanderTimer -= delta;
 				if (WanderTimer <= 0) SetState(AIState.Idle);
-				if (Danger() > 20) SetState(AIState.Evade);
+				if (Danger() > 12) SetState(AIState.Evade);
 			} break;
 			case AIState.Evade: {
 				intendedDirection = Position - Player.Position;
@@ -114,7 +114,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 
     public override void _IntegrateForces(PhysicsDirectBodyState2D state)
     {
-		SurfacesNormal *= 0.5f;
+		SurfacesNormal *= 0.7f;
         for (int i = 0; i < GetContactCount(); i++) {
 			// Color color;
 			switch (state.GetContactLocalNormal(i).Angle()) {
@@ -145,39 +145,31 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 			} break;
 			case AIState.Evade: {
 				intendedDirection = Position - Player.Position;
+				intendedDirection.Y -= 30;
+				if (SurfacesNormal.X == 0 && SurfacesNormal.Y < -0.5 && intendedDirection.LengthSquared() < 2500 && LinearVelocity.Dot(intendedDirection.Normalized()) < 100) {
+					GD.Print("Ahh!!!");
+					ApplyImpulse(intendedDirection.Normalized() * 300);
+				}
 			} break;
 			case AIState.Grabbed: return;
 		}
 		if (intendedDirection.LengthSquared() > 0) {
 			float moveDirection = Math.Sign(intendedDirection.AngleTo(SurfacesNormal));
-			if (SurfacesNormal.Y == -1) {
-				if (SurfacesNormal.X == 0 && JumpTimer < 0) {
-					JumpTimer = RNG.Range(6.0, 12.0);
-					ApplyImpulse(new Vector2(0f, RNG.Range(-100f, -300f)));
-				}
+			if (SurfacesNormal.X == 0 && SurfacesNormal.Y == -1 && JumpTimer < 0) {
+				JumpTimer = RNG.Range(6.0, 12.0);
+				ApplyImpulse(new Vector2(0f, RNG.Range(-100f, -300f)));
 			}
-			ApplyTorque(moveDirection * Size * -8000);
+			if (SurfacesNormal.LengthSquared() > 0.5f) ApplyTorque(moveDirection * Size * -18000);
+			ApplyForce(intendedDirection.Normalized() * 200);
 		}
-		if (SurfacesNormal.LengthSquared() > 0.01f) ApplyCentralForce(-SurfacesNormal.Normalized() * Game.GRAVITY);
+		if (SurfacesNormal.LengthSquared() > 0.01f && intendedDirection.Y < 0.2) ApplyCentralForce(-SurfacesNormal.Normalized() * Game.GRAVITY);
 		else ApplyCentralForce(new(0,Game.GRAVITY));
 		
-		// if (IsOnFloor() && State != AIState.Thrown) {
-		// 	if (JumpTimer < 0) {
-		// 		JumpTimer = RNG.Range(6.0, 12.0);
-		// 		newVelocity += new Vector2(0f, RNG.Range(-100f, -300f));
-		// 	}
-		// 	Rotation += moveDirection * 12 * (float)delta;
-		// 	newVelocity.X = moveDirection * 60;
-		// }
-		// if (IsOnWall() && State != AIState.Thrown) {
-		// 	float wallDirection = surfaceDirection.X;
-		// 	newVelocity.Y = -wallDirection * moveDirection * 60;
-		// 	newVelocity.X = wallDirection * 30;
-		// 	Rotation += moveDirection * 12 * (float)delta;
-		// } else {
-		// }
 		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal.Normalized()*20, Colors.White);
+		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal*20, Colors.Green);
 		DebugDrawer.AddArrow(intendedDirection.Normalized()*40, Colors.Yellow);
+		DebugDrawer.AddArrow(LinearVelocity, Colors.Cyan);
+		DebugDrawer.AddText(new(15, 15), LinearVelocity.Dot(intendedDirection.Normalized()).ToString(), Colors.White);
 		DebugDrawer.Rotation = -Rotation;
 		DebugDrawer.Evaluate();
     }
@@ -200,6 +192,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 	public void Ungrab()
 	{
 		foreach (CollisionShape2D shape in CollisionShapes()) shape.Disabled = false;
+		SurfacesNormal = Vector2.Zero;
 		SetState(AIState.Idle);
 	}
 	public void Throw(Vector2 force)
