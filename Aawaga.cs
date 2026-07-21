@@ -46,7 +46,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 				BoredomTimer = RNG.Range(5.0, 20.0);
 			} break;
 			case AIState.Wander: {
-				WanderDirection = new Vector2(RNG.FlipCoin() ? -1f : 1f, 1f);
+				WanderDirection = new Vector2(RNG.FlipCoin() ? -1f : 1f, -1f);
 				WanderTimer = RNG.Range(2.0, 4.0);
 			} break;
 			case AIState.Evade: {
@@ -145,10 +145,9 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 			} break;
 			case AIState.Evade: {
 				intendedDirection = Position - Player.Position;
-				intendedDirection.Y -= 30;
-				if (SurfacesNormal.X == 0 && SurfacesNormal.Y < -0.5 && intendedDirection.LengthSquared() < 2500 && LinearVelocity.Dot(intendedDirection.Normalized()) < 100) {
-					GD.Print("Ahh!!!");
-					ApplyImpulse(intendedDirection.Normalized() * 300);
+				if (SurfacesNormal.Y < -0.3 && Math.Abs(SurfacesNormal.X) > 0.3) intendedDirection.Y -= 50;
+				if (SurfacesNormal.Y < -0.3 && intendedDirection.LengthSquared() < 4000 && LinearVelocity.Dot(intendedDirection.Normalized()) < 100) {
+					ApplyImpulse(intendedDirection.Normalized() * 300 * Size);
 				}
 			} break;
 			case AIState.Grabbed: return;
@@ -157,10 +156,10 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 			float moveDirection = Math.Sign(intendedDirection.AngleTo(SurfacesNormal));
 			if (SurfacesNormal.X == 0 && SurfacesNormal.Y == -1 && JumpTimer < 0) {
 				JumpTimer = RNG.Range(6.0, 12.0);
-				ApplyImpulse(new Vector2(0f, RNG.Range(-100f, -300f)));
+				ApplyImpulse(new Vector2(0f, RNG.Range(-100f, -300f)) * Size);
 			}
-			if (SurfacesNormal.LengthSquared() > 0.5f) ApplyTorque(moveDirection * Size * -18000);
-			ApplyForce(intendedDirection.Normalized() * 200);
+			if (SurfacesNormal.LengthSquared() > 0.5f) ApplyTorque(moveDirection * -18000 * Size);
+			ApplyForce(intendedDirection.Normalized() * 200 * Size);
 		}
 		if (SurfacesNormal.LengthSquared() > 0.01f && intendedDirection.Y < 0.2) ApplyCentralForce(-SurfacesNormal.Normalized() * Game.GRAVITY);
 		else ApplyCentralForce(new(0,Game.GRAVITY));
