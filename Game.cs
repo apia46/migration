@@ -2,25 +2,25 @@ public partial class Game : Control
 {
 	public const float GRAVITY = 1000.0f;
 	#nullable disable
-	World world;
-	Camera2D minimapCamera;
-	ProgressBar hungerBar;
+	World World;
+	Camera2D MinimapCamera;
+	ProgressBar HungerBar;
 	#nullable enable
 	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		world = GetNode<World>("%World");
-		minimapCamera = GetNode<Camera2D>("%MinimapCamera2D");
-		hungerBar = GetNode<ProgressBar>("%HungerBar");
-		GetNode<SubViewport>("%SubViewport").World2D = world.GetWorld2D();
+		World = GetNode<World>("%World");
+		MinimapCamera = GetNode<Camera2D>("%MinimapCamera");
+		HungerBar = GetNode<ProgressBar>("%HungerBar");
+		GetNode<SubViewport>("%SubViewport").World2D = World.GetWorld2D();
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		minimapCamera.Position = world.player.Position;
-		hungerBar.Value = world.player.Hunger;
-		GetNode<Label>("%Label2").Text = world.player.Stillness.ToString();
+		MinimapCamera.Position = World.Player.Position;
+		HungerBar.Value = World.Player.Hunger;
+		GetNode<Label>("%Label2").Text = World.Player.Stillness.ToString();
 	}
 }

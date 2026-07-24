@@ -2,26 +2,24 @@
 public partial class World : Node2D
 {
 	#nullable disable
-	ProceduralGenerator generator;
-	Line2D debugDraw;
-	public Player player;
+	public ProceduralGenerator ProceduralGenerator;
+	public Player Player;
+	public CreaturesManager CreaturesManager;
 	#nullable enable
 	readonly GameRandom RNG = new();
 
-	PackedScene AawagaScene = GD.Load<PackedScene>("aawaga.tscn");
-
 	public override void _Ready()
 	{
-		generator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
-		debugDraw = GetNode<Line2D>("%Line2D");
-		player = GetNode<Player>("%player");
-		// generator.world = this;
-		generator.SetContext(GetNode<TileMapLayer>("%TileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
-		generator.world = this;
-		generator.AddToQueue(Vector2I.Zero, false);
+		ProceduralGenerator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
+		ProceduralGenerator.world = this;
+		Player = GetNode<Player>("%Player");
+		CreaturesManager = GetNode<CreaturesManager>("%CreaturesManager");
+		CreaturesManager.World = this;
+		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
+		ProceduralGenerator.AddToQueue(Vector2I.Zero, false);
 		for (int i = 0; i < 4; i++) NextChunks(3);
 		for (int i = 0; i < 4; i++) NextChunks(5);
-		generator.QueueEmpty += NextChunks;
+		ProceduralGenerator.QueueEmpty += NextChunks;
 	}
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
@@ -32,33 +30,17 @@ public partial class World : Node2D
 	void NextChunks(int chunks)
 	{
 		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
-		Vector2I position = (Vector2I)(player.Position / CHUNK_SIZE / TILE_SIZE).Round();
+		Vector2I position = (Vector2I)(Player.Position / CHUNK_SIZE / TILE_SIZE).Round();
 		for (int layer = chunks; layer > 0; layer--) {
 			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
-				generator.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < player.Stillness);
-				generator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble()*4 < player.Stillness);
-				generator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble()*4 < player.Stillness);
-				generator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble()*4 < player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble()*4 < Player.Stillness);
 			}
 		}
-		generator.AddToQueue(position, false);
-	}
-
-	public void DrawDebug(Rect2I rect)
-	{
-		debugDraw.SetPointPosition(0, rect.Position * TILE_SIZE);
-		debugDraw.SetPointPosition(1, new Vector2(rect.End.X, rect.Position.Y) * TILE_SIZE);
-		debugDraw.SetPointPosition(2, rect.End * TILE_SIZE);
-		debugDraw.SetPointPosition(3, new Vector2(rect.Position.X, rect.End.Y) * TILE_SIZE);
-	}
-
-	public void SpawnCreature(Vector2 position)
-	{
-		Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
-		aawaga.Player = player;
-		AddChild(aawaga);
-		aawaga.Position = position;
+		ProceduralGenerator.AddToQueue(position, false);
 	}
 
 	public override void _Input(InputEvent @event)
@@ -67,7 +49,7 @@ public partial class World : Node2D
 			GetNode<TileMapLayer>("%TileMapLayer").Enabled = !GetNode<TileMapLayer>("%TileMapLayer").Enabled;
 			GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
 		} else if (@event.IsActionPressed("spawn")) {	
-			SpawnCreature(player.Position + new Vector2(30,-30));
+			CreaturesManager.SpawnCreature(Player.Position + new Vector2(30,-30));
 		}
 	}
 }

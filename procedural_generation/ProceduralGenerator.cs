@@ -64,7 +64,6 @@ public partial class ProceduralGenerator : Node
 						for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
 							if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
 				Rect2I rect = task.Next();
-				// world.DrawDebug(rect);
 				if (task.IsEmpty()) Queue.Pop();
 				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
 				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);

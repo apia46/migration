@@ -4,12 +4,13 @@
 [ext_resource type="TileSet" uid="uid://b76oagfblrj2u" path="res://assets/tiles_converted.tres" id="3_036b0"]
 [ext_resource type="Script" uid="uid://d2j8xwqp52t78" path="res://procedural_generation/ProceduralGenerator.cs" id="4_036b0"]
 [ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
+[ext_resource type="Script" uid="uid://c6xw1uksf6027" path="res://creatures/CreaturesManager.cs" id="5_036b0"]
 
 [node name="World" type="Node2D" unique_id=203491962]
 script = ExtResource("1_aqk2v")
 metadata/_custom_type_script = "uid://djuyflrxhl2xr"
 
-[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=2100362068]
+[node name="PatternTileMapLayer" type="TileMapLayer" parent="." unique_id=2100362068]
 unique_name_in_owner = true
 texture_filter = 1
 scale = Vector2(4, 4)
@@ -23,7 +24,7 @@ texture_filter = 1
 scale = Vector2(2, 2)
 tile_set = ExtResource("3_036b0")
 
-[node name="player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
+[node name="Player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
 unique_name_in_owner = true
 
 [node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112]
@@ -31,9 +32,7 @@ unique_name_in_owner = true
 script = ExtResource("4_036b0")
 metadata/_custom_type_script = "uid://d2j8xwqp52t78"
 
-[node name="Line2D" type="Line2D" parent="." unique_id=488708432]
+[node name="CreaturesManager" type="Node" parent="." unique_id=1558058252]
 unique_name_in_owner = true
-visible = false
-points = PackedVector2Array(89, 50, -32, 136, -77, 45, 0, 0)
-closed = true
-width = 4.0
+script = ExtResource("5_036b0")
+metadata/_custom_type_script = "uid://c6xw1uksf6027"
