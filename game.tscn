@@ -2,6 +2,13 @@
 
 [ext_resource type="Script" uid="uid://xkiwth7qlatc" path="res://Game.cs" id="1_80nbo"]
 [ext_resource type="PackedScene" uid="uid://8kb2bxnmkwwe" path="res://world.tscn" id="2_e2o6t"]
+[ext_resource type="Shader" uid="uid://bbakqeefl8r7n" path="res://pixelate.gdshader" id="2_feb5d"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fc0e3"]
+shader = ExtResource("2_feb5d")
+shader_parameter/ScreenSize = Vector2(1152, 648)
+shader_parameter/CameraPosition = Vector2(0, 0)
+shader_parameter/CameraZoom = 2.0
 
 [node name="game" type="Control" unique_id=2066309236]
 layout_mode = 3
@@ -12,7 +19,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_80nbo")
 
-[node name="SubViewportContainer2" type="SubViewportContainer" parent="." unique_id=521328173]
+[node name="GameViewportContainer" type="SubViewportContainer" parent="." unique_id=521328173]
+unique_name_in_owner = true
+texture_filter = 1
+material = SubResource("ShaderMaterial_fc0e3")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,13 +31,18 @@ grow_horizontal = 2
 grow_vertical = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="SubViewportContainer2" unique_id=631701495]
+[node name="SubViewport" type="SubViewport" parent="GameViewportContainer" unique_id=631701495]
 handle_input_locally = false
 size = Vector2i(1152, 648)
 render_target_update_mode = 4
 
-[node name="World" parent="SubViewportContainer2/SubViewport" unique_id=203491962 instance=ExtResource("2_e2o6t")]
+[node name="World" parent="GameViewportContainer/SubViewport" unique_id=203491962 instance=ExtResource("2_e2o6t")]
 unique_name_in_owner = true
+
+[node name="Camera" type="Camera2D" parent="GameViewportContainer/SubViewport/World" unique_id=2052885974]
+unique_name_in_owner = true
+zoom = Vector2(2, 2)
+limit_enabled = false
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1762760900]
 visible = false

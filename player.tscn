@@ -19,13 +19,10 @@ shape = SubResource("RectangleShape2D_onrkg")
 scale = Vector2(0.085, 0.085)
 texture = ExtResource("2_onrkg")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=1460147725]
-zoom = Vector2(2, 2)
-
-[node name="grabArea" type="Area2D" parent="." unique_id=1245861732]
+[node name="GrabArea" type="Area2D" parent="." unique_id=1245861732]
 unique_name_in_owner = true
 collision_layer = 0
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="grabArea" unique_id=339456093]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea" unique_id=339456093]
 shape = SubResource("CircleShape2D_onrkg")

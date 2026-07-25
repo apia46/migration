@@ -76,7 +76,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 				if (Danger() > 12) SetState(AIState.Evade);
 			} break;
 			case AIState.Evade: {
-				if (Danger() < 3 && RNG.FlipCoin()) SetState(AIState.Idle);
+				if (Danger() < 3 && RNG.FlipCoin() && SurfacesNormal.Y < -0.3) SetState(AIState.Idle);
 			} break;
 			case AIState.Grabbed: return;
 		}
@@ -123,11 +123,11 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 		
 		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal.Normalized()*20, Colors.White);
 		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal*20, Colors.Green);
-		// DebugDrawer.AddArrow(intendedDirection.Normalized()*40, Colors.Yellow);
-		// DebugDrawer.AddArrow(LinearVelocity, Colors.Cyan);
-		// DebugDrawer.AddText(new(15, 15), LinearVelocity.Dot(intendedDirection.Normalized()).ToString(), Colors.White);
-		// DebugDrawer.Rotation = -Rotation;
-		// DebugDrawer.Evaluate();
+		DebugDrawer.AddArrow(intendedDirection.Normalized()*40, Colors.Yellow);
+		DebugDrawer.AddArrow(LinearVelocity, Colors.Cyan);
+		DebugDrawer.AddText(new(15, 15), LinearVelocity.Dot(intendedDirection.Normalized()).ToString(), Colors.White);
+		DebugDrawer.Rotation = -Rotation;
+		DebugDrawer.Evaluate();
     }
 
 	IEnumerable<CollisionShape2D> CollisionShapes() {
@@ -136,7 +136,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 	}
 
 	float Danger() => 100000/(World.Player.Position - Position).LengthSquared();
-
+	
 	public bool Grabbable() { return true; }
 
 	public void Grab()

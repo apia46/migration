@@ -13,6 +13,7 @@ public partial class World : Node2D
 		ProceduralGenerator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
 		ProceduralGenerator.world = this;
 		Player = GetNode<Player>("%Player");
+		Player.World = this;
 		CreaturesManager = GetNode<CreaturesManager>("%CreaturesManager");
 		CreaturesManager.World = this;
 		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());

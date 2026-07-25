@@ -6,7 +6,8 @@ public partial class Player : CharacterBody2D
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
 
     #nullable disable
-    Area2D grabArea;
+    public World World;
+    Area2D GrabArea;
     #nullable enable
 
     bool doubleJumpAvailable = false;
@@ -23,7 +24,7 @@ public partial class Player : CharacterBody2D
 
     public override void _Ready()
     {
-        grabArea = GetNode<Area2D>("%grabArea");
+        GrabArea = GetNode<Area2D>("%GrabArea");
     }
 
     public override void _PhysicsProcess(double delta)
@@ -95,7 +96,7 @@ public partial class Player : CharacterBody2D
         if (grabbed is Aawaga creature) {
             // eat
             if (Hunger >= 1.0) return;
-            creature.QueueFree();
+            World.CreaturesManager.RemoveCreature(creature);
             Hunger += 0.5;
             grabbed = null;
         }
@@ -103,7 +104,7 @@ public partial class Player : CharacterBody2D
 
     void TryGrab()
     {
-        foreach (Node2D node in grabArea.GetOverlappingBodies()) {
+        foreach (Node2D node in GrabArea.GetOverlappingBodies()) {
             if (node is Aawaga creature) {
                 if (creature.Grabbable()) {
                     grabbed = creature;
