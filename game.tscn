@@ -39,7 +39,7 @@ render_target_update_mode = 4
 [node name="World" parent="GameViewportContainer/SubViewport" unique_id=203491962 instance=ExtResource("2_e2o6t")]
 unique_name_in_owner = true
 
-[node name="Camera" type="Camera2D" parent="GameViewportContainer/SubViewport/World" unique_id=2052885974]
+[node name="Camera" type="Camera2D" parent="GameViewportContainer/SubViewport/World" unique_id=1429885777]
 unique_name_in_owner = true
 zoom = Vector2(2, 2)
 limit_enabled = false

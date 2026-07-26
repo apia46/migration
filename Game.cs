@@ -1,23 +1,21 @@
 public partial class Game : Control
 {
+	public static readonly GameRandom RNG = new();
+	
 	public const float GRAVITY = 1000.0f;
 	#nullable disable
 	World World;
 	Camera2D MinimapCamera;
-	Camera2D Camera;
 	ProgressBar HungerBar;
 	SubViewportContainer GameViewportContainer;
 	ShaderMaterial GameViewportShader;
 	#nullable enable
 
-	Vector2 CameraPosition;
-	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 		World = GetNode<World>("%World");
 		MinimapCamera = GetNode<Camera2D>("%MinimapCamera");
-		Camera = GetNode<Camera2D>("%Camera");
 		HungerBar = GetNode<ProgressBar>("%HungerBar");
 		GetNode<SubViewport>("%SubViewport").World2D = World.GetWorld2D();
 		GameViewportContainer = GetNode<SubViewportContainer>("%GameViewportContainer");
@@ -33,10 +31,4 @@ public partial class Game : Control
 		GameViewportShader.SetShaderParameter("ScreenSize", GameViewportContainer.Size);
 		GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
 	}
-
-    public override void _PhysicsProcess(double delta)
-    {
-        CameraPosition += (World.Player.Position - CameraPosition) * Math.Min(10f * (float)delta, 1f);
-		Camera.Position = CameraPosition.Floor();
-    }
 }

@@ -25,7 +25,7 @@ public partial class ProceduralGenerator : Node
 	// MUTEXED
 	TileCache PatternTiles;
 	// MUTEXED
-	TileCache ConvertedTiles;
+	RotateableTileCache ConvertedTiles;
 	#nullable enable
 
 	// MUTEXED
@@ -150,8 +150,10 @@ public partial class ProceduralGenerator : Node
 				List<Pattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
 				Pattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
 				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
-					for (int cy = 0; cy < Model.ConversionScale.Y; cy++)
+					for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
 						ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
+						ConvertedTiles.SetTileRotation((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.ConversionRotation[Fold(cx,cy,Model.ConversionScale)]);
+					}
 			}
 		return false;
 	}
@@ -290,10 +292,10 @@ class TileCache
 	readonly public Vector2I Margin;
 	readonly public EnumeratedTileSet TileSet;
 	readonly public TileMapLayer TileMap;
-	readonly Vector2I TotalSize;
-	readonly int SourceId;
+	readonly protected Vector2I TotalSize;
+	readonly protected int SourceId;
 	
-	readonly int[] Tiles;
+	readonly protected int[] Tiles;
 
 	public TileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
 	{
@@ -318,10 +320,32 @@ class TileCache
 	public int GetTile(Vector2I absolutePosition) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
 	public void SetTile(Vector2I absolutePosition, int to) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
 
-	public void WriteTileMap()
+	public virtual void WriteTileMap()
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
 			for (int y = 0; y < Rect.Size.Y; y++)
 				TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]));
+	}
+}
+
+class RotateableTileCache : TileCache
+{
+	readonly int[] TileRotations;
+    public RotateableTileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId) : base(rect, margin, tileSet, tileMap, sourceId)
+	{
+		TileRotations = new int[TotalSize.X*TotalSize.Y];
+		for (int x = 0; x < TotalSize.X; x++)
+			for (int y = 0; y < TotalSize.Y; y++)
+				TileRotations[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
+	}
+
+	public int GetTileRotation(Vector2I absolutePosition) => TileRotations[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
+	public void SetTileRotation(Vector2I absolutePosition, int to) => TileRotations[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
+
+	public override void WriteTileMap()
+	{
+		for (int x = 0; x < Rect.Size.X; x++)
+			for (int y = 0; y < Rect.Size.Y; y++)
+				TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
 	}
 }

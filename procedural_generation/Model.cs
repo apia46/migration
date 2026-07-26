@@ -40,19 +40,22 @@ public class Pattern
     public int Frequency;
     public int[] Tiles;
     public int[] Conversion;
+    public int[] ConversionRotation;
 
-    public Pattern(int[] tiles, int[] conversion)
+    public Pattern(int[] tiles, int[] conversion, int[] conversionRotation)
     {
         Frequency = 1;
         Tiles = tiles;
         Conversion = conversion;
+        ConversionRotation = conversionRotation;
     }
 
-    public Pattern(int frequency, int[] tiles, int[] conversion)
+    public Pattern(int frequency, int[] tiles, int[] conversion, int[] conversionRotation)
     {
         Frequency = frequency;
         Tiles = tiles;
         Conversion = conversion;
+        ConversionRotation = conversionRotation;
     }
 
     public bool Matches(int[] tiles)

@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://bp4k3nexvxqo5"]
+
+[ext_resource type="Script" uid="uid://dn2jwtgh6nc4a" path="res://creatures/Spider.cs" id="1_4r7lk"]
+[ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="2_di4mj"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4r7lk"]
+radius = 16.0
+
+[node name="Spider" type="CharacterBody2D" unique_id=849159917]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_4r7lk")
+metadata/_custom_type_script = "uid://dn2jwtgh6nc4a"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2018723189]
+shape = SubResource("CircleShape2D_4r7lk")
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=1138436910]
+color = Color(0, 0.28627452, 0.15686275, 1)
+polygon = PackedVector2Array(-13, -16, -13, 16, 19, 0)
+uv = PackedVector2Array(-124, -54, -49.333313, -12.666664, -190.66663, 36.66667)
+
+[node name="Line2D" type="Line2D" parent="." unique_id=2050286070]
+points = PackedVector2Array(-13, -16, -13, 16, 19, 0)
+closed = true
+width = 4.0
+default_color = Color(0, 0.22745098, 0.12156863, 1)
+joint_mode = 1
+
+[node name="DebugDrawer" type="Node2D" parent="." unique_id=1351671375]
+unique_name_in_owner = true
+script = ExtResource("2_di4mj")
+metadata/_custom_type_script = "uid://dstfir57scngn"
+
+[node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=816966064]
+unique_name_in_owner = true

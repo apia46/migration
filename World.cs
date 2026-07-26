@@ -3,15 +3,16 @@ public partial class World : Node2D
 {
 	#nullable disable
 	public ProceduralGenerator ProceduralGenerator;
+	public Camera2D Camera;
 	public Player Player;
 	public CreaturesManager CreaturesManager;
 	#nullable enable
-	readonly GameRandom RNG = new();
 
 	public override void _Ready()
 	{
 		ProceduralGenerator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
 		ProceduralGenerator.world = this;
+		Camera = GetNode<Camera2D>("%Camera");
 		Player = GetNode<Player>("%Player");
 		Player.World = this;
 		CreaturesManager = GetNode<CreaturesManager>("%CreaturesManager");
@@ -35,10 +36,10 @@ public partial class World : Node2D
 		for (int layer = chunks; layer > 0; layer--) {
 			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
-				ProceduralGenerator.AddToQueue(position + new Vector2I(layer,layer-x), unstable && RNG.NextDouble()*4 < Player.Stillness);
-				ProceduralGenerator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && RNG.NextDouble()*4 < Player.Stillness);
-				ProceduralGenerator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && RNG.NextDouble()*4 < Player.Stillness);
-				ProceduralGenerator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(layer,layer-x), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
+				ProceduralGenerator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
 			}
 		}
 		ProceduralGenerator.AddToQueue(position, false);
@@ -50,7 +51,7 @@ public partial class World : Node2D
 			GetNode<TileMapLayer>("%TileMapLayer").Enabled = !GetNode<TileMapLayer>("%TileMapLayer").Enabled;
 			GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
 		} else if (@event.IsActionPressed("spawn")) {	
-			CreaturesManager.SpawnCreature(Player.Position + new Vector2(30,-30));
+			CreaturesManager.SpawnCreature<Spider>(Player.Position + new Vector2(30,-30));
 		}
 	}
 }

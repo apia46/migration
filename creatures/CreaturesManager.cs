@@ -2,38 +2,33 @@
 public partial class CreaturesManager : Node
 {
     #nullable disable
-    public World World;
+    public static World World;
     #nullable enable
-
-    readonly PackedScene AawagaScene = GD.Load<PackedScene>("creatures/aawaga.tscn");
-
-    public Dictionary<int, Aawaga> Aawagas = [];
-    public int AawagaIdIterator = 0;
 
     public override void _PhysicsProcess(double delta)
     {
         FloodFillAawagas();
     }
 
-    public void SpawnCreature(Vector2 position)
+    public static void SpawnCreature<T>(Vector2 position) where T : Node2D, ICreature<T>
 	{
-		Aawaga aawaga = AawagaScene.Instantiate<Aawaga>();
-		aawaga.World = World;
-        Aawagas[AawagaIdIterator] = aawaga;
-        aawaga.Id = AawagaIdIterator++;
-		AddChild(aawaga);
-		aawaga.Position = position;
+		T creature = T.Scene.Instantiate<T>();
+		creature.World = World;
+        T.Creatures[T.IdIterator] = creature;
+        creature.Id = T.IdIterator++;
+		World.AddChild(creature);
+		creature.Position = position;
 	}
 
-	public void RemoveCreature(Aawaga creature)
+	public static void RemoveCreature<T>(T creature) where T : Node2D, ICreature<T>
 	{
 		creature.QueueFree();
-        Aawagas.Remove(creature.Id);
+        T.Creatures.Remove(creature.Id);
 	}
 
-    void FloodFillAawagas()
+    static void FloodFillAawagas()
 	{
-		foreach (Aawaga creature in Aawagas.Values) {
+		foreach (Aawaga creature in Aawaga.Creatures.Values) {
             creature.FloodFilled = false;
             creature.ConnectedToSurface = false;
         }
@@ -53,9 +48,16 @@ public partial class CreaturesManager : Node
                 if (body is Aawaga next) FloodFill(next);
         }
         
-        foreach (Aawaga creature in Aawagas.Values)
+        foreach (Aawaga creature in Aawaga.Creatures.Values)
             if (!creature.FloodFilled && TouchingSurface(creature)) FloodFill(creature);
-        
-
 	}
+}
+
+public interface ICreature<T> where T:ICreature<T>
+{
+    public static abstract PackedScene Scene {get; set;}
+    public static abstract Dictionary<int, T> Creatures {get; set;}
+    public static abstract int IdIterator {get; set;}
+    public int Id {get; set;}
+    public World World {get; set;}
 }

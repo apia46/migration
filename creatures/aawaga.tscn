@@ -11,7 +11,7 @@ points = PackedVector2Array(8.66, 3, 6.928, 6, -6.928, 6, -8.66, 3, -1.732, -9, 
 
 [node name="Aawaga" type="RigidBody2D" unique_id=123141641]
 collision_layer = 2
-collision_mask = 3
+collision_mask = 2
 gravity_scale = 0.0
 can_sleep = false
 contact_monitor = true

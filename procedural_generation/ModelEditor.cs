@@ -23,19 +23,17 @@ public partial class ModelEditor : Node2D
 
 		foreach (Vector2I position in PatternLayer.GetUsedCells()) {
 			if (GetTilesAtCell(position, PatternSize, PatternLayer, model.PatternTiles) is int[] tiles) {
-				if (GetTilesAtCell(position*ConversionScale+(PatternSize-new Vector2I(1,1))*ConversionScale/2,
-					ConversionScale, ConversionLayer, model.ConvertedTiles
-					) is int[] conversion) {
-						if (model.MatchPattern(tiles) is Pattern pattern) {
-							if (pattern.Conversion.SequenceEqual(conversion)) pattern.Frequency++;
-							else {
-								GD.Print($"duplicate with differing conversion at position {position}");
-								model.Patterns.Add(new Pattern(tiles, conversion));
-							}
+				Vector2I ConversionPosition = position*ConversionScale+(PatternSize-new Vector2I(1,1))*ConversionScale/2;
+				if (GetTilesAtCell(ConversionPosition, ConversionScale, ConversionLayer, model.ConvertedTiles) is int[] conversion) {
+					if (model.MatchPattern(tiles) is Pattern pattern) {
+						if (pattern.Conversion.SequenceEqual(conversion)) pattern.Frequency++;
+						else {
+							GD.Print($"duplicate with differing conversion at position {position}");
+							model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, ConversionScale, ConversionLayer)));
 						}
-						else model.Patterns.Add(new Pattern(tiles, conversion));
 					}
-				else GD.Print($"position {position} has no conversion!");
+					else model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, ConversionScale, ConversionLayer)));
+				} else GD.Print($"position {position} has no conversion!");
 			}
 		}
 
@@ -55,6 +53,18 @@ public partial class ModelEditor : Node2D
 				Vector2I tile = layer.GetCellAtlasCoords(tilePosition);
 				if (tile == Vector2I.One * -1) return null;
 				pattern[Fold(x,y,size)] = tileset.Convert(tile);
+			}
+		}
+		return pattern;
+	}
+
+	int[] GetTileRotationsAtCell(Vector2I position, Vector2I size, TileMapLayer layer)
+	{
+		int[] pattern = new int[size.X*size.Y];
+		for (int x = 0; x < size.Y; x++) {
+			for (int y = 0; y < size.X; y++) {
+				Vector2I tilePosition = position + new Vector2I(x, y);
+				pattern[Fold(x,y,size)] = layer.GetCellAlternativeTile(tilePosition);
 			}
 		}
 		return pattern;

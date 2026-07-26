@@ -7,6 +7,7 @@ public partial class Player : CharacterBody2D
 
     #nullable disable
     public World World;
+    public Camera2D Camera;
     Area2D GrabArea;
     #nullable enable
 
@@ -21,6 +22,8 @@ public partial class Player : CharacterBody2D
     const float STILLNESS_DECAY = 0.998f;
 
     Vector2 distanceAccum = new();
+    Vector2 CameraPosition;
+    float CameraSpeed = 10f;
 
     public override void _Ready()
     {
@@ -46,8 +49,10 @@ public partial class Player : CharacterBody2D
             } else if (doubleJumpAvailable) {
                 doubleJumpAvailable = false;
                 newVelocity.Y = JUMP_VELOCITY;
-                if (moveDirection != 0.0f && moveDirection * Velocity.X < DOUBLE_JUMP_REDIRECT)
+                if (moveDirection != 0.0f && moveDirection * Velocity.X < DOUBLE_JUMP_REDIRECT) {
                     newVelocity.X = moveDirection * DOUBLE_JUMP_REDIRECT;
+                    CameraSpeed = 20f;
+                }
             }
         }
 
@@ -76,6 +81,10 @@ public partial class Player : CharacterBody2D
             grabTransform.Origin = Position + GetLocalMousePosition().Normalized()*10;
             grabbed.GlobalTransform = grabTransform;
         }
+
+        CameraPosition += (Position - CameraPosition) * Math.Min(CameraSpeed * (float)delta, 1f);
+        CameraSpeed += (10f - CameraSpeed) * Math.Min((float)delta * 10, 1f);
+		World.Camera.Position = CameraPosition.Floor();
     }
 
     public override void _Input(InputEvent @event)
@@ -85,7 +94,7 @@ public partial class Player : CharacterBody2D
 		} else if (@event.IsActionPressed("grab")) {
             if (grabbed is null) TryGrab();
             else {
-                grabbed.Throw(GetLocalMousePosition().Normalized() * 500);
+                grabbed.Throw(Velocity+GetLocalMousePosition().Normalized() * 500);
                 grabbed = null;
             }
         }
@@ -93,10 +102,10 @@ public partial class Player : CharacterBody2D
 
     void UseItem()
     {
-        if (grabbed is Aawaga creature) {
+        if (grabbed is Aawaga aawaga) {
             // eat
             if (Hunger >= 1.0) return;
-            World.CreaturesManager.RemoveCreature(creature);
+            CreaturesManager.RemoveCreature(aawaga);
             Hunger += 0.5;
             grabbed = null;
         }

@@ -1,37 +1,41 @@
 using System.Text.RegularExpressions;
 
 [GlobalClass]
-public partial class Aawaga : RigidBody2D, IGrabbable
+public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 {
-	static readonly GameRandom RNG = new();
+	#nullable disable
+	public int Id { get; set; }
+    public World World { get; set; }
+	#nullable enable
+
+    public bool Grabbed { get; set; }
+    public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("creatures/aawaga.tscn");
+    public static Dictionary<int, Aawaga> Creatures { get; set; } = [];
+    public static int IdIterator { get; set; }
 
 	#nullable disable
-	public World World;
 	Node2D Visuals;
 	DebugDrawer DebugDrawer;
 	#nullable enable
-	public int Id;
 
 	float Size;
 
-	bool grabbed;
-    public bool Grabbed {get=>grabbed;set=>grabbed=value;}
-	
-	Vector2 SurfacesNormal = Vector2.Zero;
+    Vector2 SurfacesNormal = Vector2.Zero;
 
-	public enum AIState {Idle, Wander, Evade, Grabbed};
+	public enum AIState {Idle, Wander, Evade, Grabbed, Thrown};
 	AIState State = AIState.Idle;
 	Vector2 WanderDirection;
 	double BoredomTimer;
 	double WanderTimer;
 	double JumpTimer;
+	double ThrownTimer;
 
 	public bool FloodFilled;
 	public bool ConnectedToSurface;
 
     public override void _Ready()
 	{
-		Size = RNG.Range(0.8f, 1.2f);
+		Size = Game.RNG.Range(0.8f, 1.2f);
 		Visuals = GetNode<Node2D>("%Visuals");
 		DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
 		Visuals.Scale *= Size;
@@ -47,17 +51,16 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 		State = to;
 		switch (State) {
 			case AIState.Idle: {
-				BoredomTimer = RNG.Range(5.0, 20.0);
+				BoredomTimer = Game.RNG.Range(5.0, 20.0);
 			} break;
 			case AIState.Wander: {
-				WanderDirection = new Vector2(RNG.FlipCoin() ? -1f : 1f, -1f);
-				WanderTimer = RNG.Range(2.0, 4.0);
+				WanderDirection = new Vector2(Game.RNG.FlipCoin() ? -1f : 1f, -1f);
+				WanderTimer = Game.RNG.Range(2.0, 4.0);
 			} break;
-			case AIState.Evade: {
-				
-			} break;
-			case AIState.Grabbed: {
-
+			case AIState.Evade: break;
+			case AIState.Grabbed: break;
+			case AIState.Thrown: {
+				ThrownTimer = 0.3;
 			} break;
 		}
 	}
@@ -68,17 +71,21 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 			case AIState.Idle: {
 				BoredomTimer -= delta;
 				if (BoredomTimer <= 0) SetState(AIState.Wander);
-				if (Danger() > 8) SetState(AIState.Evade);
+				else if (Danger() > 8) SetState(AIState.Evade);
 			} break;
 			case AIState.Wander: {
 				WanderTimer -= delta;
 				if (WanderTimer <= 0) SetState(AIState.Idle);
-				if (Danger() > 12) SetState(AIState.Evade);
+				else if (Danger() > 12) SetState(AIState.Evade);
 			} break;
 			case AIState.Evade: {
-				if (Danger() < 3 && RNG.FlipCoin() && SurfacesNormal.Y < -0.3) SetState(AIState.Idle);
+				if (Danger() < 3 && Game.RNG.FlipCoin() && SurfacesNormal.Y < -0.3) SetState(AIState.Idle);
 			} break;
 			case AIState.Grabbed: return;
+			case AIState.Thrown: {
+				ThrownTimer -= delta;
+				if (ThrownTimer <= 0) SetState(AIState.Idle);
+			} break;
 		}
     }
 
@@ -108,15 +115,16 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 				}
 			} break;
 			case AIState.Grabbed: return;
+			case AIState.Thrown: break;
 		}
 		if (intendedDirection.LengthSquared() > 0) {
 			float moveDirection = Math.Sign(intendedDirection.AngleTo(SurfacesNormal));
 			if (SurfacesNormal.X == 0 && SurfacesNormal.Y == -1 && JumpTimer < 0) {
-				JumpTimer = RNG.Range(6.0, 12.0);
-				ApplyImpulse(new Vector2(0f, RNG.Range(-100f, -300f)) * Size);
+				JumpTimer = Game.RNG.Range(6.0, 12.0);
+				ApplyImpulse(new Vector2(0f, Game.RNG.Range(-100f, -300f)) * Size);
 			}
 			if (SurfacesNormal.LengthSquared() > 0.5f) ApplyTorque(moveDirection * -18000 * Size);
-			ApplyForce(intendedDirection.Normalized() * 200 * Size);
+			ApplyForce(intendedDirection.Normalized() * 400 * Size);
 		}
 		if (SurfacesNormal.LengthSquared() > 0.01f && intendedDirection.Y < 0.2) ApplyCentralForce(-SurfacesNormal.Normalized() * Game.GRAVITY);
 		else ApplyCentralForce(new(0,Game.GRAVITY));
@@ -125,7 +133,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal*20, Colors.Green);
 		DebugDrawer.AddArrow(intendedDirection.Normalized()*40, Colors.Yellow);
 		DebugDrawer.AddArrow(LinearVelocity, Colors.Cyan);
-		DebugDrawer.AddText(new(15, 15), LinearVelocity.Dot(intendedDirection.Normalized()).ToString(), Colors.White);
+		DebugDrawer.AddText(new(15, 15), State.ToString(), Colors.White);
 		DebugDrawer.Rotation = -Rotation;
 		DebugDrawer.Evaluate();
     }
@@ -152,8 +160,10 @@ public partial class Aawaga : RigidBody2D, IGrabbable
 	}
 	public void Throw(Vector2 force)
 	{
+		foreach (CollisionShape2D shape in CollisionShapes()) shape.Disabled = false;
 		ApplyImpulse(force);
-		Ungrab();
+		SurfacesNormal = Vector2.Zero;
+		SetState(AIState.Thrown);
 	}
 }
 
