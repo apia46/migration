@@ -34,5 +34,4 @@ metadata/_custom_type_script = "uid://dstfir57scngn"
 
 [node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=816966064]
 unique_name_in_owner = true
-simplify_path = true
 debug_enabled = true

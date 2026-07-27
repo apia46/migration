@@ -19,7 +19,7 @@ public partial class Game : Control
 		HungerBar = GetNode<ProgressBar>("%HungerBar");
 		GetNode<SubViewport>("%SubViewport").World2D = World.GetWorld2D();
 		GameViewportContainer = GetNode<SubViewportContainer>("%GameViewportContainer");
-		GameViewportShader = (ShaderMaterial)GameViewportContainer.Material;
+		// GameViewportShader = (ShaderMaterial)GameViewportContainer.Material;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -28,7 +28,7 @@ public partial class Game : Control
 		MinimapCamera.Position = World.Player.Position;
 		HungerBar.Value = World.Player.Hunger;
 		GetNode<Label>("%Label2").Text = World.Player.Stillness.ToString();
-		GameViewportShader.SetShaderParameter("ScreenSize", GameViewportContainer.Size);
-		GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
+		// GameViewportShader.SetShaderParameter("ScreenSize", GameViewportContainer.Size);
+		// GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
 	}
 }

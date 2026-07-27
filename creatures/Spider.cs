@@ -22,7 +22,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	double BoredomTimer;
 	double WanderTimer;
 	Vector2 WanderDirection;
-
+	Vector2 ChaseTarget;
     public override void _Ready()
     {
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
@@ -43,13 +43,26 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 			} break;
 			case AIState.Chase: {
 				BoredomTimer = Game.RNG.Range(15.0, 20.0);
-
+				UpdatePathfinding();
 			} break;
 			case AIState.Evade: {} break;
 		}
 	}
 
 	float Chaseness() => 100000/(World.Player.Position - Position).LengthSquared();
+
+	void UpdatePathfinding()
+	{
+		switch (State) {
+			case AIState.Chase: {
+				if (NavigationAgent.TargetPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 1000) {
+					NavigationAgent.TargetPosition = World.Player.GlobalPosition;
+					ChaseTarget = NavigationAgent.GetNextPathPosition();
+				} else if (NavigationAgent.IsNavigationFinished()) SetState(AIState.Idle);
+				else if (GlobalPosition.DistanceSquaredTo(ChaseTarget) < 400) ChaseTarget = NavigationAgent.GetNextPathPosition();
+			} break;
+		}
+	}
 
 	public override void _PhysicsProcess(double delta)
 	{
@@ -70,12 +83,9 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 			} break;
 			case AIState.Chase: {
 				BoredomTimer -= delta;
-				NavigationAgent.TargetPosition = World.Player.GlobalPosition;
-				if (NavigationAgent.IsNavigationFinished()) SetState(AIState.Idle);
-				else {
-					intendedDirection = GlobalPosition.DirectionTo(NavigationAgent.GetNextPathPosition());
-					speed = 100;
-				}
+				UpdatePathfinding();
+				intendedDirection = GlobalPosition.DirectionTo(ChaseTarget);
+				speed = 100;
 				if (BoredomTimer <= 0) SetState(AIState.Idle);
 			} break;
 			case AIState.Evade: {} break;
