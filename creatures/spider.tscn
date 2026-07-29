@@ -7,93 +7,141 @@
 radius = 16.0
 
 [sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_di4mj"]
-target_nodepath = NodePath("../Targets/LegFRTarget")
-tip_nodepath = NodePath("Center/LegFR1/LegFR2/LegFR3")
+target_nodepath = NodePath("../../Targets/Leg1")
+tip_nodepath = NodePath("Center/Leg1A/Leg1B/Leg1C")
 ccdik_data_chain_length = 2
 joint_data/0/bone_index = 1
-joint_data/0/bone2d_node = NodePath("Center/LegFR1")
+joint_data/0/bone2d_node = NodePath("Center/Leg1A")
 joint_data/0/rotate_from_joint = false
-joint_data/0/enable_constraint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = 299.99997
+joint_data/0/constraint_angle_max = 360.0
+joint_data/0/constraint_angle_invert = false
+joint_data/0/constraint_in_localspace = true
 joint_data/0/editor_draw_gizmo = true
 joint_data/1/bone_index = 2
-joint_data/1/bone2d_node = NodePath("Center/LegFR1/LegFR2")
+joint_data/1/bone2d_node = NodePath("Center/Leg1A/Leg1B")
 joint_data/1/rotate_from_joint = false
-joint_data/1/enable_constraint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 209.99998
+joint_data/1/constraint_angle_max = 329.99997
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_w7rda"]
-target_nodepath = NodePath("../Targets/LegFLTarget")
-tip_nodepath = NodePath("Center/LegFL1/LegFL2/LegFL3")
+target_nodepath = NodePath("../../Targets/Leg2")
+tip_nodepath = NodePath("Center/Leg2A/Leg2B/Leg2C")
 ccdik_data_chain_length = 2
-joint_data/0/bone_index = 4
-joint_data/0/bone2d_node = NodePath("Center/LegFL1")
+joint_data/0/bone_index = 3
+joint_data/0/bone2d_node = NodePath("Center/Leg2A")
 joint_data/0/rotate_from_joint = false
-joint_data/0/enable_constraint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -180.0
+joint_data/0/constraint_angle_max = 360.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
 joint_data/0/editor_draw_gizmo = true
-joint_data/1/bone_index = 5
-joint_data/1/bone2d_node = NodePath("Center/LegFL1/LegFL2")
+joint_data/1/bone_index = 4
+joint_data/1/bone2d_node = NodePath("Center/Leg2A/Leg2B")
 joint_data/1/rotate_from_joint = false
-joint_data/1/enable_constraint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 240.0
+joint_data/1/constraint_angle_max = 120.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_eqsgp"]
-target_nodepath = NodePath("../Targets/LegMRTarget")
-tip_nodepath = NodePath("Center/LegMR1/LegMR2/LegMR3")
+target_nodepath = NodePath("../../Targets/Leg3")
+tip_nodepath = NodePath("Center/Leg3A/Leg3B/Leg3C")
 ccdik_data_chain_length = 2
-joint_data/0/bone_index = 7
-joint_data/0/bone2d_node = NodePath("Center/LegMR1")
+joint_data/0/bone_index = 5
+joint_data/0/bone2d_node = NodePath("Center/Leg3A")
 joint_data/0/rotate_from_joint = false
-joint_data/0/enable_constraint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -299.99997
+joint_data/0/constraint_angle_max = 270.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
 joint_data/0/editor_draw_gizmo = true
-joint_data/1/bone_index = 8
-joint_data/1/bone2d_node = NodePath("Center/LegMR1/LegMR2")
+joint_data/1/bone_index = 6
+joint_data/1/bone2d_node = NodePath("Center/Leg3A/Leg3B")
 joint_data/1/rotate_from_joint = false
-joint_data/1/enable_constraint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 209.99997
+joint_data/1/constraint_angle_max = 329.99997
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_tmv5v"]
-target_nodepath = NodePath("../Targets/LegMLTarget")
-tip_nodepath = NodePath("Center/LegML1/LegML2/LegML3")
+target_nodepath = NodePath("../../Targets/Leg4")
+tip_nodepath = NodePath("Center/Leg4A/Leg4B/Leg4C")
 ccdik_data_chain_length = 2
-joint_data/0/bone_index = 10
-joint_data/0/bone2d_node = NodePath("Center/LegML1")
+joint_data/0/bone_index = 7
+joint_data/0/bone2d_node = NodePath("Center/Leg4A")
 joint_data/0/rotate_from_joint = false
-joint_data/0/enable_constraint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -60.0
+joint_data/0/constraint_angle_max = 0.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
 joint_data/0/editor_draw_gizmo = true
-joint_data/1/bone_index = 11
-joint_data/1/bone2d_node = NodePath("Center/LegML1/LegML2")
+joint_data/1/bone_index = 8
+joint_data/1/bone2d_node = NodePath("Center/Leg4A/Leg4B")
 joint_data/1/rotate_from_joint = false
-joint_data/1/enable_constraint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 30.0
+joint_data/1/constraint_angle_max = 149.99997
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_03k8p"]
-target_nodepath = NodePath("../Targets/LegBRTarget")
-tip_nodepath = NodePath("Center/LegBR1/LegBR2/LegBR3")
+target_nodepath = NodePath("../../Targets/Leg5")
+tip_nodepath = NodePath("Center/Leg5A/Leg5B/Leg5C")
 ccdik_data_chain_length = 2
-joint_data/0/bone_index = 13
-joint_data/0/bone2d_node = NodePath("Center/LegBR1")
+joint_data/0/bone_index = 9
+joint_data/0/bone2d_node = NodePath("Center/Leg5A")
 joint_data/0/rotate_from_joint = false
-joint_data/0/enable_constraint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -180.0
+joint_data/0/constraint_angle_max = 360.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
 joint_data/0/editor_draw_gizmo = true
-joint_data/1/bone_index = 14
-joint_data/1/bone2d_node = NodePath("Center/LegBR1/LegBR2")
+joint_data/1/bone_index = 10
+joint_data/1/bone2d_node = NodePath("Center/Leg5A/Leg5B")
 joint_data/1/rotate_from_joint = false
-joint_data/1/enable_constraint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = -299.99997
+joint_data/1/constraint_angle_max = 299.99997
+joint_data/1/constraint_angle_invert = false
+joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_0682x"]
-target_nodepath = NodePath("../Targets/LegBLTarget")
-tip_nodepath = NodePath("Center/LegBL1/LegBL2/LegBL3")
+target_nodepath = NodePath("../../Targets/Leg6")
+tip_nodepath = NodePath("Center/Leg6A/Leg6B/Leg6C")
 ccdik_data_chain_length = 2
-joint_data/0/bone_index = 16
-joint_data/0/bone2d_node = NodePath("Center/LegBL1")
+joint_data/0/bone_index = 11
+joint_data/0/bone2d_node = NodePath("Center/Leg6A")
 joint_data/0/rotate_from_joint = false
-joint_data/0/enable_constraint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = 149.99998
+joint_data/0/constraint_angle_max = 90.0
+joint_data/0/constraint_angle_invert = false
+joint_data/0/constraint_in_localspace = true
 joint_data/0/editor_draw_gizmo = true
-joint_data/1/bone_index = 17
-joint_data/1/bone2d_node = NodePath("Center/LegBL1/LegBL2")
+joint_data/1/bone_index = 12
+joint_data/1/bone2d_node = NodePath("Center/Leg6A/Leg6B")
 joint_data/1/rotate_from_joint = false
-joint_data/1/enable_constraint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = -299.99997
+joint_data/1/constraint_angle_max = 299.99997
+joint_data/1/constraint_angle_invert = false
+joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModificationStack2D" id="SkeletonModificationStack2D_w7rda"]
@@ -115,18 +163,6 @@ metadata/_custom_type_script = "uid://dn2jwtgh6nc4a"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2018723189]
 shape = SubResource("CircleShape2D_4r7lk")
 
-[node name="Polygon2D" type="Polygon2D" parent="." unique_id=1138436910]
-color = Color(0, 0.28627452, 0.15686275, 1)
-polygon = PackedVector2Array(-13, -16, -13, 16, 19, 0)
-uv = PackedVector2Array(-124, -54, -49.333313, -12.666664, -190.66663, 36.66667)
-
-[node name="Line2D" type="Line2D" parent="." unique_id=2050286070]
-points = PackedVector2Array(-13, -16, -13, 16, 19, 0)
-closed = true
-width = 4.0
-default_color = Color(0, 0.22745098, 0.12156863, 1)
-joint_mode = 1
-
 [node name="DebugDrawer" type="Node2D" parent="." unique_id=1351671375]
 unique_name_in_owner = true
 script = ExtResource("2_di4mj")
@@ -134,131 +170,154 @@ metadata/_custom_type_script = "uid://dstfir57scngn"
 
 [node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=816966064]
 unique_name_in_owner = true
-debug_enabled = true
 
-[node name="Skeleton2D" type="Skeleton2D" parent="." unique_id=50322439]
+[node name="Visuals" type="Node2D" parent="." unique_id=1415946010]
+unique_name_in_owner = true
+
+[node name="Polygon2D" type="Polygon2D" parent="Visuals" unique_id=1138436910]
+color = Color(0, 0.28627452, 0.15686275, 1)
+polygon = PackedVector2Array(-13, -16, -13, 16, 19, 0)
+uv = PackedVector2Array(-124, -54, -49.333313, -12.666664, -190.66663, 36.66667)
+
+[node name="Line2D" type="Line2D" parent="Visuals" unique_id=2050286070]
+points = PackedVector2Array(-13, -16, -13, 16, 19, 0)
+closed = true
+width = 4.0
+default_color = Color(0, 0.22745098, 0.12156863, 1)
+joint_mode = 1
+
+[node name="Skeleton" type="Skeleton2D" parent="Visuals" unique_id=50322439]
+unique_name_in_owner = true
 modification_stack = SubResource("SkeletonModificationStack2D_w7rda")
 
-[node name="Center" type="Bone2D" parent="Skeleton2D" unique_id=1083692271]
+[node name="Center" type="Bone2D" parent="Visuals/Skeleton" unique_id=1083692271]
+scale = Vector2(0.999994, 0.999994)
 rest = Transform2D(1, 0, 0, 1, 0, 0)
 
-[node name="LegFR1" type="Bone2D" parent="Skeleton2D/Center" unique_id=1319965773]
-position = Vector2(9, 6)
-rotation = -0.784198
-scale = Vector2(0.99998796, 0.99998796)
+[node name="Leg1A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=1319965773]
+rotation = -1.5707947
+scale = Vector2(0.999968, 0.999968)
 rest = Transform2D(1.628749e-05, -0.9999711, 0.9999711, 1.628749e-05, 9.000009, 6.000005)
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegFR2" type="Bone2D" parent="Skeleton2D/Center/LegFR1" unique_id=1009151261]
-position = Vector2(0, 18)
-scale = Vector2(0.9999766, 0.9999766)
-rest = Transform2D(0.99934316, -1.6201815e-05, 1.6201815e-05, 0.99934316, 0.00029945374, 17.999542)
+[node name="Leg1B" type="Bone2D" parent="Visuals/Skeleton/Center/Leg1A" unique_id=1009151261]
+position = Vector2(3.8146973e-06, 18.000338)
+scale = Vector2(0.99874085, 0.99874085)
+rest = Transform2D(-4.3682675e-08, 0.99934316, -0.99934316, -4.3682675e-08, 0.00029945374, 17.999542)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegFR3" type="Bone2D" parent="Skeleton2D/Center/LegFR1/LegFR2" unique_id=1280494955]
-position = Vector2(0, 18)
-rest = Transform2D(1, 0, 0, 1, 0, 18)
-editor_settings/show_bone_gizmo = false
+[node name="Leg1C" type="Node2D" parent="Visuals/Skeleton/Center/Leg1A/Leg1B" unique_id=1523535091]
+position = Vector2(16, 0)
 
-[node name="LegFL1" type="Bone2D" parent="Skeleton2D/Center" unique_id=916348858]
-position = Vector2(9, -6)
+[node name="Leg2A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=916348858]
+scale = Vector2(0.99998677, 0.99998677)
 rest = Transform2D(0.99998677, 1.0172339e-06, -1.0172339e-06, 0.99998677, 9.000007, -6.0000014)
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegFL2" type="Bone2D" parent="Skeleton2D/Center/LegFL1" unique_id=1519905495]
+[node name="Leg2B" type="Bone2D" parent="Visuals/Skeleton/Center/Leg2A" unique_id=505081305]
 position = Vector2(18, 0)
-rotation = -0.35877895
-scale = Vector2(0.999999, 0.999999)
-rest = Transform2D(0.9999947, -1.5795147e-06, 1.5795147e-06, 0.9999947, 18.000021, -2.3841858e-06)
+rotation = 0.0002220846
+rest = Transform2D(1, 0, 0, 1, 18, 0)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegFL3" type="Bone2D" parent="Skeleton2D/Center/LegFL1/LegFL2" unique_id=1130489977]
-position = Vector2(18, 0)
-rest = Transform2D(1, 0, 0, 1, 18, 0)
-editor_settings/show_bone_gizmo = false
+[node name="Leg2C" type="Node2D" parent="Visuals/Skeleton/Center/Leg2A/Leg2B" unique_id=784645445]
+position = Vector2(16, 0)
 
-[node name="LegMR1" type="Bone2D" parent="Skeleton2D/Center" unique_id=1525014889]
-position = Vector2(0, 6)
+[node name="Leg3A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=1525014889]
+scale = Vector2(0.99947566, 0.99947566)
 rest = Transform2D(0.9999995, -1.043081e-06, 1.043081e-06, 0.9999995, 2.3841858e-07, 6.000008)
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegMR2" type="Bone2D" parent="Skeleton2D/Center/LegMR1" unique_id=243157568]
+[node name="Leg3B" type="Bone2D" parent="Visuals/Skeleton/Center/Leg3A" unique_id=243157568]
 position = Vector2(0, 18)
-rest = Transform2D(0.99911034, 1.1316398e-06, -1.1316398e-06, 0.99911034, -1.6213648e-05, 17.971592)
+rotation = 1.5707966
+scale = Vector2(0.99504745, 0.99504745)
+rest = Transform2D(-1, -1.509958e-07, 1.509958e-07, -1, 0, 18)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegMR3" type="Bone2D" parent="Skeleton2D/Center/LegMR1/LegMR2" unique_id=1181090346]
-position = Vector2(0, 18)
-rest = Transform2D(1, 0, 0, 1, 0, 18)
-editor_settings/show_bone_gizmo = false
+[node name="Leg3C" type="Node2D" parent="Visuals/Skeleton/Center/Leg3A/Leg3B" unique_id=1632878856]
+position = Vector2(16, 0)
 
-[node name="LegML1" type="Bone2D" parent="Skeleton2D/Center" unique_id=200438120]
-position = Vector2(0, -6)
+[node name="Leg4A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=200438120]
+scale = Vector2(0.9993777, 0.9993777)
 rest = Transform2D(0.9999999, -1.4901165e-07, 1.4901165e-07, 0.9999999, -2.3841858e-07, -6.000008)
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegML2" type="Bone2D" parent="Skeleton2D/Center/LegML1" unique_id=2090256333]
+[node name="Leg4B" type="Bone2D" parent="Visuals/Skeleton/Center/Leg4A" unique_id=2090256333]
 position = Vector2(0, -18)
-rest = Transform2D(1.0000005, -2.9802393e-08, 2.9802393e-08, 1.0000005, 7.390976e-06, -18.000032)
+rotation = -1.5707964
+scale = Vector2(0.9989091, 0.9989091)
+rest = Transform2D(1.1924886e-08, -1.0000005, 1.0000005, 1.1924886e-08, 7.390976e-06, -18.000032)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegML3" type="Bone2D" parent="Skeleton2D/Center/LegML1/LegML2" unique_id=185002126]
-position = Vector2(0, -18)
-rest = Transform2D(1, 0, 0, 1, 0, -18)
-editor_settings/show_bone_gizmo = false
+[node name="Leg4C" type="Node2D" parent="Visuals/Skeleton/Center/Leg4A/Leg4B" unique_id=1367355136]
+position = Vector2(16, 0)
 
-[node name="LegBR1" type="Bone2D" parent="Skeleton2D/Center" unique_id=49261528]
-position = Vector2(-9, 6)
+[node name="Leg5A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=49261528]
+scale = Vector2(0.99999446, 0.99999446)
 rest = Transform2D(0.9999949, 5.647018e-07, -5.647018e-07, 0.9999949, -9.000007, 6.0000014)
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegBR2" type="Bone2D" parent="Skeleton2D/Center/LegBR1" unique_id=28342922]
+[node name="Leg5B" type="Bone2D" parent="Visuals/Skeleton/Center/Leg5A" unique_id=28342922]
 position = Vector2(-18, 0)
-rest = Transform2D(1.0000012, -5.004782e-07, 5.004782e-07, 1.0000012, -18.00172, 1.001358e-05)
+rotation = -3.1415915
+scale = Vector2(0.9989872, 0.9989872)
+rest = Transform2D(-1.0000012, -8.742288e-08, 8.742288e-08, -1.0000012, -18.00172, 1.001358e-05)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegBR3" type="Bone2D" parent="Skeleton2D/Center/LegBR1/LegBR2" unique_id=331325816]
-position = Vector2(-18, 0)
-rest = Transform2D(1, 0, 0, 1, -18, 0)
-editor_settings/show_bone_gizmo = false
+[node name="Leg5C" type="Node2D" parent="Visuals/Skeleton/Center/Leg5A/Leg5B" unique_id=1931724076]
+position = Vector2(16, 0)
 
-[node name="LegBL1" type="Bone2D" parent="Skeleton2D/Center" unique_id=1919426707]
-position = Vector2(-9, -6)
+[node name="Leg6A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=1919426707]
+rotation = -0.00028042856
+scale = Vector2(0.9998274, 0.9998274)
 rest = Transform2D(0.9999999, -1.813046e-05, 1.813046e-05, 0.9999999, -8.999999, -5.9999995)
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegBL2" type="Bone2D" parent="Skeleton2D/Center/LegBL1" unique_id=1711439394]
-position = Vector2(-18, 0)
-rest = Transform2D(1, 1.8084513e-05, -1.8084513e-05, 1, -18, -0.00032901764)
+[node name="Leg6B" type="Bone2D" parent="Visuals/Skeleton/Center/Leg6A" unique_id=1711439394]
+position = Vector2(-18, -0.003)
+rotation = -3.1414676
+rest = Transform2D(-1, -8.742278e-08, 8.742278e-08, -1, -18, -0.00032901764)
+auto_calculate_length_and_angle = false
+length = 16.0
+bone_angle = 0.0
 metadata/_local_pose_override_enabled_ = true
 
-[node name="LegBL3" type="Bone2D" parent="Skeleton2D/Center/LegBL1/LegBL2" unique_id=969320759]
-position = Vector2(-18, 0)
-rest = Transform2D(1, 0, 0, 1, -18, 0)
-editor_settings/show_bone_gizmo = false
+[node name="Leg6C" type="Node2D" parent="Visuals/Skeleton/Center/Leg6A/Leg6B" unique_id=1074850748]
+position = Vector2(16, 0)
 
 [node name="Targets" type="Node2D" parent="." unique_id=1434346343]
-
-[node name="LegFRTarget" type="Node2D" parent="Targets" unique_id=906900863]
 unique_name_in_owner = true
-position = Vector2(14, 25)
 
-[node name="LegFLTarget" type="Node2D" parent="Targets" unique_id=710165613]
-unique_name_in_owner = true
-position = Vector2(40, -15)
+[node name="Leg1" type="Node2D" parent="Targets" unique_id=906900863]
+position = Vector2(38, 12)
 
-[node name="LegMRTarget" type="Node2D" parent="Targets" unique_id=1792529623]
-unique_name_in_owner = true
-position = Vector2(-1, 25)
+[node name="Leg2" type="Node2D" parent="Targets" unique_id=710165613]
+position = Vector2(11, 38)
 
-[node name="LegMLTarget" type="Node2D" parent="Targets" unique_id=1094076124]
-unique_name_in_owner = true
-position = Vector2(15, -25)
+[node name="Leg3" type="Node2D" parent="Targets" unique_id=1792529623]
+position = Vector2(-40, 32)
 
-[node name="LegBRTarget" type="Node2D" parent="Targets" unique_id=267826091]
-unique_name_in_owner = true
-position = Vector2(-11, 25)
+[node name="Leg4" type="Node2D" parent="Targets" unique_id=1094076124]
+position = Vector2(-29, -36)
 
-[node name="LegBLTarget" type="Node2D" parent="Targets" unique_id=161093391]
-unique_name_in_owner = true
-position = Vector2(-54, -6)
+[node name="Leg5" type="Node2D" parent="Targets" unique_id=267826091]
+position = Vector2(5, -44)
+
+[node name="Leg6" type="Node2D" parent="Targets" unique_id=161093391]
+position = Vector2(39, -24)

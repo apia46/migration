@@ -21,6 +21,7 @@ public partial class DebugDrawer : Node2D
 
     public void AddArrow(Vector2 position, Vector2 point, Color color, float width = 2) => AddDrawing(new Drawing() with {Type = Type.Arrow, Position = position, Point = point, Color = color, Width = width});
     public void AddArrow(Vector2 point, Color color, float width = 2) => AddArrow(Vector2.Zero, point, color, width);
+    public void AddCircle(Vector2 position, Color color, float width = 2) => AddDrawing(new Drawing() with {Type = Type.Circle, Position = position, Color = color, Width = width});
     public void AddText(Vector2 position, string text, Color color) => AddDrawing(new Drawing() with {Type = Type.Text, Position = position, Color = color, Text = text});
 
     void AddDrawing(Drawing drawing)
@@ -65,11 +66,14 @@ public partial class DebugDrawer : Node2D
                 case Type.Text: {
                     SpaceMono.DrawString(MainDraw, drawing.Position, drawing.Text, HorizontalAlignment.Left, -1, 10, drawing.Color);
                 } break;
+                case Type.Circle: {
+                    RenderingServer.CanvasItemAddCircle(MainDraw, drawing.Position, drawing.Width, drawing.Color);
+                } break;
             }
         }
     }
 
-    public enum Type {Arrow, Text}
+    public enum Type {Arrow, Text, Circle}
     readonly struct Drawing
     {
         readonly public Type Type { get; init; }
@@ -77,7 +81,7 @@ public partial class DebugDrawer : Node2D
         readonly public Vector2 Position { get; init; }
         readonly public Color Color { get; init; }
         readonly public Vector2 Point { get; init; } // for Arrow
-        readonly public float Width { get; init; } // for Arrow
+        readonly public float Width { get; init; } // for Arrow, Circle
         readonly public string Text { get; init; } // for Text
 
         public override bool Equals(object? obj)
