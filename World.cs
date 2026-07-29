@@ -2,6 +2,7 @@
 public partial class World : Node2D
 {
 	#nullable disable
+	public TileMapLayer ConvertedTileMapLayer;
 	public ProceduralGenerator ProceduralGenerator;
 	public Camera2D Camera;
 	public Player Player;
@@ -17,7 +18,8 @@ public partial class World : Node2D
 		Player.World = this;
 		CreaturesManager = GetNode<CreaturesManager>("%CreaturesManager");
 		CreaturesManager.World = this;
-		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), GetNode<TileMapLayer>("%ConvertedTileMapLayer"), GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
+		ConvertedTileMapLayer = GetNode<TileMapLayer>("%ConvertedTileMapLayer");
+		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), ConvertedTileMapLayer, GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
 		ProceduralGenerator.AddToQueue(Vector2I.Zero, false);
 		for (int i = 0; i < 4; i++) NextChunks(3);
 		for (int i = 0; i < 4; i++) NextChunks(5);
@@ -26,7 +28,7 @@ public partial class World : Node2D
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
 	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
-	const int TILE_SIZE = 64;
+	public const int TILE_SIZE = 64;
 	
 	void NextChunks() => NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
 	void NextChunks(int chunks)
@@ -44,6 +46,14 @@ public partial class World : Node2D
 		}
 		ProceduralGenerator.AddToQueue(position, false);
 	}
+
+	public bool InteriorTile(Vector2I tile)
+	{
+        return ProceduralGenerator.Model.ConvertedTiles.Convert(tile) switch {
+            3 | 4 | 7 | 8 => false,
+            _ => true,
+        };
+    }
 
 	public override void _Input(InputEvent @event)
     {

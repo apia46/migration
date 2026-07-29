@@ -20,8 +20,7 @@ public partial class ProceduralGenerator : Node
 	TileMapLayer PatternLayer;
 	TileMapLayer ConvertedLayer;
 	
-	// MUTEXED
-	Model Model;
+	public Model Model;
 	// MUTEXED
 	TileCache PatternTiles;
 	// MUTEXED

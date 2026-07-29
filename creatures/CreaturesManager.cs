@@ -16,8 +16,8 @@ public partial class CreaturesManager : Node
 		creature.World = World;
         T.Creatures[T.IdIterator] = creature;
         creature.Id = T.IdIterator++;
+        creature.Position = position;
 		World.AddChild(creature);
-		creature.Position = position;
 	}
 
 	public static void RemoveCreature<T>(T creature) where T : Node2D, ICreature<T>

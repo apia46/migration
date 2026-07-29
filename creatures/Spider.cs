@@ -23,17 +23,16 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	Node2D Visuals;
 	Node2D TargetsNode;
 	Node2D[] Targets;
-	bool[] LegMoving = new bool[6];
 	#nullable enable
-
+	readonly bool[] LegMoving = new bool[6];
+	
 	Rid MainDraw;
 
 	public enum AIState {Idle, Wander, Chase, Evade};
 	AIState State = AIState.Idle;
 	double BoredomTimer;
-	double WanderTimer;
-	Vector2 WanderDirection;
-	Vector2 ChaseTarget;
+	Vector2 PathfindingTarget;
+
     public override void _Ready()
     {
 		MainDraw = GetCanvasItem();
@@ -44,6 +43,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 		TargetsNode = GetNode<Node2D>("%Targets");
 		Targets = [..TargetsNode.GetChildren().Select(c=>(Node2D)c)];
 		SetState(AIState.Idle);
+		ResetTargets();
     }
 
 	void SetState(AIState to)
@@ -52,10 +52,15 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer = Game.RNG.Range(5.0, 20.0);
+				ResetTargets();
 			} break;
 			case AIState.Wander: {
-				WanderDirection = new Vector2(1, 0).Rotated(Game.RNG.Range(0, TAU));
-				WanderTimer = Game.RNG.Range(2.0, 4.0);
+				Vector2 wanderLocation;
+				do {
+					wanderLocation = new Vector2(Game.RNG.Range(-800,800), Game.RNG.Range(-800,800)) + GlobalPosition;
+				} while(!World.InteriorTile(World.ConvertedTileMapLayer.GetCellAtlasCoords((Vector2I)(wanderLocation/World.TILE_SIZE))));
+				NavigationAgent.TargetPosition = wanderLocation;
+				UpdatePathfinding(true);
 			} break;
 			case AIState.Chase: {
 				BoredomTimer = Game.RNG.Range(15.0, 20.0);
@@ -65,17 +70,21 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 		}
 	}
 
-	float Chaseness() => 100000/(World.Player.Position - Position).LengthSquared();
+	float Chaseness() => 0;//100000/(World.Player.Position - Position).LengthSquared();
 
-	void UpdatePathfinding()
+	void UpdatePathfinding(bool reset=false)
 	{
 		switch (State) {
+			case AIState.Wander: {
+				if (NavigationAgent.IsNavigationFinished()) SetState(AIState.Idle);
+				else if (reset || GlobalPosition.DistanceSquaredTo(PathfindingTarget) < 400) PathfindingTarget = NavigationAgent.GetNextPathPosition();
+			} break;
 			case AIState.Chase: {
 				if (NavigationAgent.TargetPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 1000) {
 					NavigationAgent.TargetPosition = World.Player.GlobalPosition;
-					ChaseTarget = NavigationAgent.GetNextPathPosition();
+					PathfindingTarget = NavigationAgent.GetNextPathPosition();
 				} else if (NavigationAgent.IsNavigationFinished()) SetState(AIState.Idle);
-				else if (GlobalPosition.DistanceSquaredTo(ChaseTarget) < 400) ChaseTarget = NavigationAgent.GetNextPathPosition();
+				else if (GlobalPosition.DistanceSquaredTo(PathfindingTarget) < 400) PathfindingTarget = NavigationAgent.GetNextPathPosition();
 			} break;
 		}
 	}
@@ -91,36 +100,35 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 				else if (Chaseness() > 8) SetState(AIState.Chase);
 			} break;
 			case AIState.Wander: {
-				WanderTimer -= delta;
-				intendedDirection = WanderDirection;
+				UpdatePathfinding();
+				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
 				speed = 30;
-				if (WanderTimer <= 0) SetState(AIState.Idle);
-				else if (Chaseness() > 12) SetState(AIState.Chase);
+				if (Chaseness() > 12) SetState(AIState.Chase);
 			} break;
 			case AIState.Chase: {
 				BoredomTimer -= delta;
 				UpdatePathfinding();
-				intendedDirection = GlobalPosition.DirectionTo(ChaseTarget);
+				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
 				speed = SPEED;
 				if (BoredomTimer <= 0) SetState(AIState.Idle);
 			} break;
 			case AIState.Evade: {} break;
 		}
 		Velocity = intendedDirection * speed;
-		Visuals.Rotation = Velocity.Angle();
+		if (Velocity != Vector2.Zero) Visuals.Rotation = Velocity.Angle();
 		// DebugDrawer.AddText(new Vector2(30,30), Chaseness().ToString(), Colors.White);
 		// DebugDrawer.AddText(new Vector2(30,50), BoredomTimer.ToString(), Colors.White);
 		MoveAndSlide();
 		TargetsNode.Position = -Position;
 		for (int i = 0; i < 6; i++)
 		{
-			Vector2 restPosition = Vector2.Right.Rotated(Visuals.Rotation+TAU*(i+0.5f)/6) * 30 + Velocity * 0.1f;
+			Vector2 restPosition = TargetRestPosition(i, intendedDirection);
 			restPosition = restPosition.LimitLength(LEG_LENGTH) + Position;
 			Node2D target = Targets[i];
-			// DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, 1, 0.5f));
-			// DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, 1, 1));
+			DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
+			DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, 1, 1));
 			if (LegMoving[i]) {
-				target.Position = target.Position.MoveToward(restPosition, SPEED * 3f * (float)delta);
+				target.Position = target.Position.MoveToward(restPosition, speed * 3f * (float)delta);
 				if (target.Position.DistanceSquaredTo(restPosition) < 50) {
 					target.Position = restPosition;
 					LegMoving[i] = false;
@@ -128,6 +136,18 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 			} else if (target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 0.7 && !LegMoving[(i+5) % 6] && !LegMoving[(i+1) % 6]) LegMoving[i] = true;
 		}
 		DebugDrawer.Evaluate();
+	}
+
+	Vector2 TargetRestPosition(int target, Vector2 intendedDirection) => Vector2.Right.Rotated(Visuals.Rotation+TAU*(target+0.5f)/6) * 30 + intendedDirection * 15f;
+
+	void ResetTargets()
+	{
+		TargetsNode.Position = -Position;
+		for (int i = 0; i < 6; i++)
+		{
+			Node2D target = Targets[i];
+			target.Position = TargetRestPosition(i, Vector2.Zero).LimitLength(LEG_LENGTH) + Position;
+		}
 	}
 
     public override void _Process(double delta)

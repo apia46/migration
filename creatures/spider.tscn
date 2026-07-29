@@ -14,7 +14,7 @@ joint_data/0/bone_index = 1
 joint_data/0/bone2d_node = NodePath("Center/Leg1A")
 joint_data/0/rotate_from_joint = false
 joint_data/0/enable_constraint = true
-joint_data/0/constraint_angle_min = 299.99997
+joint_data/0/constraint_angle_min = 299.99994
 joint_data/0/constraint_angle_max = 360.0
 joint_data/0/constraint_angle_invert = false
 joint_data/0/constraint_in_localspace = true
@@ -23,8 +23,8 @@ joint_data/1/bone_index = 2
 joint_data/1/bone2d_node = NodePath("Center/Leg1A/Leg1B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = 209.99998
-joint_data/1/constraint_angle_max = 329.99997
+joint_data/1/constraint_angle_min = 209.99997
+joint_data/1/constraint_angle_max = 329.99994
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -60,7 +60,7 @@ joint_data/0/bone_index = 5
 joint_data/0/bone2d_node = NodePath("Center/Leg3A")
 joint_data/0/rotate_from_joint = false
 joint_data/0/enable_constraint = true
-joint_data/0/constraint_angle_min = -299.99997
+joint_data/0/constraint_angle_min = -299.99994
 joint_data/0/constraint_angle_max = 270.0
 joint_data/0/constraint_angle_invert = true
 joint_data/0/constraint_in_localspace = true
@@ -69,8 +69,8 @@ joint_data/1/bone_index = 6
 joint_data/1/bone2d_node = NodePath("Center/Leg3A/Leg3B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = 209.99997
-joint_data/1/constraint_angle_max = 329.99997
+joint_data/1/constraint_angle_min = 209.99995
+joint_data/1/constraint_angle_max = 329.99994
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -93,7 +93,7 @@ joint_data/1/bone2d_node = NodePath("Center/Leg4A/Leg4B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
 joint_data/1/constraint_angle_min = 30.0
-joint_data/1/constraint_angle_max = 149.99997
+joint_data/1/constraint_angle_max = 149.99995
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -115,8 +115,8 @@ joint_data/1/bone_index = 10
 joint_data/1/bone2d_node = NodePath("Center/Leg5A/Leg5B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = -299.99997
-joint_data/1/constraint_angle_max = 299.99997
+joint_data/1/constraint_angle_min = -299.99994
+joint_data/1/constraint_angle_max = 299.99994
 joint_data/1/constraint_angle_invert = false
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -129,7 +129,7 @@ joint_data/0/bone_index = 11
 joint_data/0/bone2d_node = NodePath("Center/Leg6A")
 joint_data/0/rotate_from_joint = false
 joint_data/0/enable_constraint = true
-joint_data/0/constraint_angle_min = 149.99998
+joint_data/0/constraint_angle_min = 149.99997
 joint_data/0/constraint_angle_max = 90.0
 joint_data/0/constraint_angle_invert = false
 joint_data/0/constraint_in_localspace = true
@@ -138,13 +138,14 @@ joint_data/1/bone_index = 12
 joint_data/1/bone2d_node = NodePath("Center/Leg6A/Leg6B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = -299.99997
-joint_data/1/constraint_angle_max = 299.99997
+joint_data/1/constraint_angle_min = -299.99994
+joint_data/1/constraint_angle_max = 299.99994
 joint_data/1/constraint_angle_invert = false
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
 
 [sub_resource type="SkeletonModificationStack2D" id="SkeletonModificationStack2D_w7rda"]
+resource_local_to_scene = true
 enabled = true
 modification_count = 6
 modifications/0 = SubResource("SkeletonModification2DCCDIK_di4mj")
@@ -163,13 +164,9 @@ metadata/_custom_type_script = "uid://dn2jwtgh6nc4a"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2018723189]
 shape = SubResource("CircleShape2D_4r7lk")
 
-[node name="DebugDrawer" type="Node2D" parent="." unique_id=1351671375]
-unique_name_in_owner = true
-script = ExtResource("2_di4mj")
-metadata/_custom_type_script = "uid://dstfir57scngn"
-
 [node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=816966064]
 unique_name_in_owner = true
+debug_enabled = true
 
 [node name="Visuals" type="Node2D" parent="." unique_id=1415946010]
 unique_name_in_owner = true
@@ -186,8 +183,23 @@ width = 4.0
 default_color = Color(0, 0.22745098, 0.12156863, 1)
 joint_mode = 1
 
+[node name="Line2D2" type="Line2D" parent="Visuals" unique_id=2001118023]
+points = PackedVector2Array(-6, 6, -6, -6)
+width = 4.0
+default_color = Color(0, 0.22745098, 0.12156863, 1)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Line2D3" type="Line2D" parent="Visuals" unique_id=1371601242]
+points = PackedVector2Array(2, 3, 2, -3)
+width = 4.0
+default_color = Color(0, 0.22745098, 0.12156863, 1)
+begin_cap_mode = 2
+end_cap_mode = 2
+
 [node name="Skeleton" type="Skeleton2D" parent="Visuals" unique_id=50322439]
 unique_name_in_owner = true
+visible = false
 modification_stack = SubResource("SkeletonModificationStack2D_w7rda")
 
 [node name="Center" type="Bone2D" parent="Visuals/Skeleton" unique_id=1083692271]
@@ -284,7 +296,7 @@ metadata/_local_pose_override_enabled_ = true
 position = Vector2(16, 0)
 
 [node name="Leg6A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=1919426707]
-rotation = -0.00028042856
+rotation = -0.0002804286
 scale = Vector2(0.9998274, 0.9998274)
 rest = Transform2D(0.9999999, -1.813046e-05, 1.813046e-05, 0.9999999, -8.999999, -5.9999995)
 metadata/_local_pose_override_enabled_ = true
@@ -321,3 +333,8 @@ position = Vector2(5, -44)
 
 [node name="Leg6" type="Node2D" parent="Targets" unique_id=161093391]
 position = Vector2(39, -24)
+
+[node name="DebugDrawer" type="Node2D" parent="." unique_id=1351671375]
+unique_name_in_owner = true
+script = ExtResource("2_di4mj")
+metadata/_custom_type_script = "uid://dstfir57scngn"
