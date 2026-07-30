@@ -63,14 +63,17 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 				UpdatePathfinding(true);
 			} break;
 			case AIState.Chase: {
-				BoredomTimer = Game.RNG.Range(15.0, 20.0);
+				BoredomTimer = 0;
 				UpdatePathfinding();
 			} break;
 			case AIState.Evade: {} break;
 		}
 	}
 
-	float Chaseness() => 0;//100000/(World.Player.Position - Position).LengthSquared();
+	float Chaseness() {
+		float dist = World.Player.Position.DistanceSquaredTo(Position);
+		return Math.Min(10, 1e6f/dist) + (State == AIState.Chase ? (10+Math.Max(0,dist/5000-dist*dist/2e9f)-(float)BoredomTimer) : 0);
+	}
 
 	void UpdatePathfinding(bool reset=false)
 	{
@@ -93,30 +96,31 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	{
 		Vector2 intendedDirection = Vector2.Zero;
 		float speed = 0;
+		float chaseness = Chaseness();
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer -= delta;
 				if (BoredomTimer <= 0) SetState(AIState.Wander);
-				else if (Chaseness() > 8) SetState(AIState.Chase);
+				else if (chaseness > 8) SetState(AIState.Chase);
 			} break;
 			case AIState.Wander: {
 				UpdatePathfinding();
 				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
 				speed = 30;
-				if (Chaseness() > 12) SetState(AIState.Chase);
+				if (chaseness > 12) SetState(AIState.Chase);
 			} break;
 			case AIState.Chase: {
-				BoredomTimer -= delta;
+				BoredomTimer += delta;
 				UpdatePathfinding();
 				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
-				speed = SPEED;
-				if (BoredomTimer <= 0) SetState(AIState.Idle);
+				speed = SPEED*(0.75f+chaseness*0.0125f);
+				if (chaseness <= 0) SetState(AIState.Idle);
 			} break;
 			case AIState.Evade: {} break;
 		}
 		Velocity = intendedDirection * speed;
 		if (Velocity != Vector2.Zero) Visuals.Rotation = Velocity.Angle();
-		// DebugDrawer.AddText(new Vector2(30,30), Chaseness().ToString(), Colors.White);
+		DebugDrawer.AddText(new Vector2(30,30), Chaseness().ToString(), Colors.White);
 		// DebugDrawer.AddText(new Vector2(30,50), BoredomTimer.ToString(), Colors.White);
 		MoveAndSlide();
 		TargetsNode.Position = -Position;
@@ -125,8 +129,8 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 			Vector2 restPosition = TargetRestPosition(i, intendedDirection);
 			restPosition = restPosition.LimitLength(LEG_LENGTH) + Position;
 			Node2D target = Targets[i];
-			DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
-			DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, 1, 1));
+			// DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
+			// DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, 1, 1));
 			if (LegMoving[i]) {
 				target.Position = target.Position.MoveToward(restPosition, speed * 3f * (float)delta);
 				if (target.Position.DistanceSquaredTo(restPosition) < 50) {
