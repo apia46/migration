@@ -72,7 +72,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 
 	float Chaseness() {
 		float dist = World.Player.Position.DistanceSquaredTo(Position);
-		return Math.Min(10, 1e6f/dist) + (State == AIState.Chase ? (10+Math.Max(0,dist/5000-dist*dist/2e9f)-(float)BoredomTimer) : 0);
+		return State == AIState.Chase ? (Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer) : 1e5f/dist;
 	}
 
 	void UpdatePathfinding(bool reset=false)
@@ -107,7 +107,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 				UpdatePathfinding();
 				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
 				speed = 30;
-				if (chaseness > 12) SetState(AIState.Chase);
+				if (chaseness >= 12) SetState(AIState.Chase);
 			} break;
 			case AIState.Chase: {
 				BoredomTimer += delta;

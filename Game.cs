@@ -10,6 +10,7 @@ public partial class Game : Control
 	SubViewportContainer GameViewportContainer;
 	ShaderMaterial GameViewportShader;
 	#nullable enable
+	public static Vector2 ScreenSize = new Vector2(400, 400);
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -28,7 +29,8 @@ public partial class Game : Control
 		MinimapCamera.Position = World.Player.Position;
 		HungerBar.Value = World.Player.Hunger;
 		GetNode<Label>("%Label2").Text = World.Player.Stillness.ToString();
-		GameViewportShader.SetShaderParameter("ScreenSize", GameViewportContainer.Size);
+		ScreenSize = GameViewportContainer.Size;
+		GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);
 		GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
 	}
 }

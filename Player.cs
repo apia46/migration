@@ -84,7 +84,8 @@ public partial class Player : CharacterBody2D
 
         CameraPosition += (Position - CameraPosition) * Math.Min(CameraSpeed * (float)delta, 1f);
         CameraSpeed += (10f - CameraSpeed) * Math.Min((float)delta * 10, 1f);
-		World.Camera.Position = CameraPosition.Floor();
+        Vector2 cameraOffset = (World.GetLocalMousePosition() - CameraPosition)/Game.ScreenSize * 100f;
+		World.Camera.Position = CameraPosition.Floor() + cameraOffset;
     }
 
     public override void _Input(InputEvent @event)
