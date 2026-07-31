@@ -9,6 +9,7 @@ public partial class Game : Control
 	ProgressBar HungerBar;
 	SubViewportContainer GameViewportContainer;
 	ShaderMaterial GameViewportShader;
+	Label HeightLabel;
 	#nullable enable
 	public static Vector2 ScreenSize = new Vector2(400, 400);
 
@@ -20,6 +21,7 @@ public partial class Game : Control
 		HungerBar = GetNode<ProgressBar>("%HungerBar");
 		GetNode<SubViewport>("%SubViewport").World2D = World.GetWorld2D();
 		GameViewportContainer = GetNode<SubViewportContainer>("%GameViewportContainer");
+		HeightLabel = GetNode<Label>("%HeightLabel");
 		GameViewportShader = (ShaderMaterial)GameViewportContainer.Material;
 	}
 
@@ -28,7 +30,7 @@ public partial class Game : Control
 	{
 		MinimapCamera.Position = World.Player.Position;
 		HungerBar.Value = World.Player.Hunger;
-		GetNode<Label>("%Label2").Text = World.Player.Stillness.ToString();
+		HeightLabel.Text = ((int)(World.Player.Position.Y/-World.TILE_SIZE)).ToString() + "m";
 		ScreenSize = GameViewportContainer.Size;
 		GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);
 		GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);

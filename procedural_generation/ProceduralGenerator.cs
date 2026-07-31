@@ -1,7 +1,7 @@
 [GlobalClass]
 public partial class ProceduralGenerator : Node
 {
-	readonly Rect2I STARTING_AREA = new(new(-7, -4), new(8, 4));
+	readonly Rect2I STARTING_AREA = new(new(-7, -7), new(8, 1));
 	public const int CHUNK_SIZE = 8;
 	const double INVERSE_TEMPERATURE = 0.25;
 	const int EXPAND_RADIUS = 1;
