@@ -9,17 +9,17 @@ public partial class CreaturesManager : Node
 
     public const int CREATURED_CHUNKS_AROUND_PLAYER = 4;
 
-    public void StartingArea()
+    public static void StartingArea()
     {
         for (int x = -CREATURED_CHUNKS_AROUND_PLAYER; x <= CREATURED_CHUNKS_AROUND_PLAYER; x++)
 		for (int y = -CREATURED_CHUNKS_AROUND_PLAYER; y <= CREATURED_CHUNKS_AROUND_PLAYER; y++)
 			SpawnCreatures(new(x,y));
     }
 
-    public void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+    public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
 	{
         Vector2I direction = to - from;
-        Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
+        static Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
 
 		for (int h = -CREATURED_CHUNKS_AROUND_PLAYER; h <= CREATURED_CHUNKS_AROUND_PLAYER; h++) {
             DespawnCreatures(to + direction * -CREATURED_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
@@ -35,7 +35,6 @@ public partial class CreaturesManager : Node
     public static void SpawnCreature<T>(Vector2 position) where T : Node2D, ICreature<T>
 	{
 		T creature = T.Scene.Instantiate<T>();
-		creature.World = World;
         T.Creatures[T.IdIterator] = creature;
         creature.Id = T.IdIterator++;
         creature.Position = position;
@@ -74,7 +73,7 @@ public partial class CreaturesManager : Node
             if (!creature.FloodFilled && TouchingSurface(creature)) FloodFill(creature);
 	}
 
-    void SpawnCreatures(Vector2I chunk)
+    static void SpawnCreatures(Vector2I chunk)
     {
         for (int i = 0; i < 2; i++)
         {
@@ -88,7 +87,7 @@ public partial class CreaturesManager : Node
         }
     }
 
-    void DespawnCreatures(Vector2I chunk)
+    static void DespawnCreatures(Vector2I chunk)
     {
         void DespawnType<T>() where T : Node2D, ICreature<T> {
             foreach (T creature in T.Creatures.Values)
@@ -105,5 +104,6 @@ public interface ICreature<T> where T:ICreature<T>
     public static abstract Dictionary<int, T> Creatures {get; set;}
     public static abstract int IdIterator {get; set;}
     public int Id {get; set;}
-    public World World {get; set;}
+
+    public abstract float CollisionRadius {get; set;}
 }

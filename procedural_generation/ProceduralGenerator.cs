@@ -14,7 +14,6 @@ public partial class ProceduralGenerator : Node
 	readonly Mutex Mutex = new();
 
 	#nullable disable
-	public World World;
 
 	TileMapLayer PatternLayer;
 	TileMapLayer ConvertedLayer;

@@ -1,11 +1,7 @@
 [GlobalClass]
 public partial class Spider : CharacterBody2D, ICreature<Spider>
 {
-
-	#nullable disable
 	public int Id { get; set; }
-    public World World { get; set; }
-	#nullable enable
 
 	const float LEG_LENGTH = 34;
 	const float SPEED = 240;
@@ -15,6 +11,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
     public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("creatures/spider.tscn");
     public static Dictionary<int, Spider> Creatures { get; set; } = [];
     public static int IdIterator { get; set; }
+	public float CollisionRadius { get; set; } = 16;
 
 	#nullable disable
 	DebugDrawer DebugDrawer;

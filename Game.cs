@@ -4,7 +4,7 @@ public partial class Game : Control
 	
 	public const float GRAVITY = 1000.0f;
 	#nullable disable
-	World World;
+	public static World World;
 	Camera2D MinimapCamera;
 	ProgressBar HungerBar;
 	SubViewportContainer GameViewportContainer;

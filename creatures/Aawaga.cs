@@ -3,15 +3,13 @@ using System.Text.RegularExpressions;
 [GlobalClass]
 public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 {
-	#nullable disable
 	public int Id { get; set; }
-    public World World { get; set; }
-	#nullable enable
 
     public bool Grabbed { get; set; }
     public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("creatures/aawaga.tscn");
     public static Dictionary<int, Aawaga> Creatures { get; set; } = [];
     public static int IdIterator { get; set; }
+	public float CollisionRadius { get; set; }
 
 	#nullable disable
 	Node2D Visuals;
@@ -36,6 +34,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
     public override void _Ready()
 	{
 		Size = Game.RNG.Range(0.8f, 1.2f);
+		CollisionRadius = Size * 10f;
 		Visuals = GetNode<Node2D>("%Visuals");
 		DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
 		Visuals.Scale *= Size;

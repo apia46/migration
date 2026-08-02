@@ -93,10 +93,10 @@ public partial class Player : CharacterBody2D
 
         Vector2I nextChunk = World.PositionToChunk(Position);
         if (CurrentChunk != nextChunk) {
-            World.CreaturesManager.PlayerCrossedChunkBoundary(nextChunk, CurrentChunk);
+            CreaturesManager.PlayerCrossedChunkBoundary(nextChunk, CurrentChunk);
             CurrentChunk = nextChunk;
-            DebugDrawer.AddText(new Vector2(40, 0), nextChunk.ToString(), Colors.White);
-            DebugDrawer.Evaluate();
+            // DebugDrawer.AddText(new Vector2(40, 0), nextChunk.ToString(), Colors.White);
+            // DebugDrawer.Evaluate();
         }
     }
 
