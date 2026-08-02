@@ -2,20 +2,19 @@
 public partial class ProceduralGenerator : Node
 {
 	readonly Rect2I STARTING_AREA = new(new(-7, -7), new(8, 1));
-	public const int CHUNK_SIZE = 8;
+	public const int PATTERN_CHUNK_SIZE = 8;
+	public const int CONVERTED_CHUNK_SIZE = 16;
 	const double INVERSE_TEMPERATURE = 0.25;
 	const int EXPAND_RADIUS = 1;
 	public const int SIZE_THRESHOLD = 12;
 
-	[Signal]
-	public delegate void QueueEmptyEventHandler();
 
 	readonly GameRandom RNG = new();
 	readonly GodotThread Thread = new();
 	readonly Mutex Mutex = new();
 
 	#nullable disable
-	public World world;
+	public World World;
 
 	TileMapLayer PatternLayer;
 	TileMapLayer ConvertedLayer;
@@ -30,6 +29,42 @@ public partial class ProceduralGenerator : Node
 	// MUTEXED
 	readonly Stack<Task> Queue = [];
 
+	bool CleanPass = false;
+	bool InitialGenFinished = false;
+
+	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
+	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
+
+	public void StartingArea()
+	{
+		Mutex.Lock();
+		Queue.Push(new(Vector2I.Zero, false, true));
+		for (int i = 0; i < 4; i++) NextChunks(3);
+		for (int i = 0; i < 4; i++) NextChunks(5);
+		Mutex.Unlock();
+	}
+	
+	void NextChunks(int chunks)
+	{
+		if ((!InitialGenFinished) && CleanPass) {
+			InitialGenFinished = true;
+			World.InitialProcGenFinished();
+		}
+		void AddToQueue(Vector2I position, bool clearBefore) => Queue.Push(new(position, clearBefore, true));
+
+		Vector2I position = (Vector2I)(World.Player.Position / PATTERN_CHUNK_SIZE / World.PATTERN_TILE_SIZE).Round();
+		for (int layer = chunks; layer > 0; layer--) {
+			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
+			for (int x = 0; x < layer*2; x++) {
+				AddToQueue(position + new Vector2I(layer,layer-x), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
+				AddToQueue(position + new Vector2I(layer-x,-layer), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
+				AddToQueue(position + new Vector2I(-layer,x-layer), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
+				AddToQueue(position + new Vector2I(x-layer,layer), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
+			}
+		}
+		AddToQueue(position, false);
+	}
+
 	public void SetContext(TileMapLayer patternLayer, TileMapLayer convertedLayer, Model model)
 	{
 		PatternLayer = patternLayer;
@@ -37,44 +72,38 @@ public partial class ProceduralGenerator : Node
 		Model = model;
 	}
 
-	public void AddToQueue(Vector2I position, bool clearBefore)
-	{
-		Mutex.Lock();
-		Queue.Push(new(position, clearBefore, true));
-		Mutex.Unlock();
-	}
-
     public override void _Process(double delta)
 	{
 		int runs = 0;
 		while (runs++ < 30 && !Thread.IsAlive()) {
 			Mutex.Lock();
-			if (Queue.Count == 0) EmitSignalQueueEmpty();
-			else {
-				if (Thread.IsStarted()) {
-					if ((bool)Thread.WaitToFinish()) {
-						ConvertedTiles.WriteTileMap();
-						PatternTiles.WriteTileMap();
-					}
-				}
-				Task task = Queue.Peek();
-				if (task.IsNew() && task.ClearBefore)
-					for (int x = task.Rect.Position.X; x < task.Rect.End.X; x++)
-						for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
-							if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
-				Rect2I rect = task.Next();
-				if (task.IsEmpty()) Queue.Pop();
-				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
-				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
-				if (!PatternTiles.AnyEmpty()) {Mutex.Unlock(); continue;}
-				ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
-				Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
+			if (Queue.Count == 0) {
+				CleanPass = true;
+				NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
 			}
+			if (Thread.IsStarted()) {
+				if ((bool)Thread.WaitToFinish()) {
+					ConvertedTiles.WriteTileMap();
+					PatternTiles.WriteTileMap();
+				} else CleanPass = false;
+			}
+			Task task = Queue.Peek();
+			if (task.IsNew() && task.ClearBefore)
+				for (int x = task.Rect.Position.X; x < task.Rect.End.X; x++)
+					for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
+						if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
+			Rect2I rect = task.Next();
+			if (task.IsEmpty()) Queue.Pop();
+			Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
+			PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
+			if (!PatternTiles.AnyEmpty()) {Mutex.Unlock(); continue;}
+			ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
+			Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
 			Mutex.Unlock();
 		}
     }
 
-	// returns if successful
+	// returns true if successful
 	bool Generate(Rect2I rect, bool canRetry)
 	{
 		Mutex.Lock();
@@ -82,8 +111,8 @@ public partial class ProceduralGenerator : Node
 		while (TryGenerate(rect)) {
 			tries++;
 			for (int x = rect.Position.X; x < rect.End.X; x++)
-				for (int y = rect.Position.Y; y < rect.End.Y; y++)
-					if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
+			for (int y = rect.Position.Y; y < rect.End.Y; y++)
+				if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
 			if (tries > 3) {
 				if (canRetry) {
 					Task retry = new(new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
@@ -108,17 +137,17 @@ public partial class ProceduralGenerator : Node
 		int tilesCompleted = 0;
 
 		for (int x = 0; x < patternsRectSize.X; x++)
-			for (int y = 0; y < patternsRectSize.Y; y++)
-				patterns[Fold(x,y,patternsRectSize)] = Model.MatchPatterns(GetTiles(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize));
+		for (int y = 0; y < patternsRectSize.Y; y++)
+			patterns[Fold(x,y,patternsRectSize)] = Model.MatchPatterns(GetTiles(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize));
 		for (int x = 0; x < rect.Size.X; x++)
-			for (int y = 0; y < rect.Size.Y; y++) {
-				Vector2I position = new(x,y);
-				if (PatternTiles.GetTile(position+rect.Position) != -1) {
-					entropies[Fold(x,y,rect.Size)] = -1;
-					tilesCompleted++;
-				}
-				else entropies[Fold(x,y,rect.Size)] = GetEntropy(GetNearbyPatterns(position, patterns, patternsRectSize));
+		for (int y = 0; y < rect.Size.Y; y++) {
+			Vector2I position = new(x,y);
+			if (PatternTiles.GetTile(position+rect.Position) != -1) {
+				entropies[Fold(x,y,rect.Size)] = -1;
+				tilesCompleted++;
 			}
+			else entropies[Fold(x,y,rect.Size)] = GetEntropy(GetNearbyPatterns(position, patterns, patternsRectSize));
+		}
 		// loop
 		while (tilesCompleted < rect.Area) {
 			Vector2I collapsePosition = GetLowestEntropy(rect, entropies);
@@ -127,33 +156,33 @@ public partial class ProceduralGenerator : Node
 				PatternTiles.SetTile(collapsePosition + rect.Position, tile);
 				entropies[Fold(collapsePosition,rect.Size)] = -1;
 				for (int px = 0; px < Model.PatternSize.X; px++)
-					for (int py = 0; py < Model.PatternSize.Y; py++) {
-						Vector2I updatePatternPosition = collapsePosition + new Vector2I(px,py);
-						patterns[Fold(updatePatternPosition,patternsRectSize)] = Model.MatchPatterns(
-							GetTiles(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
-							patterns[Fold(updatePatternPosition,patternsRectSize)]
-						);
-					}
+				for (int py = 0; py < Model.PatternSize.Y; py++) {
+					Vector2I updatePatternPosition = collapsePosition + new Vector2I(px,py);
+					patterns[Fold(updatePatternPosition,patternsRectSize)] = Model.MatchPatterns(
+						GetTiles(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
+						patterns[Fold(updatePatternPosition,patternsRectSize)]
+					);
+				}
 				for (int px = 1-Model.PatternSize.X; px < Model.PatternSize.X; px++)
-					for (int py = 1-Model.PatternSize.Y; py < Model.PatternSize.Y; py++) {
-						Vector2I updateEntropyPosition = collapsePosition + new Vector2I(px,py);
-						if (!rect.HasPoint(rect.Position + updateEntropyPosition)) continue;
-						if (entropies[Fold(updateEntropyPosition,rect.Size)] == -1) continue;
-						entropies[Fold(updateEntropyPosition,rect.Size)] = GetEntropy(GetNearbyPatterns(updateEntropyPosition, patterns, patternsRectSize));
-					}
+				for (int py = 1-Model.PatternSize.Y; py < Model.PatternSize.Y; py++) {
+					Vector2I updateEntropyPosition = collapsePosition + new Vector2I(px,py);
+					if (!rect.HasPoint(rect.Position + updateEntropyPosition)) continue;
+					if (entropies[Fold(updateEntropyPosition,rect.Size)] == -1) continue;
+					entropies[Fold(updateEntropyPosition,rect.Size)] = GetEntropy(GetNearbyPatterns(updateEntropyPosition, patterns, patternsRectSize));
+				}
 			} else return true;
 		}
 		for (int x = -1; x < rect.Size.X+1; x++)
-			for (int y = -1; y < rect.Size.Y+1; y++) {
-				Vector2I position = new(x,y);
-				List<Pattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
-				Pattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
-				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
-					for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
-						ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
-						ConvertedTiles.SetTileRotation((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.ConversionRotation[Fold(cx,cy,Model.ConversionScale)]);
-					}
+		for (int y = -1; y < rect.Size.Y+1; y++) {
+			Vector2I position = new(x,y);
+			List<Pattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
+			Pattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
+			for (int cx = 0; cx < Model.ConversionScale.X; cx++)
+			for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
+				ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
+				ConvertedTiles.SetTileRotation((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.ConversionRotation[Fold(cx,cy,Model.ConversionScale)]);
 			}
+		}
 		return false;
 	}
 
@@ -161,10 +190,10 @@ public partial class ProceduralGenerator : Node
 	{
 		List<Pattern>[] result = new List<Pattern>[Model.PatternSize.X*Model.PatternSize.Y];
 		for (int x = 0; x < Model.PatternSize.X; x++)
-			for (int y = 0; y < Model.PatternSize.Y; y++) {
-				Vector2I position = relativePosition + new Vector2I(x,y);
-				result[Fold(x,y,Model.PatternSize)] = patterns[Fold(position,patternsRectSize)];
-			}
+		for (int y = 0; y < Model.PatternSize.Y; y++) {
+			Vector2I position = relativePosition + new Vector2I(x,y);
+			result[Fold(x,y,Model.PatternSize)] = patterns[Fold(position,patternsRectSize)];
+		}
 		return result;
 	}
 
@@ -173,13 +202,13 @@ public partial class ProceduralGenerator : Node
 		double lowest = -1;
 		Vector2I lowestPosition = Vector2I.One * -1;
 		for (int x = 0; x < rect.Size.X; x++)
-			for (int y = 0; y < rect.Size.Y; y++) {
-				double entropy = entropies[Fold(x,y,rect.Size)];
-				if (lowest == -1 || (entropy < lowest && entropy != -1)) {
-					lowest = entropy;
-					lowestPosition = new Vector2I(x,y);
-				}
+		for (int y = 0; y < rect.Size.Y; y++) {
+			double entropy = entropies[Fold(x,y,rect.Size)];
+			if (lowest == -1 || (entropy < lowest && entropy != -1)) {
+				lowest = entropy;
+				lowestPosition = new Vector2I(x,y);
 			}
+		}
 		System.Diagnostics.Debug.Assert(lowestPosition != Vector2I.One * -1);
 		return lowestPosition;
 	}
@@ -196,11 +225,11 @@ public partial class ProceduralGenerator : Node
 		double[] possibilities = new double[Model.PatternTiles.Count];
 		for (int i = 0; i < Model.PatternTiles.Count; i++) possibilities[i] = 1.0;
 		for (int x = 0; x < Model.PatternSize.X; x++)
-			for (int y = 0; y < Model.PatternSize.Y; y++) {
-				int[] tiles = CountTiles(patterns[Fold(x,y,Model.PatternSize)], Model.PatternSize - new Vector2I(x,y) - Vector2I.One);
-				for (int i = 0; i < Model.PatternTiles.Count; i++)
-					possibilities[i] *= tiles[i];
-			}
+		for (int y = 0; y < Model.PatternSize.Y; y++) {
+			int[] tiles = CountTiles(patterns[Fold(x,y,Model.PatternSize)], Model.PatternSize - new Vector2I(x,y) - Vector2I.One);
+			for (int i = 0; i < Model.PatternTiles.Count; i++)
+				possibilities[i] *= tiles[i];
+		}
 		for (int i = 0; i < Model.PatternTiles.Count; i++) possibilities[i] = Math.Pow(possibilities[i], INVERSE_TEMPERATURE);
 		return possibilities;
 	}
@@ -239,8 +268,8 @@ public partial class ProceduralGenerator : Node
 	{
 		int[] tiles = new int[size.X*size.Y];
 		for (int y = 0; y < size.Y; y++)
-			for (int x = 0; x < size.X; x++)
-				tiles[Fold(x,y,size)] = PatternTiles.GetTile(absolutePosition+new Vector2I(x,y));
+		for (int x = 0; x < size.X; x++)
+			tiles[Fold(x,y,size)] = PatternTiles.GetTile(absolutePosition+new Vector2I(x,y));
 		return tiles;
 	}
 }
@@ -253,13 +282,13 @@ class Task
 	readonly List<Rect2I> Subtasks;
 	int pointer = 0;
 
-	const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
+	const int PATTERN_CHUNK_SIZE = ProceduralGenerator.PATTERN_CHUNK_SIZE;
 
 	public Task(Vector2I position, bool clearBefore, bool canRetry)
 	{
 		ClearBefore = clearBefore;
 		CanRetry = canRetry;
-		Rect = new (position*CHUNK_SIZE, Vector2I.One * CHUNK_SIZE);
+		Rect = new (position*PATTERN_CHUNK_SIZE, Vector2I.One * PATTERN_CHUNK_SIZE);
 		Subtasks = [Rect];
 	}
 
@@ -306,8 +335,8 @@ class TileCache
 		TotalSize = new(Rect.Size.X+2*Margin.X, Rect.Size.Y+2*Margin.Y);
 		Tiles = new int[TotalSize.X*TotalSize.Y];
 		for (int x = 0; x < TotalSize.X; x++)
-			for (int y = 0; y < TotalSize.Y; y++)
-				Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
+		for (int y = 0; y < TotalSize.Y; y++)
+			Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
 	}
 
 	public bool AnyEmpty()
@@ -322,8 +351,8 @@ class TileCache
 	public virtual void WriteTileMap()
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
-			for (int y = 0; y < Rect.Size.Y; y++)
-				TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]));
+		for (int y = 0; y < Rect.Size.Y; y++)
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]));
 	}
 }
 
@@ -334,8 +363,8 @@ class RotateableTileCache : TileCache
 	{
 		TileRotations = new int[TotalSize.X*TotalSize.Y];
 		for (int x = 0; x < TotalSize.X; x++)
-			for (int y = 0; y < TotalSize.Y; y++)
-				TileRotations[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
+		for (int y = 0; y < TotalSize.Y; y++)
+			TileRotations[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
 	}
 
 	public int GetTileRotation(Vector2I absolutePosition) => TileRotations[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
@@ -344,7 +373,7 @@ class RotateableTileCache : TileCache
 	public override void WriteTileMap()
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
-			for (int y = 0; y < Rect.Size.Y; y++)
-				TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
+		for (int y = 0; y < Rect.Size.Y; y++)
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
 	}
 }

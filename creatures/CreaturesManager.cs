@@ -1,9 +1,31 @@
+using System.Text.RegularExpressions;
+
 [GlobalClass]
 public partial class CreaturesManager : Node
 {
     #nullable disable
     public static World World;
     #nullable enable
+
+    public const int CREATURED_CHUNKS_AROUND_PLAYER = 4;
+
+    public void StartingArea()
+    {
+        for (int x = -CREATURED_CHUNKS_AROUND_PLAYER; x <= CREATURED_CHUNKS_AROUND_PLAYER; x++)
+		for (int y = -CREATURED_CHUNKS_AROUND_PLAYER; y <= CREATURED_CHUNKS_AROUND_PLAYER; y++)
+			SpawnCreatures(new(x,y));
+    }
+
+    public void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+	{
+        Vector2I direction = to - from;
+        Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
+
+		for (int h = -CREATURED_CHUNKS_AROUND_PLAYER; h <= CREATURED_CHUNKS_AROUND_PLAYER; h++) {
+            DespawnCreatures(to + direction * -CREATURED_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
+            SpawnCreatures(to + direction * CREATURED_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
+        }
+	}
 
     public override void _PhysicsProcess(double delta)
     {
@@ -51,6 +73,30 @@ public partial class CreaturesManager : Node
         foreach (Aawaga creature in Aawaga.Creatures.Values)
             if (!creature.FloodFilled && TouchingSurface(creature)) FloodFill(creature);
 	}
+
+    void SpawnCreatures(Vector2I chunk)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
+            if (!World.InteriorTile(tile)) continue;
+            Vector2 position = tile * World.CONVERTED_TILE_SIZE + Vector2.One * World.CONVERTED_TILE_SIZE * 0.5f;
+            switch (Game.RNG.Range(0,3))  {
+                case < 2: SpawnCreature<Aawaga>(position); break;
+                default: SpawnCreature<Spider>(position); break;
+            };
+        }
+    }
+
+    void DespawnCreatures(Vector2I chunk)
+    {
+        void DespawnType<T>() where T : Node2D, ICreature<T> {
+            foreach (T creature in T.Creatures.Values)
+                if (World.PositionToChunk(creature.Position) == chunk) RemoveCreature(creature);
+        }
+        DespawnType<Aawaga>();
+        DespawnType<Spider>();
+    }
 }
 
 public interface ICreature<T> where T:ICreature<T>

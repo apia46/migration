@@ -9,6 +9,7 @@ public partial class Player : CharacterBody2D
     public World World;
     public Camera2D Camera;
     Area2D GrabArea;
+    DebugDrawer DebugDrawer;
     #nullable enable
 
     bool doubleJumpAvailable = false;
@@ -25,9 +26,12 @@ public partial class Player : CharacterBody2D
     Vector2 CameraPosition;
     float CameraSpeed = 10f;
 
+    Vector2I CurrentChunk = Vector2I.One * -1;
+
     public override void _Ready()
     {
         GrabArea = GetNode<Area2D>("%GrabArea");
+        DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
     }
 
     public override void _PhysicsProcess(double delta)
@@ -86,6 +90,14 @@ public partial class Player : CharacterBody2D
         CameraSpeed += (10f - CameraSpeed) * Math.Min((float)delta * 10, 1f);
         Vector2 cameraOffset = (World.GetLocalMousePosition() - CameraPosition)/Game.ScreenSize * 100f;
 		World.Camera.Position = CameraPosition.Floor() + cameraOffset;
+
+        Vector2I nextChunk = World.PositionToChunk(Position);
+        if (CurrentChunk != nextChunk) {
+            World.CreaturesManager.PlayerCrossedChunkBoundary(nextChunk, CurrentChunk);
+            CurrentChunk = nextChunk;
+            DebugDrawer.AddText(new Vector2(40, 0), nextChunk.ToString(), Colors.White);
+            DebugDrawer.Evaluate();
+        }
     }
 
     public override void _Input(InputEvent @event)

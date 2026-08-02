@@ -58,7 +58,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 				Vector2 wanderLocation;
 				do {
 					wanderLocation = new Vector2(Game.RNG.Range(-800,800), Game.RNG.Range(-800,800)) + GlobalPosition;
-				} while(!World.InteriorTile(World.ConvertedTileMapLayer.GetCellAtlasCoords((Vector2I)(wanderLocation/World.TILE_SIZE))));
+				} while(!World.InteriorTile((Vector2I)(wanderLocation/World.CONVERTED_TILE_SIZE)));
 				NavigationAgent.TargetPosition = wanderLocation;
 				UpdatePathfinding(true);
 			} break;
@@ -72,7 +72,8 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 
 	float Chaseness() {
 		float dist = World.Player.Position.DistanceSquaredTo(Position);
-		return State == AIState.Chase ? (Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer) : 1e5f/dist;
+		if (State == AIState.Chase) return Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer;
+		return 5e4f/dist;
 	}
 
 	void UpdatePathfinding(bool reset=false)

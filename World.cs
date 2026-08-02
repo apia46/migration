@@ -12,7 +12,7 @@ public partial class World : Node2D
 	public override void _Ready()
 	{
 		ProceduralGenerator = GetNode<ProceduralGenerator>("%ProceduralGenerator");
-		ProceduralGenerator.world = this;
+		ProceduralGenerator.World = this;
 		Camera = GetNode<Camera2D>("%Camera");
 		Player = GetNode<Player>("%Player");
 		Player.World = this;
@@ -20,37 +20,24 @@ public partial class World : Node2D
 		CreaturesManager.World = this;
 		ConvertedTileMapLayer = GetNode<TileMapLayer>("%ConvertedTileMapLayer");
 		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), ConvertedTileMapLayer, GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
-		ProceduralGenerator.AddToQueue(Vector2I.Zero, false);
-		for (int i = 0; i < 4; i++) NextChunks(3);
-		for (int i = 0; i < 4; i++) NextChunks(5);
-		ProceduralGenerator.QueueEmpty += NextChunks;
+		ProceduralGenerator.StartingArea();
 	}
 
-	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
-	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
-	public const int TILE_SIZE = 64;
-	
-	void NextChunks() => NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
-	void NextChunks(int chunks)
+	public static Vector2I PositionToChunk(Vector2 position) => (Vector2I)(position / PATTERN_TILE_SIZE / ProceduralGenerator.PATTERN_CHUNK_SIZE).Floor();
+
+	public void InitialProcGenFinished()
 	{
-		const int CHUNK_SIZE = ProceduralGenerator.CHUNK_SIZE;
-		Vector2I position = (Vector2I)(Player.Position / CHUNK_SIZE / TILE_SIZE).Round();
-		for (int layer = chunks; layer > 0; layer--) {
-			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
-			for (int x = 0; x < layer*2; x++) {
-				ProceduralGenerator.AddToQueue(position + new Vector2I(layer,layer-x), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
-				ProceduralGenerator.AddToQueue(position + new Vector2I(layer-x,-layer), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
-				ProceduralGenerator.AddToQueue(position + new Vector2I(-layer,x-layer), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
-				ProceduralGenerator.AddToQueue(position + new Vector2I(x-layer,layer), unstable && Game.RNG.NextDouble()*4 < Player.Stillness);
-			}
-		}
-		ProceduralGenerator.AddToQueue(position, false);
+		CreaturesManager.StartingArea();
 	}
+
+	public const int PATTERN_TILE_SIZE = 64;
+	public const int CONVERTED_TILE_SIZE = 32;
 
 	public bool InteriorTile(Vector2I tile)
 	{
-        return ProceduralGenerator.Model.ConvertedTiles.Convert(tile) switch {
-            3 | 4 | 7 | 8 => false,
+		Vector2I tileAtlas = ConvertedTileMapLayer.GetCellAtlasCoords(tile);
+        return ProceduralGenerator.Model.ConvertedTiles.Convert(tileAtlas) switch {
+            3 or 4 or 7 or 8 => false,
             _ => true,
         };
     }

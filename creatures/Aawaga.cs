@@ -129,13 +129,13 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 		if (SurfacesNormal.LengthSquared() > 0.01f && intendedDirection.Y < 0.2) ApplyCentralForce(-SurfacesNormal.Normalized() * Game.GRAVITY);
 		else ApplyCentralForce(new(0,Game.GRAVITY));
 		
-		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal.Normalized()*20, Colors.White);
-		if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal*20, Colors.Green);
-		DebugDrawer.AddArrow(intendedDirection.Normalized()*40, Colors.Yellow);
-		DebugDrawer.AddArrow(LinearVelocity, Colors.Cyan);
-		DebugDrawer.AddText(new(15, 15), State.ToString(), Colors.White);
-		DebugDrawer.Rotation = -Rotation;
-		DebugDrawer.Evaluate();
+		// if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal.Normalized()*20, Colors.White);
+		// if (SurfacesNormal.LengthSquared() > 0.01f) DebugDrawer.AddArrow(SurfacesNormal*20, Colors.Green);
+		// DebugDrawer.AddArrow(intendedDirection.Normalized()*40, Colors.Yellow);
+		// DebugDrawer.AddArrow(LinearVelocity, Colors.Cyan);
+		// DebugDrawer.AddText(new(15, 15), State.ToString(), Colors.White);
+		// DebugDrawer.Rotation = -Rotation;
+		// DebugDrawer.Evaluate();
     }
 
 	IEnumerable<CollisionShape2D> CollisionShapes() {

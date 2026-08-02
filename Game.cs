@@ -30,7 +30,7 @@ public partial class Game : Control
 	{
 		MinimapCamera.Position = World.Player.Position;
 		HungerBar.Value = World.Player.Hunger;
-		HeightLabel.Text = ((int)(World.Player.Position.Y/-World.TILE_SIZE)).ToString() + "m";
+		HeightLabel.Text = ((int)(World.Player.Position.Y/-World.PATTERN_TILE_SIZE)).ToString() + "m";
 		ScreenSize = GameViewportContainer.Size;
 		GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);
 		GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
