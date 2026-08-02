@@ -8,7 +8,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	readonly Color LEG_COLOR = new("#004928");
 
     public bool Grabbed { get; set; }
-    public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("creatures/spider.tscn");
+    public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("res://creatures/spider.tscn");
     public static Dictionary<int, Spider> Creatures { get; set; } = [];
     public static int IdIterator { get; set; }
 	public float CollisionRadius { get; set; } = 16;
@@ -138,6 +138,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 			} else if (target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 0.7 && !LegMoving[(i+5) % 6] && !LegMoving[(i+1) % 6]) LegMoving[i] = true;
 		}
 		DebugDrawer.Evaluate();
+		CreaturesManager.CreatureMoved(this);
 	}
 
 	Vector2 TargetRestPosition(int target, Vector2 intendedDirection) => Vector2.Right.Rotated(Visuals.Rotation+TAU*(target+0.5f)/6) * 30 + intendedDirection * 15f;

@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://d2j8xwqp52t78" path="res://procedural_generation/ProceduralGenerator.cs" id="4_036b0"]
 [ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
 [ext_resource type="Script" uid="uid://c6xw1uksf6027" path="res://creatures/CreaturesManager.cs" id="5_036b0"]
-[ext_resource type="Script" uid="uid://bokwt2lmygbtc" path="res://details/Vine.cs" id="7_pkg7o"]
+[ext_resource type="Script" uid="uid://dx6h71m1eq5pv" path="res://details/DetailPlacer.cs" id="7_gbfbk"]
 
 [node name="World" type="Node2D" unique_id=203491962]
 script = ExtResource("1_aqk2v")
@@ -40,7 +40,7 @@ unique_name_in_owner = true
 script = ExtResource("5_036b0")
 metadata/_custom_type_script = "uid://c6xw1uksf6027"
 
-[node name="Vine" type="Line2D" parent="." unique_id=906557284]
-position = Vector2(-75, -130)
-script = ExtResource("7_pkg7o")
-metadata/_custom_type_script = "uid://bokwt2lmygbtc"
+[node name="DetailPlacer" type="Node" parent="." unique_id=1848559869]
+unique_name_in_owner = true
+script = ExtResource("7_gbfbk")
+metadata/_custom_type_script = "uid://dx6h71m1eq5pv"

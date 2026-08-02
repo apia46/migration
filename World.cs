@@ -7,6 +7,7 @@ public partial class World : Node2D
 	public static Camera2D Camera;
 	public static Player Player;
 	public static CreaturesManager CreaturesManager;
+	public static DetailPlacer DetailPlacer;
 	#nullable enable
 
 	public override void _Ready()
@@ -17,6 +18,8 @@ public partial class World : Node2D
 		Player.World = this;
 		CreaturesManager = GetNode<CreaturesManager>("%CreaturesManager");
 		CreaturesManager.World = this;
+		DetailPlacer = GetNode<DetailPlacer>("%DetailPlacer");
+		DetailPlacer.World = this;
 		ConvertedTileMapLayer = GetNode<TileMapLayer>("%ConvertedTileMapLayer");
 		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), ConvertedTileMapLayer, GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
 		ProceduralGenerator.StartingArea();
@@ -26,7 +29,8 @@ public partial class World : Node2D
 
 	public static void InitialProcGenFinished()
 	{
-		CreaturesManager.StartingArea();
+		DetailPlacer.StartingArea();
+		// CreaturesManager.StartingArea();
 	}
 
 	public const int PATTERN_TILE_SIZE = 64;

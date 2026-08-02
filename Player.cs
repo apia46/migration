@@ -26,7 +26,7 @@ public partial class Player : CharacterBody2D
     Vector2 CameraPosition;
     float CameraSpeed = 10f;
 
-    Vector2I CurrentChunk = Vector2I.One * -1;
+    public Vector2I CurrentChunk = Vector2I.One * -1;
 
     public override void _Ready()
     {

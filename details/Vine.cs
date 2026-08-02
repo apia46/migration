@@ -2,28 +2,46 @@
 // https://www.youtube.com/watch?v=FcnvwtyxLds
 
 [GlobalClass]
-public partial class Vine : Line2D
+public partial class Vine : Line2D, IDetail<Vine>
 {
+    public static PackedScene Scene {get; set;} = GD.Load<PackedScene>("res://details/vine.tscn");
+    public static Dictionary<int, Vine> Instances {get; set;} = [];
+    public static int IdIterator {get; set;}
+    public int Id {get; set;}
+
     static readonly Vector2 GRAVITY = new(0, 100);
     readonly Color COLOR = new("#2a3330");
 
     Segment[] Segments = [];
     float SegmentLength = 7f;
 
+    List<TileCollider> TileColliders = [];
+
     public override void _Ready()
     {
         DefaultColor = COLOR;
         Width = 4;
-        Segments = new Segment[30];
+        Segments = new Segment[Game.RNG.Range(10,30)];
         Vector2 NextStartPoint = Vector2.Zero;
         for (int i = 0; i < Segments.Length; i++) {
             Segments[i] = new Segment(NextStartPoint);
             NextStartPoint.Y += SegmentLength * 0.25f;
         }
+
+        Vector2I TilePosition = (Vector2I)(Position / World.CONVERTED_TILE_SIZE).Floor();
+        
+        TileColliders = [];
+        int TileDistance = (int)Math.Ceiling(SegmentLength*Segments.Length / World.CONVERTED_TILE_SIZE + 0.5);
+        for (int x = -TileDistance; x <= TileDistance; x++)
+        for (int y = -TileDistance; y <= TileDistance; y++) {
+            Vector2I tile = TilePosition + new Vector2I(x,y);
+            if (World.SolidTile(tile)) TileColliders.Add(new((new Vector2(0.5f,0.5f)+tile) * World.CONVERTED_TILE_SIZE));
+        }
     }
 
     public override void _PhysicsProcess(double delta)
     {
+        if (Position.DistanceSquaredTo(World.Player.Position) > 40000) return; 
         for (int i = 0; i < Segments.Length; i++) {
             Segment segment = Segments[i];
             Vector2 velocity = segment.Position - segment.OldPosition;
@@ -46,16 +64,7 @@ public partial class Vine : Line2D
 
         CircleCollider[] circleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>(), new CircleCollider(World.Player.Position, 15)];
         
-        Vector2I TilePosition = (Vector2I)(Position / World.CONVERTED_TILE_SIZE).Floor();
-        int TileDistance = (int)Math.Ceiling(SegmentLength*Segments.Length / World.CONVERTED_TILE_SIZE + 0.5);
-
         const float HALF_TILESIZE = World.CONVERTED_TILE_SIZE/2;
-        List<TileCollider> tileColliders = [];
-        for (int x = -TileDistance; x <= TileDistance; x++)
-        for (int y = -TileDistance; y <= TileDistance; y++) {
-            Vector2I tile = TilePosition + new Vector2I(x,y);
-            if (World.SolidTile(tile)) tileColliders.Add(new((new Vector2(0.5f,0.5f)+tile) * World.CONVERTED_TILE_SIZE));
-        }
 
         for (int c = 0; c < 50; c++) // constraints
         for (int i = 0; i < Segments.Length - 1; i++) {
@@ -83,7 +92,7 @@ public partial class Vine : Line2D
             } else secondSegment.Position += changeAmount;
 
             // tile collision
-            foreach (TileCollider collider in tileColliders) {
+            foreach (TileCollider collider in TileColliders) {
                 Vector2 fromCollide = secondSegment.Position + Position - collider.Position;
                 fromCollide.X *= 0.9f;
                 float m = fromCollide.Y / fromCollide.X;

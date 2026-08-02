@@ -27,6 +27,15 @@ public partial class CreaturesManager : Node
         }
 	}
 
+    public static void CreatureMoved<T>(T creature) where T : Node2D, ICreature<T>
+    {
+        Vector2I toPlayerChunk = World.PositionToChunk(creature.Position) - World.Player.CurrentChunk;
+        if (Math.Abs(toPlayerChunk.X) > CREATURED_CHUNKS_AROUND_PLAYER || Math.Abs(toPlayerChunk.Y) > CREATURED_CHUNKS_AROUND_PLAYER)
+        {
+            RemoveCreature(creature);
+        }
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         FloodFillAawagas();
