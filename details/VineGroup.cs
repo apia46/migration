@@ -19,7 +19,13 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 
 		Vector2I tile = World.PositionToConvertedTile(Position);
 
-		int maxLength = 0;
+		Vector2 RangeExpand(Vector2 range, float point)
+		{
+			if (point < range.X) range.X = point;
+			if (point > range.Y) range.Y = point;
+			return range;
+		}
+		Vector2 lengthRange = new(99999, 0);
 
 		int CreateVinesWithOffset(Vector2I offset) {
 			int length = 0;
@@ -37,12 +43,12 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 			return length;
 		}
 
-		maxLength = Math.Max(maxLength,CreateVinesWithOffset(new(0,0)));
-		maxLength = Math.Max(maxLength,CreateVinesWithOffset(new(1,0)));
-		maxLength = Math.Max(maxLength,CreateVinesWithOffset(new(-1,0)));
+		lengthRange = RangeExpand(lengthRange,CreateVinesWithOffset(new(0,0)));
+		lengthRange = RangeExpand(lengthRange,CreateVinesWithOffset(new(1,0)));
+		lengthRange = RangeExpand(lengthRange,CreateVinesWithOffset(new(-1,0)));
 
         for (int x = -3; x <= 3; x++)
-        for (int y = 0; y < maxLength; y++) {
+        for (int y = lengthRange.X < 5 ? -1 : 0; y < lengthRange.Y; y++) {
             Vector2I collideTile = tile + new Vector2I(x,y);
 			DebugDrawer.AddCircle((new Vector2(0.5f,0.5f) + collideTile)*World.CONVERTED_TILE_SIZE - Position, World.SolidTile(collideTile) ? Colors.Red : Colors.Green);
 			if (World.SolidTile(collideTile)) {

@@ -42,6 +42,9 @@ public partial class Vine : Line2D
 
         const float HALF_TILESIZE = World.CONVERTED_TILE_SIZE/2;
 
+        Vector2 position = Position;
+        Vector2 globalPosition = GlobalPosition;
+
         for (int c = 0; c < 15; c++) // constraints
         for (int i = 0; i < Segments.Length - 1; i++) {
             Segment firstSegment = Segments[i];
@@ -59,7 +62,7 @@ public partial class Vine : Line2D
             // circle collision
             if (Math.Abs(secondSegment.Position.X) <= 50)
                 foreach (CircleCollider collider in DetailPlacer.CircleColliders) {
-                    Vector2 toCollide = collider.Position - secondSegment.Position - GlobalPosition;
+                    Vector2 toCollide = collider.Position - secondSegment.Position - globalPosition;
                     if (toCollide.LengthSquared() < collider.Radius*collider.Radius) {
                         float distToCollide = toCollide.Length();
                         float penalty = Math.Sign(toCollide.X) != Math.Sign(secondSegment.Position.X) ? 1 : 0.25f;
@@ -69,7 +72,7 @@ public partial class Vine : Line2D
 
             // tile collision
             foreach (Vector2 collider in Group.TileColliders) {
-                Vector2 fromCollide = secondSegment.Position + Position - collider;
+                Vector2 fromCollide = secondSegment.Position + position - collider;
                 fromCollide.X *= 0.99f;
                 if (fromCollide.LengthSquared() > 512) continue;
                 float m = fromCollide.Y / fromCollide.X;
