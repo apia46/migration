@@ -11,7 +11,7 @@ public partial class ProceduralGenerator : Node
 
 	readonly GameRandom RNG = new();
 	readonly GodotThread Thread = new();
-	readonly Mutex Mutex = new();
+	public static readonly Mutex Mutex = new();
 
 	#nullable disable
 
@@ -27,6 +27,9 @@ public partial class ProceduralGenerator : Node
 
 	// MUTEXED
 	readonly Stack<Task> Queue = [];
+	// MUTEXED
+	public enum ChunkState {Generated, Detailed};
+	public static readonly Dictionary<Vector2I, ChunkState> ChunkStates = []; // in chunks
 
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
@@ -49,7 +52,10 @@ public partial class ProceduralGenerator : Node
 			InitialGenFinished = true;
 			World.InitialProcGenFinished();
 		}
-		void AddToQueue(Vector2I position, bool clearBefore) => Queue.Push(new(position, clearBefore, true));
+		void AddToQueue(Vector2I position, bool clearBefore) {
+			if (ChunkStates.ContainsKey(position)) return;
+			Queue.Push(new(position, clearBefore, true));
+		}
 
 		Vector2I position = (Vector2I)(World.Player.Position / PATTERN_CHUNK_SIZE / World.PATTERN_TILE_SIZE).Round();
 		for (int layer = chunks; layer > 0; layer--) {
@@ -77,8 +83,8 @@ public partial class ProceduralGenerator : Node
 		while (runs++ < 30 && !Thread.IsAlive()) {
 			Mutex.Lock();
 			if (Queue.Count == 0) {
-				CleanPass = true;
 				NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
+				CleanPass = true;
 			}
 			if (Thread.IsStarted()) {
 				if ((bool)Thread.WaitToFinish()) {
@@ -87,10 +93,12 @@ public partial class ProceduralGenerator : Node
 				} else CleanPass = false;
 			}
 			Task task = Queue.Peek();
-			if (task.IsNew() && task.ClearBefore)
+			if (task.IsNew() && task.ClearBefore) {
+				RectangleReverted(task.Rect);
 				for (int x = task.Rect.Position.X; x < task.Rect.End.X; x++)
 					for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
 						if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
+			}
 			Rect2I rect = task.Next();
 			if (task.IsEmpty()) Queue.Pop();
 			Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
@@ -102,6 +110,15 @@ public partial class ProceduralGenerator : Node
 		}
     }
 
+	void RectangleReverted(Rect2I rect)
+	{
+		Vector2I start = (Vector2I)(((Vector2)rect.Position)/8).Floor();
+		Vector2I end = (Vector2I)(((Vector2)rect.End)/8).Ceil();
+		for (int x = start.X; x < end.X; x++)
+		for (int y = start.Y; y < end.Y; y++)
+			ChunkStates.Remove(new(x,y));
+	}
+
 	// returns true if successful
 	bool Generate(Rect2I rect, bool canRetry)
 	{
@@ -112,6 +129,7 @@ public partial class ProceduralGenerator : Node
 			for (int x = rect.Position.X; x < rect.End.X; x++)
 			for (int y = rect.Position.Y; y < rect.End.Y; y++)
 				if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
+			
 			if (tries > 3) {
 				if (canRetry) {
 					Task retry = new(new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
@@ -121,6 +139,7 @@ public partial class ProceduralGenerator : Node
 				return false;
 			}
 		}
+		ChunkStates[(Vector2I)(((Vector2)rect.Position)/8).Ceil()] = ChunkState.Generated;
 		Mutex.Unlock();
 		return true;
 	}

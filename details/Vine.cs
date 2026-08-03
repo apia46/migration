@@ -41,7 +41,7 @@ public partial class Vine : Line2D, IDetail<Vine>
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Position.DistanceSquaredTo(World.Player.Position) > 40000) return; 
+        if (Position.DistanceSquaredTo(World.Player.Position) > 400000) return;
         for (int i = 0; i < Segments.Length; i++) {
             Segment segment = Segments[i];
             Vector2 velocity = segment.Position - segment.OldPosition;
@@ -55,25 +55,16 @@ public partial class Vine : Line2D, IDetail<Vine>
 
         float MinSquaredLength = (float)Math.Pow(SegmentLength*Segments.Length+50, 2);
 
-        IEnumerable<CircleCollider> GetCreatureColliders<T>() where T : Node2D, ICreature<T> {
-            return T.Creatures.Values.Where(c=>
-                c.CollisionRadius != 0 &&
-                c.Position.DistanceSquaredTo(Position) < MinSquaredLength
-            ).Select(c=>new CircleCollider(c.Position, c.CollisionRadius));
-        }
-
-        CircleCollider[] circleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>(), new CircleCollider(World.Player.Position, 15)];
-        
         const float HALF_TILESIZE = World.CONVERTED_TILE_SIZE/2;
 
-        for (int c = 0; c < 50; c++) // constraints
+        for (int c = 0; c < 15; c++) // constraints
         for (int i = 0; i < Segments.Length - 1; i++) {
             Segment firstSegment = Segments[i];
             Segment secondSegment = Segments[i+1];
 
             // circle collision
             if (Math.Abs(secondSegment.Position.X) <= 50)
-                foreach (CircleCollider collider in circleColliders) {
+                foreach (CircleCollider collider in DetailPlacer.CircleColliders) {
                     Vector2 toCollide = collider.Position - secondSegment.Position - Position;
                     float distToCollide = toCollide.Length();
                     if (distToCollide < collider.Radius) {
@@ -108,13 +99,9 @@ public partial class Vine : Line2D, IDetail<Vine>
 
     public override void _Process(double delta)
     {
+        if (Position.DistanceSquaredTo(World.Player.Position) > 400000) return;
         Points = [..Segments.Select(s => s.Position)];
     }
-}
-struct CircleCollider(Vector2 Position, float Radius)
-{
-    public Vector2 Position = Position;
-    public float Radius = Radius;
 }
 
 struct TileCollider(Vector2 Position)

@@ -4,15 +4,35 @@ public partial class DetailPlacer : Node
     #nullable disable
     public static World World;
     #nullable enable
+    public static List<CircleCollider> CircleColliders = [];
 
     public const int DETAILED_CHUNKS_AROUND_PLAYER = 2;
 
+    public override void _PhysicsProcess(double delta)
+    {
+        CreateCircleColliders();
+    }
+
     public static void StartingArea()
     {
+        ProceduralGenerator.Mutex.Lock();
         for (int x = -DETAILED_CHUNKS_AROUND_PLAYER; x <= DETAILED_CHUNKS_AROUND_PLAYER; x++)
 		for (int y = -DETAILED_CHUNKS_AROUND_PLAYER; y <= DETAILED_CHUNKS_AROUND_PLAYER; y++)
 			PlaceDetails(new(x,y));
+        ProceduralGenerator.Mutex.Unlock();
     }
+
+    public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+	{
+        Vector2I direction = to - from;
+        static Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
+
+        ProceduralGenerator.Mutex.Lock();
+		for (int h = -DETAILED_CHUNKS_AROUND_PLAYER; h <= DETAILED_CHUNKS_AROUND_PLAYER; h++) {
+            PlaceDetails(to + direction * DETAILED_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
+        }
+        ProceduralGenerator.Mutex.Unlock();
+	}
 
     static void PlaceDetail<T>(Vector2 position) where T : Node2D, IDetail<T>
     {
@@ -25,7 +45,8 @@ public partial class DetailPlacer : Node
 
     static void PlaceDetails(Vector2I chunk)
     {
-        for (int i = 0; i < 10; i++)
+        if (!ProceduralGenerator.ChunkStates.TryGetValue(chunk, out ProceduralGenerator.ChunkState value) || value == ProceduralGenerator.ChunkState.Detailed) return;
+        for (int i = 0; i < 20; i++)
         {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
             if (!World.InteriorTile(tile)) continue;
@@ -33,6 +54,15 @@ public partial class DetailPlacer : Node
             Vector2 position = tile * World.CONVERTED_TILE_SIZE + Vector2.One * World.CONVERTED_TILE_SIZE * 0.5f;
             PlaceDetail<Vine>(position);
         }
+        ProceduralGenerator.ChunkStates[chunk] = ProceduralGenerator.ChunkState.Detailed;
+    }
+
+    static void CreateCircleColliders()
+    {
+        static IEnumerable<CircleCollider> GetCreatureColliders<T>() where T : Node2D, ICreature<T> {
+            return T.Creatures.Values.Where(c=>c.CollisionRadius != 0).Select(c=>new CircleCollider(c.Position, c.CollisionRadius));
+        }
+        CircleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>(), new CircleCollider(World.Player.Position, 15)];
     }
 }
 
@@ -42,4 +72,10 @@ public interface IDetail<T> where T:IDetail<T>
     public static abstract Dictionary<int, T> Instances {get; set;}
     public static abstract int IdIterator {get; set;}
     public int Id {get; set;}
+}
+
+public struct CircleCollider(Vector2 Position, float Radius)
+{
+    public Vector2 Position = Position;
+    public float Radius = Radius;
 }

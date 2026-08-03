@@ -30,7 +30,13 @@ public partial class World : Node2D
 	public static void InitialProcGenFinished()
 	{
 		DetailPlacer.StartingArea();
-		// CreaturesManager.StartingArea();
+		CreaturesManager.StartingArea();
+	}
+
+	 public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+	{
+		DetailPlacer.PlayerCrossedChunkBoundary(to,from);
+		CreaturesManager.PlayerCrossedChunkBoundary(to,from);
 	}
 
 	public const int PATTERN_TILE_SIZE = 64;
