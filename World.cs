@@ -26,6 +26,7 @@ public partial class World : Node2D
 	}
 
 	public static Vector2I PositionToChunk(Vector2 position) => (Vector2I)(position / PATTERN_TILE_SIZE / ProceduralGenerator.PATTERN_CHUNK_SIZE).Floor();
+	public static Vector2I PositionToConvertedTile(Vector2 position) => (Vector2I)(position / CONVERTED_TILE_SIZE).Floor();
 
 	public static void InitialProcGenFinished()
 	{

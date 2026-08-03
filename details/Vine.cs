@@ -2,13 +2,8 @@
 // https://www.youtube.com/watch?v=FcnvwtyxLds
 
 [GlobalClass]
-public partial class Vine : Line2D, IDetail<Vine>
+public partial class Vine : Line2D
 {
-    public static PackedScene Scene {get; set;} = GD.Load<PackedScene>("res://details/vine.tscn");
-    public static Dictionary<int, Vine> Instances {get; set;} = [];
-    public static int IdIterator {get; set;}
-    public int Id {get; set;}
-
     static readonly Vector2 GRAVITY = new(0, 100);
     readonly Color COLOR = new("#2a3330");
 
@@ -17,18 +12,18 @@ public partial class Vine : Line2D, IDetail<Vine>
 
     List<TileCollider> TileColliders = [];
 
-    public override void _Ready()
+    public void Initialise(float targetLength)
     {
         DefaultColor = COLOR;
         Width = 4;
-        Segments = new Segment[Game.RNG.Range(10,30)];
+        Segments = new Segment[Math.Min(30,(int)(targetLength / SegmentLength))];
         Vector2 NextStartPoint = Vector2.Zero;
         for (int i = 0; i < Segments.Length; i++) {
             Segments[i] = new Segment(NextStartPoint);
-            NextStartPoint.Y += SegmentLength * 0.25f;
+            NextStartPoint.Y += SegmentLength;
         }
 
-        Vector2I TilePosition = (Vector2I)(Position / World.CONVERTED_TILE_SIZE).Floor();
+        Vector2I TilePosition = (Vector2I)(GlobalPosition / World.CONVERTED_TILE_SIZE).Floor();
         
         TileColliders = [];
         int TileDistance = (int)Math.Ceiling(SegmentLength*Segments.Length / World.CONVERTED_TILE_SIZE + 0.5);
@@ -41,7 +36,7 @@ public partial class Vine : Line2D, IDetail<Vine>
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Position.DistanceSquaredTo(World.Player.Position) > 400000) return;
+        if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
         for (int i = 0; i < Segments.Length; i++) {
             Segment segment = Segments[i];
             Vector2 velocity = segment.Position - segment.OldPosition;
@@ -53,8 +48,6 @@ public partial class Vine : Line2D, IDetail<Vine>
   
         Segments[0].Position = Vector2.Zero;
 
-        float MinSquaredLength = (float)Math.Pow(SegmentLength*Segments.Length+50, 2);
-
         const float HALF_TILESIZE = World.CONVERTED_TILE_SIZE/2;
 
         for (int c = 0; c < 15; c++) // constraints
@@ -63,9 +56,12 @@ public partial class Vine : Line2D, IDetail<Vine>
             Segment secondSegment = Segments[i+1];
 
             // circle collision
+            // i think this is where all the lag comes from
+            // at 60 physics frames per second, this needs to take <40ns per collider to be performant
+            // but it takes a lot more
             if (Math.Abs(secondSegment.Position.X) <= 50)
                 foreach (CircleCollider collider in DetailPlacer.CircleColliders) {
-                    Vector2 toCollide = collider.Position - secondSegment.Position - Position;
+                    Vector2 toCollide = collider.Position - secondSegment.Position - GlobalPosition;
                     float distToCollide = toCollide.Length();
                     if (distToCollide < collider.Radius) {
                         float penalty = Math.Sign(toCollide.X) != Math.Sign(secondSegment.Position.X) ? 1 : 0.25f;
@@ -84,7 +80,7 @@ public partial class Vine : Line2D, IDetail<Vine>
 
             // tile collision
             foreach (TileCollider collider in TileColliders) {
-                Vector2 fromCollide = secondSegment.Position + Position - collider.Position;
+                Vector2 fromCollide = secondSegment.Position + GlobalPosition - collider.Position;
                 fromCollide.X *= 0.9f;
                 float m = fromCollide.Y / fromCollide.X;
                 Vector2 squareSurface = (Math.Abs(m) > 1 ? new Vector2(1/m,1)*Math.Sign(fromCollide.Y) : new Vector2(1,m)*Math.Sign(fromCollide.X)) * HALF_TILESIZE;
@@ -99,7 +95,7 @@ public partial class Vine : Line2D, IDetail<Vine>
 
     public override void _Process(double delta)
     {
-        if (Position.DistanceSquaredTo(World.Player.Position) > 400000) return;
+        if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
         Points = [..Segments.Select(s => s.Position)];
     }
 }

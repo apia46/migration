@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://trv4uvi0rem6"]
+
+[ext_resource type="Script" uid="uid://bmnb343so5omn" path="res://details/VineGroup.cs" id="1_ob84n"]
+[ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="2_lt137"]
+
+[node name="VineGroup" type="Node2D" unique_id=247780933]
+script = ExtResource("1_ob84n")
+metadata/_custom_type_script = "uid://bmnb343so5omn"
+
+[node name="DebugDrawer" type="Node2D" parent="." unique_id=929384215]
+unique_name_in_owner = true
+script = ExtResource("2_lt137")
+metadata/_custom_type_script = "uid://dstfir57scngn"

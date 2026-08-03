@@ -1,7 +1,0 @@
-[gd_scene format=3 uid="uid://bmfrsdxnwbxvv"]
-
-[ext_resource type="Script" uid="uid://bokwt2lmygbtc" path="res://details/Vine.cs" id="1_w1aba"]
-
-[node name="Vine" type="Line2D" unique_id=2071757225]
-script = ExtResource("1_w1aba")
-metadata/_custom_type_script = "uid://bokwt2lmygbtc"
