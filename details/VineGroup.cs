@@ -23,7 +23,7 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 
 		int CreateVinesWithOffset(Vector2I offset) {
 			int length = 0;
-			while(World.InteriorTile(tile + offset + new Vector2I(0,++length)))
+			while(World.InteriorTile(tile + offset + new Vector2I(0,++length)) && length < 12)
 			{
 				DebugDrawer.AddCircle((new Vector2(0,length)+offset) * World.CONVERTED_TILE_SIZE, Colors.White, 4);
 			}
@@ -41,12 +41,14 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 		maxLength = Math.Max(maxLength,CreateVinesWithOffset(new(1,0)));
 		maxLength = Math.Max(maxLength,CreateVinesWithOffset(new(-1,0)));
 
-		TileColliders = [];
         for (int x = -3; x <= 3; x++)
         for (int y = 0; y < maxLength; y++) {
             Vector2I collideTile = tile + new Vector2I(x,y);
 			DebugDrawer.AddCircle((new Vector2(0.5f,0.5f) + collideTile)*World.CONVERTED_TILE_SIZE - Position, World.SolidTile(collideTile) ? Colors.Red : Colors.Green);
-            if (World.SolidTile(collideTile)) TileColliders.Add((new Vector2(0.5f,0.5f)+collideTile) * World.CONVERTED_TILE_SIZE);
+			if (World.SolidTile(collideTile)) {
+				TileColliders.Add(new Vector2(x,y) * World.CONVERTED_TILE_SIZE);
+				// GD.Print(TileColliders[^1]);
+			}
         }
 		DebugDrawer.Evaluate();
 	}

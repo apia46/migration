@@ -18,14 +18,12 @@ public partial class Vine : Line2D
     {
         DefaultColor = COLOR;
         Width = 4;
-        Segments = new Segment[Math.Min(30,(int)(targetLength / SegmentLength))];
+        Segments = new Segment[(int)(targetLength / (SegmentLength+2f))];
         Vector2 NextStartPoint = Vector2.Zero;
         for (int i = 0; i < Segments.Length; i++) {
             Segments[i] = new Segment(NextStartPoint);
             NextStartPoint.Y += SegmentLength;
         }
-
-        Vector2I TilePosition = (Vector2I)(GlobalPosition / World.CONVERTED_TILE_SIZE).Floor();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -62,8 +60,8 @@ public partial class Vine : Line2D
             if (Math.Abs(secondSegment.Position.X) <= 50)
                 foreach (CircleCollider collider in DetailPlacer.CircleColliders) {
                     Vector2 toCollide = collider.Position - secondSegment.Position - GlobalPosition;
-                    float distToCollide = toCollide.Length();
-                    if (distToCollide < collider.Radius) {
+                    if (toCollide.LengthSquared() < collider.Radius*collider.Radius) {
+                        float distToCollide = toCollide.Length();
                         float penalty = Math.Sign(toCollide.X) != Math.Sign(secondSegment.Position.X) ? 1 : 0.25f;
                         secondSegment.Position -= toCollide/distToCollide * (collider.Radius-distToCollide) * penalty * (50-Math.Abs(secondSegment.Position.X))/250;
                     }
@@ -71,12 +69,14 @@ public partial class Vine : Line2D
 
             // tile collision
             foreach (Vector2 collider in Group.TileColliders) {
-                Vector2 fromCollide = secondSegment.Position + GlobalPosition - collider;
-                fromCollide.X *= 0.9f;
+                Vector2 fromCollide = secondSegment.Position + Position - collider;
+                fromCollide.X *= 0.99f;
+                if (fromCollide.LengthSquared() > 512) continue;
                 float m = fromCollide.Y / fromCollide.X;
                 Vector2 squareSurface = (Math.Abs(m) > 1 ? new Vector2(1/m,1)*Math.Sign(fromCollide.Y) : new Vector2(1,m)*Math.Sign(fromCollide.X)) * HALF_TILESIZE;
-                if (fromCollide.LengthSquared() < squareSurface.LengthSquared())
+                if (fromCollide.LengthSquared() < squareSurface.LengthSquared()) {
                     secondSegment.Position += squareSurface-fromCollide;
+                }
             }
 
             Segments[i] = firstSegment;
