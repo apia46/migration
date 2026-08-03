@@ -4,13 +4,15 @@
 [GlobalClass]
 public partial class Vine : Line2D
 {
+    #nullable disable
+    public VineGroup Group;
+    #nullable enable
+
     static readonly Vector2 GRAVITY = new(0, 100);
     readonly Color COLOR = new("#2a3330");
 
     Segment[] Segments = [];
     float SegmentLength = 7f;
-
-    List<TileCollider> TileColliders = [];
 
     public void Initialise(float targetLength)
     {
@@ -24,14 +26,6 @@ public partial class Vine : Line2D
         }
 
         Vector2I TilePosition = (Vector2I)(GlobalPosition / World.CONVERTED_TILE_SIZE).Floor();
-        
-        TileColliders = [];
-        int TileDistance = (int)Math.Ceiling(SegmentLength*Segments.Length / World.CONVERTED_TILE_SIZE + 0.5);
-        for (int x = -TileDistance; x <= TileDistance; x++)
-        for (int y = -TileDistance; y <= TileDistance; y++) {
-            Vector2I tile = TilePosition + new Vector2I(x,y);
-            if (World.SolidTile(tile)) TileColliders.Add(new((new Vector2(0.5f,0.5f)+tile) * World.CONVERTED_TILE_SIZE));
-        }
     }
 
     public override void _PhysicsProcess(double delta)
@@ -55,10 +49,16 @@ public partial class Vine : Line2D
             Segment firstSegment = Segments[i];
             Segment secondSegment = Segments[i+1];
 
+            // keep together
+            float dist = firstSegment.Position.DistanceTo(secondSegment.Position);
+            float error = dist - SegmentLength;
+            Vector2 changeAmount = (firstSegment.Position - secondSegment.Position).Normalized() * error;
+            if (i != 0) {
+                firstSegment.Position -= changeAmount * 0.5f;
+                secondSegment.Position += changeAmount * 0.5f;
+            } else secondSegment.Position += changeAmount;
+
             // circle collision
-            // i think this is where all the lag comes from
-            // at 60 physics frames per second, this needs to take <40ns per collider to be performant
-            // but it takes a lot more
             if (Math.Abs(secondSegment.Position.X) <= 50)
                 foreach (CircleCollider collider in DetailPlacer.CircleColliders) {
                     Vector2 toCollide = collider.Position - secondSegment.Position - GlobalPosition;
@@ -69,18 +69,9 @@ public partial class Vine : Line2D
                     }
                 }
 
-            // keep together
-            float dist = firstSegment.Position.DistanceTo(secondSegment.Position);
-            float error = dist - SegmentLength;
-            Vector2 changeAmount = (firstSegment.Position - secondSegment.Position).Normalized() * error;
-            if (i != 0) {
-                firstSegment.Position -= changeAmount * 0.5f;
-                secondSegment.Position += changeAmount * 0.5f;
-            } else secondSegment.Position += changeAmount;
-
             // tile collision
-            foreach (TileCollider collider in TileColliders) {
-                Vector2 fromCollide = secondSegment.Position + GlobalPosition - collider.Position;
+            foreach (Vector2 collider in Group.TileColliders) {
+                Vector2 fromCollide = secondSegment.Position + GlobalPosition - collider;
                 fromCollide.X *= 0.9f;
                 float m = fromCollide.Y / fromCollide.X;
                 Vector2 squareSurface = (Math.Abs(m) > 1 ? new Vector2(1/m,1)*Math.Sign(fromCollide.Y) : new Vector2(1,m)*Math.Sign(fromCollide.X)) * HALF_TILESIZE;
@@ -98,11 +89,6 @@ public partial class Vine : Line2D
         if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
         Points = [..Segments.Select(s => s.Position)];
     }
-}
-
-struct TileCollider(Vector2 Position)
-{
-    public Vector2 Position = Position;
 }
 
 struct Segment(Vector2 Position)
