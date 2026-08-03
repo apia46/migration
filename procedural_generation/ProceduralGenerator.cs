@@ -377,7 +377,8 @@ class TileCache
 class RotateableTileCache : TileCache
 {
 	readonly int[] TileRotations;
-    public RotateableTileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId) : base(rect, margin, tileSet, tileMap, sourceId)
+    public RotateableTileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
+		: base(rect, margin, tileSet, tileMap, sourceId)
 	{
 		TileRotations = new int[TotalSize.X*TotalSize.Y];
 		for (int x = 0; x < TotalSize.X; x++)

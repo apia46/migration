@@ -31,13 +31,13 @@ public partial class World : Node2D
 	public static void InitialProcGenFinished()
 	{
 		DetailPlacer.StartingArea();
-		CreaturesManager.StartingArea();
+		// CreaturesManager.StartingArea();
 	}
 
 	 public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
 	{
 		DetailPlacer.PlayerCrossedChunkBoundary(to,from);
-		CreaturesManager.PlayerCrossedChunkBoundary(to,from);
+		// CreaturesManager.PlayerCrossedChunkBoundary(to,from);
 	}
 
 	public const int PATTERN_TILE_SIZE = 64;
@@ -66,7 +66,7 @@ public partial class World : Node2D
 			GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled = !GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled;
 			GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
 		} else if (@event.IsActionPressed("spawn")) {	
-			CreaturesManager.SpawnCreature<Spider>(Player.Position + new Vector2(30,-30));
+			CreaturesManager.SpawnCreature<Aawaga>(Player.Position + new Vector2(30,-30));
 		}
 	}
 }

@@ -35,7 +35,7 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 			}
 			for (int i = 0; i < 4; i++) {
 				Vine vine = new();
-				vine.Initialise((length+Game.RNG.Range(-1.25f, -0.25f)) * World.CONVERTED_TILE_SIZE);
+				vine.Initialise((length+Game.RNG.Range(-1.25f, -0.25f)) * World.CONVERTED_TILE_SIZE, Game.RNG.FlipCoin());
 				vine.Position = (offset + new Vector2(Game.RNG.Range(-0.5f,0.5f), -0.5f)) * World.CONVERTED_TILE_SIZE;
 				vine.Group = this;
 				AddChild(vine);

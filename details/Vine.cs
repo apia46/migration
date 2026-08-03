@@ -12,22 +12,26 @@ public partial class Vine : Line2D
     readonly Color COLOR = new("#2a3330");
 
     Segment[] Segments = [];
-    float SegmentLength = 7f;
+    float SegmentLength = 16f;
+    bool Simulated;
 
-    public void Initialise(float targetLength)
+    public void Initialise(float targetLength, bool simulated)
     {
         DefaultColor = COLOR;
         Width = 4;
+        Simulated = simulated;
         Segments = new Segment[(int)(targetLength / (SegmentLength+2f))];
         Vector2 NextStartPoint = Vector2.Zero;
         for (int i = 0; i < Segments.Length; i++) {
             Segments[i] = new Segment(NextStartPoint);
             NextStartPoint.Y += SegmentLength;
         }
+        if (!Simulated) Points = [..Segments.Select(s => s.Position)];
     }
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!Simulated) return;
         if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
         for (int i = 0; i < Segments.Length; i++) {
             Segment segment = Segments[i];
@@ -89,6 +93,7 @@ public partial class Vine : Line2D
 
     public override void _Process(double delta)
     {
+        if (!Simulated) return;
         if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
         Points = [..Segments.Select(s => s.Position)];
     }
