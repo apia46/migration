@@ -9,23 +9,22 @@ public partial class Vine : Line2D
     #nullable enable
 
     static readonly Vector2 GRAVITY = new(0, 100);
-    readonly Color COLOR = new("#2a3330");
 
     Segment[] Segments = [];
-    float SegmentLength = 16f;
+    public const float SEGMENT_LENGTH = 16f;
     bool Simulated;
 
     public void Initialise(float targetLength, bool simulated)
     {
-        DefaultColor = COLOR;
+        DefaultColor = Color.FromHsv(0.44f,Game.RNG.Range(0.2f,0.3f),Game.RNG.Range(0.2f,0.3f));
         Width = 4;
         Simulated = simulated;
-        int segments = (int)(targetLength / SegmentLength);
+        int segments = (int)(targetLength / SEGMENT_LENGTH);
         Segments = new Segment[segments];
         Vector2 NextStartPoint = Vector2.Zero;
         for (int i = 0; i < Segments.Length; i++) {
             Segments[i] = new Segment(NextStartPoint);
-            NextStartPoint.Y += SegmentLength;
+            NextStartPoint.Y += SEGMENT_LENGTH;
         }
         if (!Simulated) Points = [..Segments.Select(s => s.Position)];
     }
@@ -57,7 +56,7 @@ public partial class Vine : Line2D
 
             // keep together
             float dist = firstSegment.Position.DistanceTo(secondSegment.Position);
-            float error = dist - SegmentLength;
+            float error = dist - SEGMENT_LENGTH;
             Vector2 changeAmount = (firstSegment.Position - secondSegment.Position).Normalized() * error;
             if (i != 0) {
                 firstSegment.Position -= changeAmount * 0.5f;
@@ -66,7 +65,7 @@ public partial class Vine : Line2D
 
             // circle collision
             if (Math.Abs(secondSegment.Position.X) <= 50)
-                foreach (CircleCollider collider in DetailPlacer.CircleColliders) {
+                foreach (CircleCollider collider in DetailManager.CircleColliders) {
                     Vector2 toCollide = collider.Position - secondSegment.Position - globalPosition;
                     if (toCollide.LengthSquared() < collider.Radius*collider.Radius) {
                         float distToCollide = toCollide.Length();

@@ -70,7 +70,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	float Chaseness() {
 		float dist = World.Player.Position.DistanceSquaredTo(Position);
 		if (State == AIState.Chase) return Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer;
-		return 5e4f/dist;
+		return 1e6f/dist;
 	}
 
 	void UpdatePathfinding(bool reset=false)

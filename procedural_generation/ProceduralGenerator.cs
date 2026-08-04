@@ -1,7 +1,7 @@
 [GlobalClass]
 public partial class ProceduralGenerator : Node
 {
-	readonly Rect2I STARTING_AREA = new(new(-7, -7), new(8, 1));
+	readonly Rect2I STARTING_AREA = new(new(-7, -7), new(15, 8));
 	public const int PATTERN_CHUNK_SIZE = 8;
 	public const int CONVERTED_CHUNK_SIZE = 16;
 	const double INVERSE_TEMPERATURE = 0.25;
@@ -34,7 +34,7 @@ public partial class ProceduralGenerator : Node
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
-	const int GENERATE_CHUNKS_AROUND_PLAYER = 5;
+	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
 	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
 
 	public void StartingArea()

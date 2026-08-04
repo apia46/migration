@@ -1,5 +1,5 @@
 [GlobalClass]
-public partial class DetailPlacer : Node
+public partial class DetailManager : Node
 {
     #nullable disable
     public static World World;
@@ -36,6 +36,7 @@ public partial class DetailPlacer : Node
 
     static void PlaceDetail<T>(Vector2 position) where T : Node2D, IDetail<T>
     {
+        foreach (T checkDetail in T.Instances.Values) if (position.DistanceSquaredTo(checkDetail.Position) < 80000) return;
         T detail = T.Scene.Instantiate<T>();
         T.Instances[T.IdIterator] = detail;
         detail.Id = T.IdIterator++;
@@ -50,8 +51,6 @@ public partial class DetailPlacer : Node
         {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
             if (!World.InteriorTile(tile)) continue;
-            if (!World.InteriorTile(tile + new Vector2I(1,0))) continue;
-            if (!World.InteriorTile(tile + new Vector2I(-1,0))) continue;
             if (!World.SolidTile(tile + new Vector2I(0,-1))) continue;
             Vector2 position = tile * World.CONVERTED_TILE_SIZE + Vector2.One * World.CONVERTED_TILE_SIZE * 0.5f;
             PlaceDetail<VineGroup>(position);
