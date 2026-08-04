@@ -20,7 +20,8 @@ public partial class Vine : Line2D
         DefaultColor = COLOR;
         Width = 4;
         Simulated = simulated;
-        Segments = new Segment[(int)(targetLength / (SegmentLength+2f))];
+        int segments = (int)(targetLength / SegmentLength);
+        Segments = new Segment[segments];
         Vector2 NextStartPoint = Vector2.Zero;
         for (int i = 0; i < Segments.Length; i++) {
             Segments[i] = new Segment(NextStartPoint);
@@ -69,7 +70,7 @@ public partial class Vine : Line2D
                     Vector2 toCollide = collider.Position - secondSegment.Position - globalPosition;
                     if (toCollide.LengthSquared() < collider.Radius*collider.Radius) {
                         float distToCollide = toCollide.Length();
-                        float penalty = Math.Sign(toCollide.X) != Math.Sign(secondSegment.Position.X) ? 1 : 0.25f;
+                        float penalty = Math.Sign(toCollide.X) != Math.Sign(secondSegment.Position.X) ? 1 : 0.5f;
                         secondSegment.Position -= toCollide/distToCollide * (collider.Radius-distToCollide) * penalty * (50-Math.Abs(secondSegment.Position.X))/250;
                     }
                 }

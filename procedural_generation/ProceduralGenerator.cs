@@ -34,7 +34,7 @@ public partial class ProceduralGenerator : Node
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
-	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
+	const int GENERATE_CHUNKS_AROUND_PLAYER = 5;
 	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
 
 	public void StartingArea()
