@@ -36,10 +36,12 @@ public partial class World : Node2D
 
 	public static void InitialProcGenFinished()
 	{
-		GD.Print(time);
+		GD.Print($"Load time: {time}");
 		DetailManager.StartingArea();
 		CreaturesManager.StartingArea();
-		Game.Loading = false;
+		Game.State = Game.States.Menu;
+		Game.StartButton.Text = "Start";
+		Game.StartButton.Disabled = false;
 	}
 
 	 public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)

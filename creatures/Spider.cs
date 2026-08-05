@@ -102,7 +102,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (Game.Loading) return;
+		if (Game.State != Game.States.Play) return;
 		Vector2 intendedDirection = Vector2.Zero;
 		float speed = 0;
 		switch (State) {

@@ -31,7 +31,9 @@ public partial class Vine : Line2D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (Game.State != Game.States.Play) return;
         if (!Simulated) return;
+        if (!Settings.FancyVisuals) return;
         if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
         for (int i = 0; i < Segments.Length; i++) {
             Segment segment = Segments[i];
@@ -95,6 +97,10 @@ public partial class Vine : Line2D
     {
         if (!Simulated) return;
         if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
+        if (!Settings.FancyVisuals) {
+            Points = [Vector2.Zero, new(0, SEGMENT_LENGTH * Segments.Length)];
+            return;
+        }
         Points = [..Segments.Select(s => s.Position)];
     }
 }

@@ -3,8 +3,12 @@
 [ext_resource type="Script" uid="uid://xkiwth7qlatc" path="res://Game.cs" id="1_80nbo"]
 [ext_resource type="PackedScene" uid="uid://8kb2bxnmkwwe" path="res://world.tscn" id="2_e2o6t"]
 [ext_resource type="Shader" uid="uid://bbakqeefl8r7n" path="res://pixelate.gdshader" id="2_feb5d"]
-[ext_resource type="Texture2D" uid="uid://8af6rxgo1tlu" path="res://owchies.png" id="4_fc0e3"]
-[ext_resource type="Texture2D" uid="uid://b1dyf8ak44hh8" path="res://youdied.png" id="5_7jktm"]
+[ext_resource type="Texture2D" uid="uid://8af6rxgo1tlu" path="res://assets/owchies.png" id="4_fc0e3"]
+[ext_resource type="Texture2D" uid="uid://b1dyf8ak44hh8" path="res://assets/youdied.png" id="5_7jktm"]
+[ext_resource type="Texture2D" uid="uid://dlvjsxqokn0c4" path="res://assets/title.png" id="6_ryrav"]
+[ext_resource type="Texture2D" uid="uid://pdtgcl5cnf60" path="res://assets/controls.png" id="7_eow3j"]
+[ext_resource type="Texture2D" uid="uid://c0ynaeck07ot5" path="res://assets/goup.png" id="7_vef74"]
+[ext_resource type="PackedScene" uid="uid://f7fh77vlrpnd" path="res://settings.tscn" id="8_j5wjh"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fc0e3"]
 shader = ExtResource("2_feb5d")
@@ -23,6 +27,7 @@ script = ExtResource("1_80nbo")
 
 [node name="GameViewportContainer" type="SubViewportContainer" parent="." unique_id=521328173]
 unique_name_in_owner = true
+visible = false
 texture_filter = 1
 material = SubResource("ShaderMaterial_fc0e3")
 layout_mode = 1
@@ -36,7 +41,7 @@ stretch = true
 [node name="SubViewport" type="SubViewport" parent="GameViewportContainer" unique_id=631701495]
 handle_input_locally = false
 size = Vector2i(1152, 648)
-render_target_update_mode = 4
+render_target_update_mode = 0
 
 [node name="World" parent="GameViewportContainer/SubViewport" unique_id=203491962 instance=ExtResource("2_e2o6t")]
 unique_name_in_owner = true
@@ -47,6 +52,7 @@ zoom = Vector2(2, 2)
 limit_enabled = false
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1762760900]
+visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -65,7 +71,7 @@ stretch = true
 unique_name_in_owner = true
 handle_input_locally = false
 size = Vector2i(500, 348)
-render_target_update_mode = 4
+render_target_update_mode = 0
 
 [node name="MinimapCamera" type="Camera2D" parent="SubViewportContainer/SubViewport" unique_id=26055832]
 unique_name_in_owner = true
@@ -78,6 +84,7 @@ horizontal_alignment = 1
 
 [node name="Ouchies" type="TextureRect" parent="." unique_id=189726945]
 unique_name_in_owner = true
+visible = false
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
@@ -89,38 +96,9 @@ mouse_filter = 2
 texture = ExtResource("4_fc0e3")
 expand_mode = 1
 
-[node name="RestButton" type="Button" parent="." unique_id=1265975896]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -36.5
-offset_top = -135.0
-offset_right = 36.5
-offset_bottom = -96.0
-grow_horizontal = 2
-grow_vertical = 0
-text = "Not enough food to Rest!"
-
-[node name="BlackScreen" type="ColorRect" parent="." unique_id=1350138844]
-unique_name_in_owner = true
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
-
 [node name="LivingUI" type="Control" parent="." unique_id=1918604377]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -179,8 +157,56 @@ grow_horizontal = 2
 text = "HEIGHT"
 horizontal_alignment = 1
 
+[node name="RestButton" type="Button" parent="LivingUI" unique_id=1265975896]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -125.0
+offset_top = -135.0
+offset_right = 125.0
+offset_bottom = -96.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Not enough food to Rest!"
+
+[node name="BlackScreen" type="ColorRect" parent="LivingUI" unique_id=1350138844]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ShelterLabel" type="Label" parent="LivingUI" unique_id=1074541713]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -74.0
+offset_top = -175.0
+offset_right = 74.0
+offset_bottom = -152.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "RMB to exit shelter"
+
 [node name="YouDied" type="TextureRect" parent="." unique_id=1137643743]
 unique_name_in_owner = true
+visible = false
 modulate = Color(1, 1, 1, 0)
 texture_filter = 1
 layout_mode = 1
@@ -196,3 +222,88 @@ offset_bottom = 29.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("5_7jktm")
+
+[node name="Menu" type="Control" parent="." unique_id=1998411197]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="TextureRect" parent="Menu" unique_id=1045993497]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -124.0
+offset_top = -164.0
+offset_right = 124.0
+offset_bottom = -38.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_ryrav")
+
+[node name="Title2" type="TextureRect" parent="Menu" unique_id=1005451291]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -124.0
+offset_top = -164.0
+offset_right = 124.0
+offset_bottom = -38.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_vef74")
+
+[node name="StartButton" type="Button" parent="Menu" unique_id=1186418123]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -72.5
+offset_top = -15.5
+offset_right = 72.5
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+disabled = true
+text = "Loading Map (288/289)"
+
+[node name="Controls" type="TextureRect" parent="Menu" unique_id=1206867571]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -367.0
+offset_top = -242.0
+offset_right = 367.0
+offset_bottom = -59.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("7_eow3j")
+
+[node name="Settings" parent="Menu" unique_id=710678417 instance=ExtResource("8_j5wjh")]
+layout_mode = 1

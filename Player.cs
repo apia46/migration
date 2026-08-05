@@ -48,7 +48,7 @@ public partial class Player : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Game.Loading) return;
+        if (Game.State != Game.States.Play) return;
         switch (State) {
             case States.Normal: Normal(delta); break;
             case States.Sheltering: Sheltering(delta); break;
@@ -163,6 +163,10 @@ public partial class Player : CharacterBody2D
 
     public override void _Input(InputEvent @event)
     {
+        if (Game.State != Game.States.Play) {
+            if (Game.State == Game.States.Paused && @event.IsActionPressed("pause")) Unpause();
+            return;
+        }
         if (@event.IsActionPressed("use")) {
             if (State == States.Sheltering) ExitShelter();
             else if (grabbed is not null) UseItem();
@@ -178,7 +182,19 @@ public partial class Player : CharacterBody2D
                 grabbed.Throw(GetLocalMousePosition().Normalized() * 800);
                 grabbed = null;
             }
-        }
+        } else if (Game.CanPause && @event.IsActionPressed("pause")) Pause();
+    }
+
+    void Pause()
+    {
+        Game.Menu.Visible = true;
+        Game.State = Game.States.Paused;
+    }
+
+    void Unpause()
+    {
+        Game.Menu.Visible = false;
+        Game.State = Game.States.Play;
     }
 
     public void Rest()
@@ -210,6 +226,7 @@ public partial class Player : CharacterBody2D
         Velocity = Vector2.Zero;
         DoubleJumpAvailable = true;
         Visible = false;
+        Game.ShelterLabel.Visible = true;
         Game.RestButton.Visible = true;
         Game.RestButton.Disabled = Hunger < REST_FOOD_COST + 0.1;
         Game.RestButton.Text = Hunger < REST_FOOD_COST + 0.1 ? "Not enough food to Rest!" : "Rest";
@@ -221,6 +238,7 @@ public partial class Player : CharacterBody2D
         State = States.Normal;
         Shelter = null;
         Visible = true;
+        Game.ShelterLabel.Visible = false;
         Game.RestButton.Visible = false;
     }
 

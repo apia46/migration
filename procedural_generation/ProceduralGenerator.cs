@@ -30,12 +30,14 @@ public partial class ProceduralGenerator : Node
 	// MUTEXED
 	public enum ChunkState {Generated, Detailed};
 	public static readonly Dictionary<Vector2I, ChunkState> ChunkStates = []; // in chunks
+	// should be mutexed but doesnt matter
+	public static int GenCount = 0;
 
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
-	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
+	const int UNSTABLE_CHUNKS_THRESHOLD = 9;	public int minx = 0;
 
 	public void StartingArea()
 	{
@@ -85,6 +87,7 @@ public partial class ProceduralGenerator : Node
 			if (Queue.Count == 0) {
 				NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
 				CleanPass = true;
+				if (Queue.Count == 0) return;
 			}
 			if (Thread.IsStarted()) {
 				if ((bool)Thread.WaitToFinish()) {
@@ -103,7 +106,13 @@ public partial class ProceduralGenerator : Node
 			if (task.IsEmpty()) Queue.Pop();
 			Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
 			PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
-			if (!PatternTiles.AnyEmpty()) {Mutex.Unlock(); continue;}
+			if (!PatternTiles.AnyEmpty()) {
+				Vector2I chunk = (Vector2I)(((Vector2)rect.Position)/8).Ceil();
+				if (!ChunkStates.ContainsKey(chunk)) GenCount++;
+				ChunkStates[chunk] = ChunkState.Generated;
+				Mutex.Unlock();
+				continue;
+			}
 			ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
 			Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
 			Mutex.Unlock();
@@ -116,7 +125,7 @@ public partial class ProceduralGenerator : Node
 		Vector2I end = (Vector2I)(((Vector2)rect.End)/8).Ceil();
 		for (int x = start.X; x < end.X; x++)
 		for (int y = start.Y; y < end.Y; y++)
-			ChunkStates.Remove(new(x,y));
+		if (ChunkStates.Remove(new(x,y))) GenCount--;
 	}
 
 	// returns true if successful
@@ -139,7 +148,9 @@ public partial class ProceduralGenerator : Node
 				return false;
 			}
 		}
-		ChunkStates[(Vector2I)(((Vector2)rect.Position)/8).Ceil()] = ChunkState.Generated;
+		Vector2I chunk = (Vector2I)(((Vector2)rect.Position)/8).Ceil();
+		if (!ChunkStates.ContainsKey(chunk)) GenCount++;
+		ChunkStates[chunk] = ChunkState.Generated;
 		Mutex.Unlock();
 		return true;
 	}

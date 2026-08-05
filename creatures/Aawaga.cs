@@ -67,7 +67,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 
     public override void _PhysicsProcess(double delta)
     {
-		if (Game.Loading) return;
+		if (Game.State != Game.States.Play) return;
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer -= delta;
@@ -93,7 +93,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 
     public override void _IntegrateForces(PhysicsDirectBodyState2D state)
     {
-		if (Game.Loading) return;
+		if (Game.State != Game.States.Play) return;
 		SurfacesNormal *= 0.7f;
         if (ConnectedToSurface)
 			for (int i = 0; i < GetContactCount(); i++)

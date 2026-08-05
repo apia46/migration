@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://8af6rxgo1tlu"
-path="res://.godot/imported/owchies.png-ad9b7d8503a1aa76e9e18ce9758cf837.ctex"
+path="res://.godot/imported/owchies.png-3e7b7185623991382132bafe8fd80b37.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://owchies.png"
-dest_files=["res://.godot/imported/owchies.png-ad9b7d8503a1aa76e9e18ce9758cf837.ctex"]
+source_file="res://assets/owchies.png"
+dest_files=["res://.godot/imported/owchies.png-3e7b7185623991382132bafe8fd80b37.ctex"]
 
 [params]
 

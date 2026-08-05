@@ -16,9 +16,15 @@ public partial class Game : Control
 	public static ColorRect BlackScreen;
 	public static Button RestButton;
 	public static TextureRect YouDied;
+	public static Label ShelterLabel;
+	public static Button StartButton;
+	public static Control Menu;
 	#nullable enable
 	public static Vector2 ScreenSize = new Vector2(400, 400);
-	public static bool Loading = true;
+	
+	public enum States {Play, Loading, Menu, Paused, Starting}
+	public static States State = States.Loading;
+	public static bool CanPause = false;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -33,23 +39,57 @@ public partial class Game : Control
 		Ouchies = GetNode<TextureRect>("%Ouchies");
 		BlackScreen = GetNode<ColorRect>("%BlackScreen");
 		RestButton = GetNode<Button>("%RestButton");
+		StartButton = GetNode<Button>("%StartButton");
 		LivingUI = GetNode<Control>("%LivingUI");
 		YouDied = GetNode<TextureRect>("%YouDied");
+		ShelterLabel = GetNode<Label>("%ShelterLabel");
+		Menu = GetNode<Control>("%Menu");
 		GameViewportShader = (ShaderMaterial)GameViewportContainer.Material;
 		RestButton.Pressed += World.Player.Rest;
+		StartButton.Pressed += Start;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		MinimapCamera.Position = World.Player.Position;
-		HungerBar.Value = World.Player.Hunger;
-		HealthBar.Value = World.Player.Health;
-		Color modulate = Ouchies.Modulate;
-		Ouchies.Modulate = new(modulate){A=1-(float)World.Player.Health};
-		HeightLabel.Text = ((int)(World.Player.Position.Y/-World.PATTERN_TILE_SIZE)).ToString() + "m";
-		ScreenSize = GameViewportContainer.Size;
-		GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);
-		GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
+		if (State == States.Loading) {
+			StartButton.Text = $"Loading Map ({ProceduralGenerator.GenCount}/289)";
+		} else {
+			MinimapCamera.Position = World.Player.Position;
+			HungerBar.Value = World.Player.Hunger;
+			HealthBar.Value = World.Player.Health;
+			Color modulate = Ouchies.Modulate;
+			Ouchies.Modulate = new(modulate){A=1-(float)World.Player.Health};
+			HeightLabel.Text = ((int)(World.Player.Position.Y/-World.PATTERN_TILE_SIZE)).ToString() + "m";
+			ScreenSize = GameViewportContainer.Size;
+			GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);
+			GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
+		}
+	}
+
+	public void Start()
+	{
+		GameViewportContainer.Visible = true;
+		Ouchies.Visible = true;
+		LivingUI.Visible = true;
+		YouDied.Visible = true;
+		StartButton.Visible = false;
+		State = States.Starting;
+		Tween startTween = GetTree().CreateTween();
+		startTween.TweenProperty(GetNode<TextureRect>("%Title"), "modulate:a", 0, 0.5);
+		startTween.TweenInterval(1);
+		startTween.TweenProperty(GetNode<TextureRect>("%Title2"), "modulate:a", 1, 0.5);
+		startTween.TweenCallback(Callable.From(() => State = States.Play));
+		startTween.TweenProperty(Menu, "modulate:a", 0, 2);
+		startTween.TweenCallback(Callable.From(Started));
+	}
+
+	public void Started()
+	{
+		Menu.Modulate = Colors.White;
+		GetNode<TextureRect>("%Title").Modulate = Colors.White;
+		GetNode<TextureRect>("%Title2").Modulate = Colors.Transparent;
+		Menu.Visible = false;
+		CanPause = true;
 	}
 }
