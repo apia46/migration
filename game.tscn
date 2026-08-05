@@ -221,6 +221,7 @@ offset_right = 123.0
 offset_bottom = 29.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("5_7jktm")
 
 [node name="Menu" type="Control" parent="." unique_id=1998411197]
