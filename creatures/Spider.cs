@@ -31,6 +31,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	Vector2 PathfindingTarget;
 	Vector2 Home;
 	double BonkTimer;
+	double ChompTimer;
 
     public override void _Ready()
     {
@@ -75,8 +76,8 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	}
 
 	bool ChasePlayer() {
-		if (World.Player.Shelter is not null) return false;
-		if (Home.DistanceSquaredTo(Position) > (State == AIState.Chase ? 1e8 : 1e7)) return false;
+		if (World.Player.State != Player.States.Normal) return false;
+		if (Home.DistanceSquaredTo(Position) > (State == AIState.Chase ? 1e9 : 1e7)) return false;
 		// if (State == AIState.Chase) return Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer;
 		return World.Player.Position.DistanceSquaredTo(Position) < 40000;
 	}
@@ -92,14 +93,16 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 				if (NavigationAgent.TargetPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 1000) {
 					NavigationAgent.TargetPosition = World.Player.GlobalPosition;
 					PathfindingTarget = NavigationAgent.GetNextPathPosition();
-				} else if (NavigationAgent.IsNavigationFinished()) SetState(AIState.Idle);
-				else if (GlobalPosition.DistanceSquaredTo(PathfindingTarget) < 400) PathfindingTarget = NavigationAgent.GetNextPathPosition();
+				} else if (NavigationAgent.IsNavigationFinished()) {
+					NavigationAgent.TargetPosition = World.Player.GlobalPosition;
+				} else if (GlobalPosition.DistanceSquaredTo(PathfindingTarget) < 400) PathfindingTarget = NavigationAgent.GetNextPathPosition();
 			} break;
 		}
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Game.Loading) return;
 		Vector2 intendedDirection = Vector2.Zero;
 		float speed = 0;
 		switch (State) {
@@ -136,6 +139,11 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 		Velocity = intendedDirection * speed;
 		if (Velocity != Vector2.Zero) Visuals.Rotation = Velocity.Angle();
 		// DebugDrawer.AddText(new Vector2(30,50), BoredomTimer.ToString(), Colors.White);
+		ChompTimer -= delta;
+		if (World.Player.State == Player.States.Normal && ChompTimer <= 0 && Position.DistanceSquaredTo(World.Player.Position) < 800) {
+			ChompTimer = 0.5;
+			World.Player.Hurt(0.5);
+		}
 		MoveAndSlide();
 		TargetsNode.Position = -Position;
 		for (int i = 0; i < 6; i++)

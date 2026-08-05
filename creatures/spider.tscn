@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dn2jwtgh6nc4a" path="res://creatures/Spider.cs" id="1_4r7lk"]
 [ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="2_di4mj"]
+[ext_resource type="Texture2D" uid="uid://dws228xhck24o" path="res://creatures/spider_maw.png" id="3_w7rda"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_4r7lk"]
 radius = 16.0
@@ -23,8 +24,8 @@ joint_data/1/bone_index = 2
 joint_data/1/bone2d_node = NodePath("Center/Leg1A/Leg1B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = 209.99995
-joint_data/1/constraint_angle_max = 329.9999
+joint_data/1/constraint_angle_min = 209.99994
+joint_data/1/constraint_angle_max = 329.99988
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -69,8 +70,8 @@ joint_data/1/bone_index = 6
 joint_data/1/bone2d_node = NodePath("Center/Leg3A/Leg3B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = 209.99994
-joint_data/1/constraint_angle_max = 329.9999
+joint_data/1/constraint_angle_min = 209.99992
+joint_data/1/constraint_angle_max = 329.99988
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -295,7 +296,7 @@ metadata/_local_pose_override_enabled_ = true
 position = Vector2(16, 0)
 
 [node name="Leg6A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=1919426707]
-rotation = -0.00028042862
+rotation = -0.00028042865
 scale = Vector2(0.9998274, 0.9998274)
 rest = Transform2D(0.9999999, -1.813046e-05, 1.813046e-05, 0.9999999, -8.999999, -5.9999995)
 metadata/_local_pose_override_enabled_ = true
@@ -311,6 +312,12 @@ metadata/_local_pose_override_enabled_ = true
 
 [node name="Leg6C" type="Node2D" parent="Visuals/Skeleton/Center/Leg6A/Leg6B" unique_id=1074850748]
 position = Vector2(16, 0)
+
+[node name="maw" type="Sprite2D" parent="Visuals" unique_id=496803236]
+texture_filter = 1
+position = Vector2(22, 0)
+rotation = -1.5707964
+texture = ExtResource("3_w7rda")
 
 [node name="Targets" type="Node2D" parent="." unique_id=1434346343]
 unique_name_in_owner = true

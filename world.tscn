@@ -28,7 +28,7 @@ tile_set = ExtResource("3_036b0")
 
 [node name="Player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
 unique_name_in_owner = true
-position = Vector2(-6, -56)
+position = Vector2(0, -9)
 
 [node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112]
 unique_name_in_owner = true

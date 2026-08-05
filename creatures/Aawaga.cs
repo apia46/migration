@@ -67,6 +67,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 
     public override void _PhysicsProcess(double delta)
     {
+		if (Game.Loading) return;
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer -= delta;
@@ -92,6 +93,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 
     public override void _IntegrateForces(PhysicsDirectBodyState2D state)
     {
+		if (Game.Loading) return;
 		SurfacesNormal *= 0.7f;
         if (ConnectedToSurface)
 			for (int i = 0; i < GetContactCount(); i++)
@@ -172,12 +174,4 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 		SurfacesNormal = Vector2.Zero;
 		SetState(AIState.Thrown);
 	}
-}
-
-public interface IGrabbable
-{
-	public bool Grabbable();
-	public void Grab();
-	public void Ungrab();
-	public void Throw(Vector2 force);
 }

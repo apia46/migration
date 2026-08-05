@@ -44,12 +44,12 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 		float end = (expandRight+0.5f) * World.CONVERTED_TILE_SIZE - 2;
 		float middle = (vineX+end)/2;
 		while (vineX <= end) {
-			Vine vine = new();
 			float heightScale = 1f-2.5f*(float)Math.Pow((vineX-middle)/(1+expandLeft+expandRight)/World.CONVERTED_TILE_SIZE, 2);
 			float tileHeight = heights[Math.Clamp((int)Math.Round(vineX/World.CONVERTED_TILE_SIZE)+expandLeft,0,heights.Length-1)];
 			float vineHeight = tileHeight * World.CONVERTED_TILE_SIZE * heightScale + Game.RNG.Range(-0.5f, 0.5f)*World.CONVERTED_TILE_SIZE;
 			if (vineHeight >= Vine.SEGMENT_LENGTH * 1) {
-				vine.Initialise(vineHeight, Game.RNG.FlipCoin(0.4f));
+                Vine vine = new();
+                vine.Initialise(vineHeight, Game.RNG.FlipCoin(0.4f));
 				vine.Position = new(vineX, -World.CONVERTED_TILE_SIZE/2);
 				vine.Group = this;
 				AddChild(vine);

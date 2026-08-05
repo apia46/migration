@@ -39,6 +39,7 @@ public partial class World : Node2D
 		GD.Print(time);
 		DetailManager.StartingArea();
 		CreaturesManager.StartingArea();
+		Game.Loading = false;
 	}
 
 	 public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)

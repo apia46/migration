@@ -1,7 +1,7 @@
 [GlobalClass]
 public partial class ProceduralGenerator : Node
 {
-	readonly Rect2I STARTING_AREA = new(new(-7, -7), new(15, 8));
+	public static readonly Rect2I STARTING_AREA = new(new(-7, -7), new(15, 8));
 	public const int PATTERN_CHUNK_SIZE = 8;
 	public const int CONVERTED_CHUNK_SIZE = 16;
 	const double INVERSE_TEMPERATURE = 0.25;

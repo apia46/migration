@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
@@ -16,7 +18,8 @@ public partial class Player : CharacterBody2D
 
     Aawaga? grabbed = null;
 
-    public double Hunger = 1.0;
+    public double Hunger = 0.5;
+    public double Health = 1.0;
     public double Stillness = 0.0;
     const double STILLNESS_CUTOFF = 600000;
     const float STILLNESS_DECAY = 0.998f;
@@ -27,22 +30,36 @@ public partial class Player : CharacterBody2D
 
     public Vector2I CurrentChunk = new(-1,-1);
 
-    public Shelter? Shelter;
+    Shelter? Shelter;
+
+    public enum States {Normal, Sheltering, Resting, Dying}
+    public States State = States.Normal;
+
+    const double REST_FOOD_COST = 0.5;
+    Vector2 RespawnPosition;
+    Shelter? RespawnShelter;
 
     public override void _Ready()
     {
         GrabArea = GetNode<Area2D>("%GrabArea");
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
+        RespawnPosition = Position;
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Shelter is not null) {
-            Sheltering();
-            return;
+        if (Game.Loading) return;
+        switch (State) {
+            case States.Normal: Normal(delta); break;
+            case States.Sheltering: Sheltering(delta); break;
         }
+    }
 
-        Hunger -= delta * 0.01;
+    void Normal(double delta)
+    {
+        Hunger = Math.Max(0, Hunger + delta * -0.01);
+        Health = Math.Min(1, Health+delta * ((Hunger == 0) ? -0.05 : 0.005));
+        if (Health <= 0) Die();
 
         float horizontalControl = IsOnFloor() ? 1.0f : 0.2f;
         float moveDirection = Input.GetAxis("move_left", "move_right");
@@ -105,10 +122,41 @@ public partial class Player : CharacterBody2D
         }
     }
 
+    public void Hurt(double amount)
+    {
+        Health -= amount;
+        if (Health <= 0) Die();
+    }
+
+    void Die()
+    {
+        grabbed?.Ungrab();
+        Game.LivingUI.Visible = false;
+        Tween dieTween = GetTree().CreateTween();
+        State = States.Dying;
+        Visible = false;
+        dieTween.TweenProperty(Game.YouDied, "modulate:a", 1, 1);
+        dieTween.TweenInterval(1);
+        dieTween.TweenCallback(Callable.From(Respawn));
+        dieTween.TweenProperty(Game.YouDied, "modulate:a", 0, 1);
+    }
+    
+    void Respawn()
+    {
+        Position = RespawnPosition;
+        Game.LivingUI.Visible = true;
+        Visible = true;
+        State = States.Normal;
+        Health = 1;
+        Hunger = 0.5;
+        if (RespawnShelter is not null) EnterShelter(RespawnShelter);
+    }
+
     Vector2 GetCameraOffset() => ((World.GetLocalMousePosition() - CameraPosition)/Game.ScreenSize * 100f).Floor();
 
-    void Sheltering()
+    void Sheltering(double delta)
     {
+        Health = Math.Min(1, Health+delta * 0.03);
         CameraPosition += (Shelter!.Position - CameraPosition) * 0.5f;
         World.Camera.Position = CameraPosition.Floor() + GetCameraOffset();
     }
@@ -116,13 +164,13 @@ public partial class Player : CharacterBody2D
     public override void _Input(InputEvent @event)
     {
         if (@event.IsActionPressed("use")) {
-            if (Shelter is not null) ExitShelter(Shelter);
+            if (State == States.Sheltering) ExitShelter();
             else if (grabbed is not null) UseItem();
 		} else if (@event.IsActionPressed("grab")) {
             if (grabbed is null) {
                 foreach (Area2D node in GrabArea.GetOverlappingAreas())
                     if (node is Shelter shelter) {
-                        shelter.Enter();
+                        EnterShelter(shelter);
                         return;
                     }
                 TryGrab();
@@ -133,19 +181,47 @@ public partial class Player : CharacterBody2D
         }
     }
 
+    public void Rest()
+    {
+        if (State != States.Sheltering) return;
+        State = States.Resting;
+        Hunger -= REST_FOOD_COST;
+        Game.RestButton.Visible = false;
+        Tween restTween = GetTree().CreateTween();
+        restTween.TweenProperty(Game.BlackScreen, "modulate:a", 1, 1);
+        restTween.TweenInterval(1);
+        restTween.TweenCallback(Callable.From(Rested));
+        restTween.TweenProperty(Game.BlackScreen, "modulate:a", 0, 1);
+    }
+
+    void Rested()
+    {
+        RespawnShelter = Shelter!;
+        RespawnPosition = Position;
+        Health = 1;
+        EnterShelter(Shelter!);
+    }
+
     void EnterShelter(Shelter shelter)
     {
-        shelter.Enter();
+        if (Shelter != shelter) shelter.Enter();
+        State = States.Sheltering;
         Shelter = shelter;
         Velocity = Vector2.Zero;
         DoubleJumpAvailable = true;
         Visible = false;
+        Game.RestButton.Visible = true;
+        Game.RestButton.Disabled = Hunger < REST_FOOD_COST + 0.1;
+        Game.RestButton.Text = Hunger < REST_FOOD_COST + 0.1 ? "Not enough food to Rest!" : "Rest";
     }
 
-    void ExitShelter(Shelter shelter)
+    void ExitShelter()
     {
-        shelter.Exit();
+        Shelter!.Exit();
+        State = States.Normal;
         Shelter = null;
+        Visible = true;
+        Game.RestButton.Visible = false;
     }
 
     void UseItem()
@@ -154,7 +230,7 @@ public partial class Player : CharacterBody2D
             // eat
             if (Hunger >= 1.0) return;
             CreaturesManager.RemoveCreature(aawaga);
-            Hunger += 0.5;
+            Hunger += 0.3;
             grabbed = null;
         }
     }
@@ -171,4 +247,12 @@ public partial class Player : CharacterBody2D
             }
         }
     }
+}
+
+public interface IGrabbable
+{
+	public bool Grabbable();
+	public void Grab();
+	public void Ungrab();
+	public void Throw(Vector2 force);
 }

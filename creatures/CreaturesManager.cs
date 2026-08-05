@@ -12,8 +12,10 @@ public partial class CreaturesManager : Node
     public static void StartingArea()
     {
         for (int x = -CREATURED_CHUNKS_AROUND_PLAYER; x <= CREATURED_CHUNKS_AROUND_PLAYER; x++)
-		for (int y = -CREATURED_CHUNKS_AROUND_PLAYER; y <= CREATURED_CHUNKS_AROUND_PLAYER; y++)
-			SpawnCreatures(new(x,y));
+		for (int y = -CREATURED_CHUNKS_AROUND_PLAYER; y <= CREATURED_CHUNKS_AROUND_PLAYER; y++) {
+            if ((x == -1 || x == 0) && (y == -1 || y == 0)) continue;
+            SpawnCreatures(new(x,y));
+        }
     }
 
     public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
