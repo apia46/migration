@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://84m2201tkvw3"]
+
+[ext_resource type="Script" uid="uid://cnjx74xsny7pd" path="res://details/Shelter.cs" id="1_pjbna"]
+[ext_resource type="Texture2D" uid="uid://ccb85ajv4r0n" path="res://details/shelter.png" id="2_da48h"]
+[ext_resource type="Texture2D" uid="uid://cd00rlcwxwu0x" path="res://details/shelter_full.png" id="3_fumi2"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_da48h"]
+radius = 20.0
+
+[node name="Shelter" type="Area2D" unique_id=321647476]
+texture_filter = 1
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_pjbna")
+metadata/_custom_type_script = "uid://cnjx74xsny7pd"
+
+[node name="EmptySprite" type="Sprite2D" parent="." unique_id=1734971754]
+unique_name_in_owner = true
+texture = ExtResource("2_da48h")
+
+[node name="FullSprite" type="Sprite2D" parent="." unique_id=314171542]
+unique_name_in_owner = true
+visible = false
+texture = ExtResource("3_fumi2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=63466158]
+shape = SubResource("CircleShape2D_da48h")

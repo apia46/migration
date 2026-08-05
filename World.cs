@@ -52,17 +52,15 @@ public partial class World : Node2D
 
 	public static bool InteriorTile(Vector2I tile)
 	{
-		Vector2I tileAtlas = ConvertedTileMapLayer.GetCellAtlasCoords(tile);
-        return ProceduralGenerator.Model.ConvertedTiles.Convert(tileAtlas) switch {
-            3 or 4 or 7 or 8 => false,
+        return ConvertedTileMapLayer.GetCellAtlasCoords(tile) switch {
+        	{Y:0} or {X:1,Y:1} or {X:1,Y:2} => false,
             _ => true,
         };
     }
 	public static bool SolidTile(Vector2I tile)
 	{
-		Vector2I tileAtlas = ConvertedTileMapLayer.GetCellAtlasCoords(tile);
-        return ProceduralGenerator.Model.ConvertedTiles.Convert(tileAtlas) switch {
-            3  => true,
+        return ConvertedTileMapLayer.GetCellAtlasCoords(tile) switch {
+            {X:1,Y:0} or {X:1,Y:1} => true,
             _ => false,
         };
     }

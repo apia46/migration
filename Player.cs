@@ -26,7 +26,9 @@ public partial class Player : CharacterBody2D
     Vector2 CameraPosition;
     float CameraSpeed = 10f;
 
-    public Vector2I CurrentChunk = Vector2I.One * -1;
+    public Vector2I CurrentChunk = new(-1,-1);
+
+    public Shelter? Shelter;
 
     public override void _Ready()
     {
@@ -36,7 +38,9 @@ public partial class Player : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
     {
-        Hunger -= delta * 0.02;
+        Hunger -= delta * 0.01;
+        Visible = Shelter is null;
+        if (Shelter is not null) return;
 
         float horizontalControl = IsOnFloor() ? 1.0f : 0.2f;
         float moveDirection = Input.GetAxis("move_left", "move_right");
@@ -103,7 +107,13 @@ public partial class Player : CharacterBody2D
     public override void _Input(InputEvent @event)
     {
         if (@event.IsActionPressed("use")) {
-            if (grabbed is not null) UseItem();
+            if (Shelter is not null) Shelter.Exit();
+            else {
+                foreach (Area2D node in GrabArea.GetOverlappingAreas()) {
+                    if (node is Shelter shelter) shelter.Enter();
+                }
+                if (grabbed is not null) UseItem();
+            }
 		} else if (@event.IsActionPressed("grab")) {
             if (grabbed is null) TryGrab();
             else {

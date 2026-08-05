@@ -34,26 +34,40 @@ public partial class DetailManager : Node
         ProceduralGenerator.Mutex.Unlock();
 	}
 
-    static void PlaceDetail<T>(Vector2 position) where T : Node2D, IDetail<T>
+    static T PlaceDetail<T>(Vector2 position) where T : Node2D, IDetail<T>
     {
-        foreach (T checkDetail in T.Instances.Values) if (position.DistanceSquaredTo(checkDetail.Position) < 80000) return;
         T detail = T.Scene.Instantiate<T>();
         T.Instances[T.IdIterator] = detail;
         detail.Id = T.IdIterator++;
         detail.Position = position;
         World.AddChild(detail);
+        return detail;
     }
 
     static void PlaceDetails(Vector2I chunk)
     {
         if (!ProceduralGenerator.ChunkStates.TryGetValue(chunk, out ProceduralGenerator.ChunkState value) || value == ProceduralGenerator.ChunkState.Detailed) return;
-        for (int i = 0; i < 20; i++)
-        {
+        for (int i = 0; i < 20; i++) {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
             if (!World.InteriorTile(tile)) continue;
             if (!World.SolidTile(tile + new Vector2I(0,-1))) continue;
-            Vector2 position = tile * World.CONVERTED_TILE_SIZE + Vector2.One * World.CONVERTED_TILE_SIZE * 0.5f;
+            Vector2 position = (tile + new Vector2(0.5f,0.5f)) * World.CONVERTED_TILE_SIZE;
+            foreach (VineGroup checkGroup in VineGroup.Instances.Values) if (position.DistanceSquaredTo(checkGroup.Position) < 80000) goto cont;
             PlaceDetail<VineGroup>(position);
+            cont:;
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
+            if (!World.SolidTile(tile)) continue;
+            float rotation;
+            if (World.InteriorTile(tile + new Vector2I(0,-1))) rotation = 0;
+            else if (World.InteriorTile(tile + new Vector2I(1,0))) rotation = PI/2;
+            else if (World.InteriorTile(tile + new Vector2I(0,1))) rotation = PI;
+            else if (World.InteriorTile(tile + new Vector2I(-1,0))) rotation = -PI/2;
+            else continue;
+            Vector2 position = (tile + new Vector2(0.5f,0.5f)) * World.CONVERTED_TILE_SIZE;
+            PlaceDetail<Shelter>(position).Rotation = rotation;
         }
         ProceduralGenerator.ChunkStates[chunk] = ProceduralGenerator.ChunkState.Detailed;
     }

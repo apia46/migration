@@ -34,7 +34,7 @@ public partial class ProceduralGenerator : Node
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
-	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
+	const int GENERATE_CHUNKS_AROUND_PLAYER = 4;
 	const int UNSTABLE_CHUNKS_THRESHOLD = 9;
 
 	public void StartingArea()
@@ -42,7 +42,7 @@ public partial class ProceduralGenerator : Node
 		Mutex.Lock();
 		Queue.Push(new(Vector2I.Zero, false, true));
 		for (int i = 0; i < 4; i++) NextChunks(3);
-		for (int i = 0; i < 4; i++) NextChunks(5);
+		// for (int i = 0; i < 4; i++) NextChunks(5);
 		Mutex.Unlock();
 	}
 	
