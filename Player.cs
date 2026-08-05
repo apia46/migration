@@ -7,13 +7,12 @@ public partial class Player : CharacterBody2D
 
     #nullable disable
     public World World;
-    public Camera2D Camera;
     Area2D GrabArea;
     DebugDrawer DebugDrawer;
     #nullable enable
 
-    bool doubleJumpAvailable = false;
-    double coyoteTime = 0.0f;
+    bool DoubleJumpAvailable = false;
+    double CoyoteTime = 0.0f;
 
     Aawaga? grabbed = null;
 
@@ -38,9 +37,12 @@ public partial class Player : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (Shelter is not null) {
+            Sheltering();
+            return;
+        }
+
         Hunger -= delta * 0.01;
-        Visible = Shelter is null;
-        if (Shelter is not null) return;
 
         float horizontalControl = IsOnFloor() ? 1.0f : 0.2f;
         float moveDirection = Input.GetAxis("move_left", "move_right");
@@ -50,12 +52,12 @@ public partial class Player : CharacterBody2D
         if (Input.IsActionJustPressed("jump")) {
             if (IsOnWallOnly()) {
                 newVelocity.X = GetWallNormal().X * WALL_JUMP_IMPULSE;
-                doubleJumpAvailable = true;
+                DoubleJumpAvailable = true;
                 newVelocity.Y = JUMP_VELOCITY;
-            } else if (IsOnFloor() || coyoteTime > 0.0) {
+            } else if (IsOnFloor() || CoyoteTime > 0.0) {
                 newVelocity.Y = JUMP_VELOCITY;
-            } else if (doubleJumpAvailable) {
-                doubleJumpAvailable = false;
+            } else if (DoubleJumpAvailable) {
+                DoubleJumpAvailable = false;
                 newVelocity.Y = JUMP_VELOCITY;
                 if (moveDirection != 0.0f && moveDirection * Velocity.X < DOUBLE_JUMP_REDIRECT) {
                     newVelocity.X = moveDirection * DOUBLE_JUMP_REDIRECT;
@@ -68,12 +70,12 @@ public partial class Player : CharacterBody2D
         else newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
 
         if (IsOnFloor()) {
-            doubleJumpAvailable = true;
-            coyoteTime = 0.2f;
+            DoubleJumpAvailable = true;
+            CoyoteTime = 0.2f;
             newVelocity.X *= 0.8f;
         } else {
             newVelocity.Y += (float)delta * Game.GRAVITY;
-            coyoteTime = Math.Max(coyoteTime - delta, 0);
+            CoyoteTime = Math.Max(CoyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
         }
 
@@ -92,8 +94,7 @@ public partial class Player : CharacterBody2D
 
         CameraPosition += (Position - CameraPosition) * Math.Min(CameraSpeed * (float)delta, 1f);
         CameraSpeed += (10f - CameraSpeed) * Math.Min((float)delta * 10, 1f);
-        Vector2 cameraOffset = (World.GetLocalMousePosition() - CameraPosition)/Game.ScreenSize * 100f;
-		World.Camera.Position = CameraPosition.Floor() + cameraOffset;
+		World.Camera.Position = CameraPosition.Floor() + GetCameraOffset();
 
         Vector2I nextChunk = World.PositionToChunk(Position);
         if (CurrentChunk != nextChunk) {
@@ -104,23 +105,47 @@ public partial class Player : CharacterBody2D
         }
     }
 
+    Vector2 GetCameraOffset() => ((World.GetLocalMousePosition() - CameraPosition)/Game.ScreenSize * 100f).Floor();
+
+    void Sheltering()
+    {
+        CameraPosition += (Shelter!.Position - CameraPosition) * 0.5f;
+        World.Camera.Position = CameraPosition.Floor() + GetCameraOffset();
+    }
+
     public override void _Input(InputEvent @event)
     {
         if (@event.IsActionPressed("use")) {
-            if (Shelter is not null) Shelter.Exit();
-            else {
-                foreach (Area2D node in GrabArea.GetOverlappingAreas()) {
-                    if (node is Shelter shelter) shelter.Enter();
-                }
-                if (grabbed is not null) UseItem();
-            }
+            if (Shelter is not null) ExitShelter(Shelter);
+            else if (grabbed is not null) UseItem();
 		} else if (@event.IsActionPressed("grab")) {
-            if (grabbed is null) TryGrab();
-            else {
+            if (grabbed is null) {
+                foreach (Area2D node in GrabArea.GetOverlappingAreas())
+                    if (node is Shelter shelter) {
+                        shelter.Enter();
+                        return;
+                    }
+                TryGrab();
+            } else {
                 grabbed.Throw(GetLocalMousePosition().Normalized() * 800);
                 grabbed = null;
             }
         }
+    }
+
+    void EnterShelter(Shelter shelter)
+    {
+        shelter.Enter();
+        Shelter = shelter;
+        Velocity = Vector2.Zero;
+        DoubleJumpAvailable = true;
+        Visible = false;
+    }
+
+    void ExitShelter(Shelter shelter)
+    {
+        shelter.Exit();
+        Shelter = null;
     }
 
     void UseItem()

@@ -4,7 +4,7 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	public int Id { get; set; }
 
 	const float LEG_LENGTH = 34;
-	const float SPEED = 240;
+	float Speed;
 	readonly Color LEG_COLOR = new("#004928");
 
     public bool Grabbed { get; set; }
@@ -25,13 +25,17 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	
 	Rid MainDraw;
 
-	public enum AIState {Idle, Wander, Chase, Evade};
+	public enum AIState {Idle, Wander, Chase, Evade, Bonking};
 	AIState State = AIState.Idle;
 	double BoredomTimer;
 	Vector2 PathfindingTarget;
+	Vector2 Home;
+	double BonkTimer;
 
     public override void _Ready()
     {
+		Home = Position;
+		Speed = Game.RNG.Range(180, 220);
 		MainDraw = GetCanvasItem();
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
         NavigationAgent = GetNode<NavigationAgent2D>("%NavigationAgent");
@@ -64,14 +68,17 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 				UpdatePathfinding();
 			} break;
 			case AIState.Evade: {} break;
+			case AIState.Bonking: {
+				BonkTimer = 0.4;
+			} break;
 		}
 	}
 
-	float Chaseness() {
-		if (World.Player.Shelter is not null) return 0;
-		float dist = World.Player.Position.DistanceSquaredTo(Position);
-		if (State == AIState.Chase) return Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer;
-		return 1e6f/dist;
+	bool ChasePlayer() {
+		if (World.Player.Shelter is not null) return false;
+		if (Home.DistanceSquaredTo(Position) > (State == AIState.Chase ? 1e8 : 1e7)) return false;
+		// if (State == AIState.Chase) return Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer;
+		return World.Player.Position.DistanceSquaredTo(Position) < 40000;
 	}
 
 	void UpdatePathfinding(bool reset=false)
@@ -95,31 +102,39 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	{
 		Vector2 intendedDirection = Vector2.Zero;
 		float speed = 0;
-		float chaseness = Chaseness();
 		switch (State) {
 			case AIState.Idle: {
 				BoredomTimer -= delta;
 				if (BoredomTimer <= 0) SetState(AIState.Wander);
-				else if (chaseness > 8) SetState(AIState.Chase);
+				else if (ChasePlayer()) SetState(AIState.Chase);
 			} break;
 			case AIState.Wander: {
 				UpdatePathfinding();
 				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
 				speed = 30;
-				if (chaseness >= 12) SetState(AIState.Chase);
+				if (ChasePlayer()) SetState(AIState.Chase);
 			} break;
 			case AIState.Chase: {
-				BoredomTimer += delta;
 				UpdatePathfinding();
 				intendedDirection = GlobalPosition.DirectionTo(PathfindingTarget);
-				speed = SPEED*(0.75f+chaseness*0.0125f);
-				if (chaseness <= 0) SetState(AIState.Idle);
+				speed = Speed;
+				if (!ChasePlayer()) SetState(AIState.Idle);
 			} break;
 			case AIState.Evade: {} break;
+			case AIState.Bonking: {
+				Vector2 velocity = Velocity;
+				velocity.Y += Game.GRAVITY * (float)delta;
+				velocity *= 0.9f;
+				Velocity = velocity;
+				Vector2 PreviousPosition = Position;
+				MoveAndSlide();
+				foreach (Node2D target in Targets) target.Position += Position-PreviousPosition;
+				BonkTimer -= delta;
+				if (BonkTimer <= 0) SetState(AIState.Idle);
+			} return;
 		}
 		Velocity = intendedDirection * speed;
 		if (Velocity != Vector2.Zero) Visuals.Rotation = Velocity.Angle();
-		DebugDrawer.AddText(new Vector2(30,30), Chaseness().ToString(), Colors.White);
 		// DebugDrawer.AddText(new Vector2(30,50), BoredomTimer.ToString(), Colors.White);
 		MoveAndSlide();
 		TargetsNode.Position = -Position;
@@ -140,6 +155,12 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 		}
 		DebugDrawer.Evaluate();
 		CreaturesManager.CreatureMoved(this);
+	}
+
+	public void Bonk(Vector2 direction)
+	{
+		Velocity += direction * 1.25f;
+		SetState(AIState.Bonking);
 	}
 
 	Vector2 TargetRestPosition(int target, Vector2 intendedDirection) => Vector2.Right.Rotated(Visuals.Rotation+TAU*(target+0.5f)/6) * 30 + intendedDirection * 15f;

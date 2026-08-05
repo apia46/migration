@@ -20,14 +20,12 @@ public partial class Shelter : Area2D, IDetail<Shelter>
 
     public void Enter()
     {
-        World.Player.Shelter = this;
         FullSprite.Visible = true;
         EmptySprite.Visible = false;
     }
 
     public void Exit()
     {
-        World.Player.Shelter = null;
         FullSprite.Visible = false;
         EmptySprite.Visible = true;
     }

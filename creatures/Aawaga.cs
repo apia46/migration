@@ -43,6 +43,7 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 			shape.Position *= Size;
 		}
 		SetState(AIState.Idle);
+		BodyEntered += Collided;
 	}
 
 	void SetState(AIState to)
@@ -137,6 +138,12 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 		// DebugDrawer.Rotation = -Rotation;
 		// DebugDrawer.Evaluate();
     }
+
+	void Collided(Node node)
+	{
+		if (node is Spider spider && LinearVelocity.LengthSquared() > 40000)
+			spider.Bonk(LinearVelocity);
+	}
 
 	IEnumerable<CollisionShape2D> CollisionShapes() {
 		foreach (Node node in GetChildren())
