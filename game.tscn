@@ -175,18 +175,6 @@ grow_horizontal = 2
 grow_vertical = 0
 text = "Not enough food to Rest!"
 
-[node name="BlackScreen" type="ColorRect" parent="LivingUI" unique_id=1350138844]
-unique_name_in_owner = true
-modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
-
 [node name="ShelterLabel" type="Label" parent="LivingUI" unique_id=1074541713]
 unique_name_in_owner = true
 visible = false
@@ -203,6 +191,18 @@ offset_bottom = -152.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "RMB to exit shelter"
+
+[node name="BlackScreen" type="ColorRect" parent="LivingUI" unique_id=1350138844]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
 
 [node name="YouDied" type="TextureRect" parent="." unique_id=1137643743]
 unique_name_in_owner = true

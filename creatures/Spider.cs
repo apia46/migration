@@ -77,9 +77,8 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 
 	bool ChasePlayer() {
 		if (World.Player.State != Player.States.Normal) return false;
-		if (Home.DistanceSquaredTo(Position) > (State == AIState.Chase ? 1e9 : 1e7)) return false;
-		// if (State == AIState.Chase) return Math.Min(10, 1e6f/dist)+10+Math.Max(-5,dist/5000-dist*dist/2e9f)-(float)BoredomTimer;
-		return World.Player.Position.DistanceSquaredTo(Position) < 40000;
+		if (Home.DistanceSquaredTo(Position) > 1e7) return false;
+		return World.Player.Position.DistanceSquaredTo(Position) < (State == AIState.Chase ? 1e6 : 4e4);
 	}
 
 	void UpdatePathfinding(bool reset=false)

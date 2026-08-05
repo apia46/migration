@@ -87,7 +87,10 @@ public partial class ProceduralGenerator : Node
 			if (Queue.Count == 0) {
 				NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
 				CleanPass = true;
-				if (Queue.Count == 0) return;
+				if (Queue.Count == 0) {
+					Mutex.Unlock();
+					return;
+				}
 			}
 			if (Thread.IsStarted()) {
 				if ((bool)Thread.WaitToFinish()) {
