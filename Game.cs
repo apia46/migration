@@ -1,5 +1,7 @@
 public partial class Game : Control
 {
+	public const bool DEBUG = false;
+
 	public static readonly GameRandom RNG = new();
 	
 	public const float GRAVITY = 1000.0f;
@@ -77,7 +79,7 @@ public partial class Game : Control
 		State = States.Starting;
 		Tween startTween = GetTree().CreateTween();
 		startTween.TweenProperty(GetNode<TextureRect>("%Title"), "modulate:a", 0, 0.5);
-		startTween.TweenInterval(1);
+		startTween.TweenInterval(0.5);
 		startTween.TweenProperty(GetNode<TextureRect>("%Title2"), "modulate:a", 1, 0.5);
 		startTween.TweenCallback(Callable.From(() => State = States.Play));
 		startTween.TweenProperty(Menu, "modulate:a", 0, 2);

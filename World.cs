@@ -46,8 +46,14 @@ public partial class World : Node2D
 
 	 public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
 	{
+		if (to.X != from.X && to.Y != from.Y) {
+			PlayerCrossedChunkBoundary(new(to.X, 0), from);
+			PlayerCrossedChunkBoundary(to, new(to.X, from.Y));
+			return;
+		}
 		DetailManager.PlayerCrossedChunkBoundary(to,from);
 		CreaturesManager.PlayerCrossedChunkBoundary(to,from);
+		ProceduralGenerator.PlayerCrossedChunkBoundary(to,from);
 	}
 
 	public const int PATTERN_TILE_SIZE = 64;
@@ -70,11 +76,15 @@ public partial class World : Node2D
 
 	public override void _Input(InputEvent @event)
     {
-        if (@event.IsActionPressed("toggle")) {	
-			GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled = !GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled;
-			GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
-		} else if (@event.IsActionPressed("spawn")) {	
-			CreaturesManager.SpawnCreature<Aawaga>(Player.Position + new Vector2(30,-30));
+		#pragma warning disable CS0162
+		if (Game.DEBUG) {
+			if (@event.IsActionPressed("toggle")) {	
+				GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled = !GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled;
+				GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
+			} else if (@event.IsActionPressed("spawn")) {	
+				CreaturesManager.SpawnCreature<Aawaga>(Player.Position + new Vector2(30,-30));
+			}
 		}
+		#pragma warning restore CS0162
 	}
 }

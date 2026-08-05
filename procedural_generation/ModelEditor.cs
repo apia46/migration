@@ -40,7 +40,7 @@ public partial class ModelEditor : Node2D
 		ModelResource resource = new(model);
 		resource.TakeOverPath(PATH);
 		ResourceSaver.Save(resource);
-		EditorInterface.Singleton.CallDeferred("edit_resource", resource);
+		// EditorInterface.Singleton.CallDeferred("edit_resource", resource);
     }
 
 	// returns whether or not to 

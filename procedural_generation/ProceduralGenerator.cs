@@ -37,7 +37,7 @@ public partial class ProceduralGenerator : Node
 	bool InitialGenFinished = false;
 
 	const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
-	const int UNSTABLE_CHUNKS_THRESHOLD = 9;	public int minx = 0;
+	const int DEGENERATE_CHUNKS_AROUND_PLAYER = 12;
 
 	public void StartingArea()
 	{
@@ -46,6 +46,18 @@ public partial class ProceduralGenerator : Node
 		for (int i = 0; i < 4; i++) NextChunks(3);
 		for (int i = 0; i < 4; i++) NextChunks(5);
 		Mutex.Unlock();
+	}
+
+	public void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+	{
+        Vector2I direction = to - from;
+        static Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
+
+        Mutex.Lock();
+		for (int h = -DEGENERATE_CHUNKS_AROUND_PLAYER; h <= DEGENERATE_CHUNKS_AROUND_PLAYER; h++) {
+            Degenerate(to + direction * -DEGENERATE_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
+        }
+        Mutex.Unlock();
 	}
 	
 	void NextChunks(int chunks)
@@ -61,12 +73,11 @@ public partial class ProceduralGenerator : Node
 
 		Vector2I position = (Vector2I)(World.Player.Position / PATTERN_CHUNK_SIZE / World.PATTERN_TILE_SIZE).Round();
 		for (int layer = chunks; layer > 0; layer--) {
-			bool unstable = layer >= UNSTABLE_CHUNKS_THRESHOLD;
 			for (int x = 0; x < layer*2; x++) {
-				AddToQueue(position + new Vector2I(layer,layer-x), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
-				AddToQueue(position + new Vector2I(layer-x,-layer), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
-				AddToQueue(position + new Vector2I(-layer,x-layer), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
-				AddToQueue(position + new Vector2I(x-layer,layer), unstable && Game.RNG.NextDouble()*4 < World.Player.Stillness);
+				AddToQueue(position + new Vector2I(layer,layer-x), false);
+				AddToQueue(position + new Vector2I(layer-x,-layer), false);
+				AddToQueue(position + new Vector2I(-layer,x-layer), false);
+				AddToQueue(position + new Vector2I(x-layer,layer), false);
 			}
 		}
 		AddToQueue(position, false);
@@ -121,6 +132,22 @@ public partial class ProceduralGenerator : Node
 			Mutex.Unlock();
 		}
     }
+
+	void Degenerate(Vector2I position)
+	{
+		if (!ChunkStates.ContainsKey(position)) return;
+		Rect2I rect = new(position * PATTERN_CHUNK_SIZE, Vector2I.One * PATTERN_CHUNK_SIZE);
+		RectangleReverted(rect);
+		for (int x = rect.Position.X; x < rect.End.X; x++)
+		for (int y = rect.Position.Y; y < rect.End.Y; y++) {
+			Vector2I patternTile = new(x,y);
+			PatternLayer.SetCell(patternTile);
+			for (int cx = 0; cx < Model.ConversionScale.X; cx++)
+			for (int cy = 0; cy < Model.ConversionScale.Y; cy++)
+				ConvertedLayer.SetCell(patternTile*Model.ConversionScale + new Vector2I(cx,cy));
+		}
+
+	}
 
 	void RectangleReverted(Rect2I rect)
 	{
