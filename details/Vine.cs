@@ -67,7 +67,8 @@ public partial class Vine : Line2D
 
             // circle collision
             if (Math.Abs(secondSegment.Position.X) <= 50)
-                foreach (CircleCollider collider in DetailManager.CircleColliders) {
+                for (int coll = 0; coll < DetailManager.CircleColliders.Length; coll++) {
+                    CircleCollider collider = DetailManager.CircleColliders[coll];
                     Vector2 toCollide = collider.Position - secondSegment.Position - globalPosition;
                     if (toCollide.LengthSquared() < collider.Radius*collider.Radius) {
                         float distToCollide = toCollide.Length();
@@ -77,8 +78,8 @@ public partial class Vine : Line2D
                 }
 
             // tile collision
-            foreach (Vector2 collider in Group.TileColliders) {
-                Vector2 fromCollide = secondSegment.Position + position - collider;
+            for (int coll = 0; coll < Group.TileColliders.Length; coll++) {
+                Vector2 fromCollide = secondSegment.Position + position - Group.TileColliders[coll];
                 fromCollide.X *= 0.99f;
                 if (fromCollide.LengthSquared() > 512) continue;
                 float m = fromCollide.Y / fromCollide.X;

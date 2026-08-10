@@ -10,7 +10,7 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
     public static int IdIterator {get; set;}
     public int Id {get; set;}
 
-	public List<Vector2> TileColliders = [];
+	public Vector2[] TileColliders = [];
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -57,11 +57,14 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 			vineX += Game.RNG.Range(6,12);
 		}
 		
+		List<Vector2> tileColliders = [];
         for (int x = -expandLeft; x <= expandRight; x++)
         for (int y = lengthRange.X < 5 ? -1 : 0; y < lengthRange.Y; y++)
 			if (World.SolidTile(tile + new Vector2I(x,y)))
-				TileColliders.Add(new Vector2(x,y) * World.CONVERTED_TILE_SIZE);
+				tileColliders.Add(new Vector2(x,y) * World.CONVERTED_TILE_SIZE);
         
+		TileColliders = [..tileColliders];
+
 		DebugDrawer.Evaluate();
 	}
 

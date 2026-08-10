@@ -4,7 +4,7 @@ public partial class DetailManager : Node
     #nullable disable
     public static World World;
     #nullable enable
-    public static List<CircleCollider> CircleColliders = [];
+    public static CircleCollider[] CircleColliders = [];
 
     public const int DETAILED_CHUNKS_AROUND_PLAYER = 2;
 
