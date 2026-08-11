@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
@@ -11,6 +9,7 @@ public partial class Player : CharacterBody2D
     public World World;
     Area2D GrabArea;
     DebugDrawer DebugDrawer;
+    Line2D WingL;
     #nullable enable
 
     bool DoubleJumpAvailable = false;
@@ -39,11 +38,38 @@ public partial class Player : CharacterBody2D
     Vector2 RespawnPosition;
     Shelter? RespawnShelter;
 
+    WingSegment[] WingLSegments = [];
+    double WingT;
+
     public override void _Ready()
     {
         GrabArea = GetNode<Area2D>("%GrabArea");
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
+        WingL = GetNode<Line2D>("%WingL");
+        WingLSegments = new WingSegment[3];
+        for (int i = 0; i < WingLSegments.Length; i++)
+            WingLSegments[i] = new();
         RespawnPosition = Position;
+    }
+
+    public override void _Process(double delta)
+    {
+        WingT += delta;
+        if (WingT >= TAU) WingT -= TAU;
+        WingLSegments[0].Angle = 0.3 * Math.Sin(WingT);
+        WingLSegments[1].Angle = 0.4 * Math.Sin(WingT+0.75);
+        WingLSegments[2].Angle = 0.5 * Math.Sin(WingT+1.5);
+
+        Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
+        Vector2 pointAccum = Vector2.Zero;
+        double angleAccum = 0;
+        for (int i = 0; i < WingLSegments.Length; i++) {
+            WingSegment segment = WingLSegments[i];
+            angleAccum += segment.Angle;
+            pointAccum += new Vector2(16,0).Rotated((float)angleAccum);
+            wingLPoints[i] = pointAccum;
+        }
+        WingL.Points = wingLPoints;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -273,4 +299,9 @@ public interface IGrabbable
 	public void Grab();
 	public void Ungrab();
 	public void Throw(Vector2 force);
+}
+
+struct WingSegment()
+{
+    public double Angle = 0;
 }

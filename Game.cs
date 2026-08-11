@@ -55,7 +55,8 @@ public partial class Game : Control
 	public override void _Process(double delta)
 	{
 		if (State == States.Loading) {
-			StartButton.Text = $"Loading Map ({ProceduralGenerator.GenCount}/289)";
+			const int L = ProceduralGenerator.GENERATE_CHUNKS_AROUND_PLAYER*2+1;
+			StartButton.Text = $"Loading Map ({ProceduralGenerator.GenCount}/{L*L})";
 		} else {
 			MinimapCamera.Position = World.Player.Position;
 			HungerBar.Value = World.Player.Hunger;
