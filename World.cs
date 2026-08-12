@@ -46,6 +46,8 @@ public partial class World : Node2D
 
 	 public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
 	{
+		#pragma warning disable CS0162
+		if (Game.DEBUG_NO_PROCGEN) return;
 		if (to.X != from.X && to.Y != from.Y) {
 			PlayerCrossedChunkBoundary(new(to.X, 0), from);
 			PlayerCrossedChunkBoundary(to, new(to.X, from.Y));
@@ -54,6 +56,7 @@ public partial class World : Node2D
 		DetailManager.PlayerCrossedChunkBoundary(to,from);
 		CreaturesManager.PlayerCrossedChunkBoundary(to,from);
 		ProceduralGenerator.PlayerCrossedChunkBoundary(to,from);
+		#pragma warning restore CS0162
 	}
 
 	public const int PATTERN_TILE_SIZE = 64;

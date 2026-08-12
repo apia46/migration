@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cwry062tn6awj" path="res://Player.cs" id="1_onrkg"]
 [ext_resource type="Texture2D" uid="uid://oaibwbfon52x" path="res://assets/moth.jpg" id="2_onrkg"]
+[ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="3_i3pqv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_onrkg"]
 size = Vector2(16, 16)
@@ -30,3 +31,8 @@ shape = SubResource("CircleShape2D_onrkg")
 [node name="WingL" type="Line2D" parent="." unique_id=637804009]
 unique_name_in_owner = true
 width = 2.0
+
+[node name="DebugDrawer" type="Node2D" parent="." unique_id=793793531]
+unique_name_in_owner = true
+script = ExtResource("3_i3pqv")
+metadata/_custom_type_script = "uid://dstfir57scngn"

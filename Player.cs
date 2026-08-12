@@ -39,14 +39,20 @@ public partial class Player : CharacterBody2D
     Shelter? RespawnShelter;
 
     WingSegment[] WingLSegments = [];
-    double WingT;
+    double WingT = WING_UP+TAU;
+    double WingM = 0;
+    bool WingFlapping = false;
+    const float WING_UP = -2;
+    const float WING_DOWN = 1;
+
+    bool FacingRight = true;
 
     public override void _Ready()
     {
         GrabArea = GetNode<Area2D>("%GrabArea");
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
         WingL = GetNode<Line2D>("%WingL");
-        WingLSegments = new WingSegment[3];
+        WingLSegments = new WingSegment[5];
         for (int i = 0; i < WingLSegments.Length; i++)
             WingLSegments[i] = new();
         RespawnPosition = Position;
@@ -54,11 +60,21 @@ public partial class Player : CharacterBody2D
 
     public override void _Process(double delta)
     {
-        WingT += delta;
-        if (WingT >= TAU) WingT -= TAU;
-        WingLSegments[0].Angle = 0.3 * Math.Sin(WingT);
-        WingLSegments[1].Angle = 0.4 * Math.Sin(WingT+0.75);
-        WingLSegments[2].Angle = 0.5 * Math.Sin(WingT+1.5);
+        if (WingFlapping) {
+            double wingTarget = DoubleJumpAvailable ? WING_UP : WING_DOWN;
+            WingT += (WING_UP - 1 - WingT) * 3 * delta;
+            if (WingT<wingTarget) WingT = wingTarget;
+            if (WingT-WING_UP < 0.1) {
+                WingFlapping = false;
+                WingT = WING_UP+TAU;
+            }
+        }
+
+        WingLSegments[0].Angle = WingM * 0.5 * Math.Sin(WingT);
+        WingLSegments[1].Angle = WingM * 0.10 * Math.Sin(WingT+0.375);
+        WingLSegments[2].Angle = WingM * 0.15 * Math.Sin(WingT+0.75);
+        WingLSegments[3].Angle = WingM * 0.20 * Math.Sin(WingT+1.125);
+        WingLSegments[4].Angle = WingM * 0.25 * Math.Sin(WingT+1.5);
 
         Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
         Vector2 pointAccum = Vector2.Zero;
@@ -66,10 +82,14 @@ public partial class Player : CharacterBody2D
         for (int i = 0; i < WingLSegments.Length; i++) {
             WingSegment segment = WingLSegments[i];
             angleAccum += segment.Angle;
-            pointAccum += new Vector2(16,0).Rotated((float)angleAccum);
-            wingLPoints[i] = pointAccum;
+            pointAccum += new Vector2(8,0).Rotated((float)angleAccum);
+            wingLPoints[i] = new((FacingRight ? -pointAccum.X : pointAccum.X) * 1.5f, pointAccum.Y);
         }
         WingL.Points = wingLPoints;
+
+        DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
+        DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
+        DebugDrawer.Evaluate();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -99,9 +119,13 @@ public partial class Player : CharacterBody2D
                 newVelocity.Y = JUMP_VELOCITY;
             } else if (IsOnFloor() || CoyoteTime > 0.0) {
                 newVelocity.Y = JUMP_VELOCITY;
+                WingT = WING_UP+TAU;
+                WingFlapping = true;
             } else if (DoubleJumpAvailable) {
                 DoubleJumpAvailable = false;
                 newVelocity.Y = JUMP_VELOCITY;
+                if (WingT < 0) WingT = 3;
+                WingFlapping = true;
                 if (moveDirection != 0.0f && moveDirection * Velocity.X < DOUBLE_JUMP_REDIRECT) {
                     newVelocity.X = moveDirection * DOUBLE_JUMP_REDIRECT;
                     CameraSpeed = 20f;
@@ -109,8 +133,14 @@ public partial class Player : CharacterBody2D
             }
         }
 
-        if (moveDirection != 0.0f) newVelocity.X += moveDirection * MOVE_SPEED * (float)delta * horizontalControl;
-        else newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
+        if (moveDirection != 0.0f) {
+            WingM = Mathf.MoveToward(WingM, 1, (float)delta);
+            newVelocity.X += moveDirection * MOVE_SPEED * (float)delta * horizontalControl;
+            FacingRight = moveDirection > 0;
+        } else {
+            WingM = Mathf.MoveToward(WingM, 0, (float)delta * 5);
+            newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
+        }
 
         if (IsOnFloor()) {
             DoubleJumpAvailable = true;

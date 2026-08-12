@@ -36,16 +36,19 @@ public partial class ProceduralGenerator : Node
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
-	public const int GENERATE_CHUNKS_AROUND_PLAYER = 4;
+	public const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
 	const int DEGENERATE_CHUNKS_AROUND_PLAYER = 12;
 
 	public void StartingArea()
 	{
+		#pragma warning disable CS0162
+		if (Game.DEBUG_NO_PROCGEN) return;
 		Mutex.Lock();
 		Queue.Push(new(Vector2I.Zero, false, true));
 		for (int i = 0; i < 4; i++) NextChunks(3);
-		// for (int i = 0; i < 4; i++) NextChunks(5);
+		for (int i = 0; i < 4; i++) NextChunks(5);
 		Mutex.Unlock();
+		#pragma warning restore CS0162
 	}
 
 	public void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
@@ -96,7 +99,7 @@ public partial class ProceduralGenerator : Node
 		while (runs++ < 30 && !Thread.IsAlive()) {
 			Mutex.Lock();
 			if (Queue.Count == 0) {
-				NextChunks(GENERATE_CHUNKS_AROUND_PLAYER);
+				NextChunks(Game.DEBUG_NO_PROCGEN ? 1 : GENERATE_CHUNKS_AROUND_PLAYER);
 				CleanPass = true;
 				if (Queue.Count == 0) {
 					Mutex.Unlock();
