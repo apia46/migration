@@ -10,6 +10,10 @@ size = Vector2(16, 16)
 [sub_resource type="CircleShape2D" id="CircleShape2D_onrkg"]
 radius = 25.0
 
+[sub_resource type="Curve" id="Curve_i3pqv"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.663492, 0.6263066), -0.6641781, -0.6641781, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
 [node name="player" type="CharacterBody2D" unique_id=951441720]
 script = ExtResource("1_onrkg")
 
@@ -17,6 +21,7 @@ script = ExtResource("1_onrkg")
 shape = SubResource("RectangleShape2D_onrkg")
 
 [node name="sprite" type="Sprite2D" parent="." unique_id=1141303818]
+visible = false
 scale = Vector2(0.085, 0.085)
 texture = ExtResource("2_onrkg")
 
@@ -28,11 +33,24 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea" unique_id=339456093]
 shape = SubResource("CircleShape2D_onrkg")
 
-[node name="WingL" type="Line2D" parent="." unique_id=637804009]
-unique_name_in_owner = true
-width = 2.0
-
 [node name="DebugDrawer" type="Node2D" parent="." unique_id=793793531]
 unique_name_in_owner = true
 script = ExtResource("3_i3pqv")
 metadata/_custom_type_script = "uid://dstfir57scngn"
+
+[node name="Body" type="Line2D" parent="." unique_id=1818213931]
+unique_name_in_owner = true
+points = PackedVector2Array(10, 0, 18, 3, 27, 5, 40, 7, 51, 9, 61, 11)
+width = 16.0
+width_curve = SubResource("Curve_i3pqv")
+default_color = Color(0.86754787, 0.86754787, 0.8675478, 1)
+begin_cap_mode = 2
+
+[node name="WingL2" type="Line2D" parent="." unique_id=813249488]
+unique_name_in_owner = true
+visible = false
+points = PackedVector2Array(10, 0, 18, 3, 27, 5, 40, 7, 51, 9)
+width = 1.0
+
+[node name="WingL" type="Node2D" parent="." unique_id=1379472332]
+unique_name_in_owner = true

@@ -9,8 +9,9 @@ public partial class Player : CharacterBody2D
     public World World;
     Area2D GrabArea;
     DebugDrawer DebugDrawer;
-    Line2D WingL;
+    Line2D Body;
     #nullable enable
+    Rid WingL;
 
     bool DoubleJumpAvailable = false;
     double CoyoteTime = 0.0f;
@@ -39,11 +40,18 @@ public partial class Player : CharacterBody2D
     Shelter? RespawnShelter;
 
     WingSegment[] WingLSegments = [];
+    Vector2[] WingL2PointsBase = [];
+    Color[] WingLColors = [];
+    Color[] WingPolygonColors = [];
     double WingT = WING_UP+TAU;
     double WingM = 0;
+    double BodyR = 0;
     bool WingFlapping = false;
     const float WING_UP = -2;
-    const float WING_DOWN = 1;
+    const float WING_DOWN = -0.5f;
+    readonly Color WingEdgeColor = new("#d4d2b0");
+    readonly Color WingWithinColor = new("#ffdaac");
+    readonly Color WingBaseColor = new("#fffded");
 
     bool FacingRight = true;
 
@@ -51,32 +59,42 @@ public partial class Player : CharacterBody2D
     {
         GrabArea = GetNode<Area2D>("%GrabArea");
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
-        WingL = GetNode<Line2D>("%WingL");
+        WingL = GetNode<Node2D>("%WingL").GetCanvasItem();
         WingLSegments = new WingSegment[5];
-        for (int i = 0; i < WingLSegments.Length; i++)
-            WingLSegments[i] = new();
+        WingLColors = FillArray(new Color[WingLSegments.Length], WingEdgeColor);
+        WingPolygonColors = FillArray(new Color[3], WingBaseColor);
         RespawnPosition = Position;
+        WingL2PointsBase = GetNode<Line2D>("%WingL2").Points;
+        Body = GetNode<Line2D>("%Body");
     }
 
     public override void _Process(double delta)
     {
         if (WingFlapping) {
             double wingTarget = DoubleJumpAvailable ? WING_UP : WING_DOWN;
-            WingT += (WING_UP - 1 - WingT) * 3 * delta;
-            if (WingT<wingTarget) WingT = wingTarget;
-            if (WingT-WING_UP < 0.1) {
+            WingT += (wingTarget - 1 - WingT) * 3 * delta;
+            if (DoubleJumpAvailable && WingT-WING_UP < 0.1) {
                 WingFlapping = false;
-                WingT = WING_UP+TAU;
-            }
+                WingT += TAU;
+            } else if (WingT<wingTarget) WingT = wingTarget;
         }
 
-        WingLSegments[0].Angle = WingM * 0.5 * Math.Sin(WingT);
-        WingLSegments[1].Angle = WingM * 0.10 * Math.Sin(WingT+0.375);
-        WingLSegments[2].Angle = WingM * 0.15 * Math.Sin(WingT+0.75);
-        WingLSegments[3].Angle = WingM * 0.20 * Math.Sin(WingT+1.125);
-        WingLSegments[4].Angle = WingM * 0.25 * Math.Sin(WingT+1.5);
+        DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
+        DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
+        DebugDrawer.Evaluate();
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        WingLSegments[0].Angle = WingM * (0.1 + 0.6 * Math.Sin(WingT));
+        WingLSegments[1].Angle = WingM * (0.1 + 0.5 * Math.Sin(WingT+0.375));
+        WingLSegments[2].Angle = WingM * (0.1 + 0.3 * Math.Sin(WingT+0.75));
+        WingLSegments[3].Angle = WingM * (0.1 + 0.2 * Math.Sin(WingT+1.125));
+        WingLSegments[4].Angle = WingM * (0.1 + 0.1 * Math.Sin(WingT+1.5));
 
         Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
+        Vector2[] wingL2Points = new Vector2[WingLSegments.Length];
         Vector2 pointAccum = Vector2.Zero;
         double angleAccum = 0;
         for (int i = 0; i < WingLSegments.Length; i++) {
@@ -84,12 +102,23 @@ public partial class Player : CharacterBody2D
             angleAccum += segment.Angle;
             pointAccum += new Vector2(8,0).Rotated((float)angleAccum);
             wingLPoints[i] = new((FacingRight ? -pointAccum.X : pointAccum.X) * 1.5f, pointAccum.Y);
+            Vector2 l2BasePoint = WingL2PointsBase[i];
+            wingL2Points[i] = l2BasePoint.Rotated((float)BodyR) * new Vector2(FacingRight ? -1 : 1, 1);
         }
-        WingL.Points = wingLPoints;
+        Body.Points = wingL2Points;
 
-        DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
-        DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
-        DebugDrawer.Evaluate();
+        RenderingServer.CanvasItemClear(WingL);
+        for (int i = 1; i < WingLSegments.Length; i++) {
+            RenderingServer.CanvasItemAddPolygon(WingL, [wingLPoints[i-1], wingLPoints[i], wingL2Points[i-1]], WingPolygonColors);
+            RenderingServer.CanvasItemAddPolygon(WingL, [wingL2Points[i-1], wingLPoints[i], wingL2Points[i]], WingPolygonColors);
+        }
+        for (int i = 0; i < WingLSegments.Length; i++) {
+            bool isEnd = i == 0 || i == WingLSegments.Length - 1;
+            RenderingServer.CanvasItemAddLine(WingL, wingLPoints[i], wingL2Points[i],
+                isEnd?WingEdgeColor:WingWithinColor, isEnd?2:1);
+        }
+        RenderingServer.CanvasItemAddPolyline(WingL, wingLPoints, WingLColors, 2);
+        RenderingServer.CanvasItemAddPolyline(WingL, wingL2Points, WingLColors, 2);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -134,7 +163,7 @@ public partial class Player : CharacterBody2D
         }
 
         if (moveDirection != 0.0f) {
-            WingM = Mathf.MoveToward(WingM, 1, (float)delta);
+            WingM = Mathf.MoveToward(WingM, 1, (float)delta * 5);
             newVelocity.X += moveDirection * MOVE_SPEED * (float)delta * horizontalControl;
             FacingRight = moveDirection > 0;
         } else {
@@ -146,10 +175,12 @@ public partial class Player : CharacterBody2D
             DoubleJumpAvailable = true;
             CoyoteTime = 0.2f;
             newVelocity.X *= 0.8f;
+            BodyR = 0;
         } else {
             newVelocity.Y += (float)delta * Game.GRAVITY;
             CoyoteTime = Math.Max(CoyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
+            BodyR = 0.4;
         }
 
         Velocity = newVelocity;

@@ -8,5 +8,10 @@ namespace migration
         public static int Fold(Vector2I position, Vector2I size) => position.X+position.Y*size.X;
         public static int Fold(int x, int y, Vector2I size) => x+y*size.X;
         public static int Fold(int x, int y, int width) => x+y*width;
+
+        public static T[] FillArray<T>(T[] array, T value){
+            Array.Fill(array, value);
+            return array;
+        }
     }
 }
