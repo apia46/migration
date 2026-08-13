@@ -10,6 +10,7 @@ public partial class Player : CharacterBody2D
     Area2D GrabArea;
     DebugDrawer DebugDrawer;
     Line2D Body;
+    Sprite2D Sprite;
     #nullable enable
     Rid WingL;
 
@@ -66,6 +67,7 @@ public partial class Player : CharacterBody2D
         RespawnPosition = Position;
         WingL2PointsBase = GetNode<Line2D>("%WingL2").Points;
         Body = GetNode<Line2D>("%Body");
+        Sprite = GetNode<Sprite2D>("%Sprite");
     }
 
     public override void _Process(double delta)
@@ -87,6 +89,9 @@ public partial class Player : CharacterBody2D
 
     public override void _Draw()
     {
+        Sprite.FlipH = FacingRight;
+        Sprite.Position = new Vector2(FacingRight? 4 : -4, 0);
+
         WingLSegments[0].Angle = WingM * (0.1 + 0.6 * Math.Sin(WingT));
         WingLSegments[1].Angle = WingM * (0.1 + 0.5 * Math.Sin(WingT+0.375));
         WingLSegments[2].Angle = WingM * (0.1 + 0.3 * Math.Sin(WingT+0.75));
@@ -95,6 +100,7 @@ public partial class Player : CharacterBody2D
 
         Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
         Vector2[] wingL2Points = new Vector2[WingLSegments.Length];
+        Vector2[] bodyPoints = new Vector2[WingLSegments.Length+1];
         Vector2 pointAccum = Vector2.Zero;
         double angleAccum = 0;
         for (int i = 0; i < WingLSegments.Length; i++) {
@@ -104,8 +110,10 @@ public partial class Player : CharacterBody2D
             wingLPoints[i] = new((FacingRight ? -pointAccum.X : pointAccum.X) * 1.5f, pointAccum.Y);
             Vector2 l2BasePoint = WingL2PointsBase[i];
             wingL2Points[i] = l2BasePoint.Rotated((float)BodyR) * new Vector2(FacingRight ? -1 : 1, 1);
+            bodyPoints[i] = wingL2Points[i];
         }
-        Body.Points = wingL2Points;
+        bodyPoints[WingLSegments.Length] = bodyPoints[WingLSegments.Length-1] + new Vector2(FacingRight ? -8 : 8, -5);
+        Body.Points = bodyPoints;
 
         RenderingServer.CanvasItemClear(WingL);
         for (int i = 1; i < WingLSegments.Length; i++) {
