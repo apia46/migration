@@ -36,7 +36,7 @@ metadata/_custom_type_script = "uid://dstfir57scngn"
 
 [node name="Body" type="Line2D" parent="." unique_id=1818213931]
 unique_name_in_owner = true
-points = PackedVector2Array(0, 0, 7, 4, 14, 6, 24, 8, 38, 9, 50, 7)
+points = PackedVector2Array(-5, -5, -1, -1, 5, 1, 14, 3, 25, 4, 37, 3)
 width = 14.0
 width_curve = SubResource("Curve_i3pqv")
 default_color = Color(0.86754787, 0.86754787, 0.8675478, 1)
@@ -45,15 +45,19 @@ begin_cap_mode = 2
 [node name="WingL2" type="Line2D" parent="." unique_id=813249488]
 unique_name_in_owner = true
 visible = false
-points = PackedVector2Array(0, 0, 7, 4, 14, 6, 24, 8, 38, 9)
+points = PackedVector2Array(-5, -5, -1, -1, 5, 1, 14, 3, 25, 4)
 width = 1.0
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=1141303818]
 unique_name_in_owner = true
+visible = false
 texture_filter = 1
-position = Vector2(-4, 0)
+position = Vector2(-9, 0)
 texture = ExtResource("3_hqtel")
-offset = Vector2(0, -9)
+offset = Vector2(0, -14)
 
 [node name="WingL" type="Node2D" parent="." unique_id=1379472332]
+unique_name_in_owner = true
+
+[node name="Face" type="Node2D" parent="." unique_id=572435034]
 unique_name_in_owner = true

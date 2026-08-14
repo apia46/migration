@@ -42,8 +42,10 @@ public partial class Player : CharacterBody2D
 
     WingSegment[] WingLSegments = [];
     Vector2[] WingL2PointsBase = [];
+    Vector2[] BodyPointsBase = [];
     Color[] WingLColors = [];
     Color[] WingPolygonColors = [];
+    Color[] WingPolygonColors2 = [];
     double WingT = WING_UP+TAU;
     double WingM = 0;
     double BodyR = 0;
@@ -64,10 +66,12 @@ public partial class Player : CharacterBody2D
         WingLSegments = new WingSegment[5];
         WingLColors = FillArray(new Color[WingLSegments.Length], WingEdgeColor);
         WingPolygonColors = FillArray(new Color[3], WingBaseColor);
+        WingPolygonColors2 = FillArray(new Color[3], Colors.Green);
         RespawnPosition = Position;
         WingL2PointsBase = GetNode<Line2D>("%WingL2").Points;
         Body = GetNode<Line2D>("%Body");
         Sprite = GetNode<Sprite2D>("%Sprite");
+        BodyPointsBase = Body.Points;
     }
 
     public override void _Process(double delta)
@@ -90,7 +94,8 @@ public partial class Player : CharacterBody2D
     public override void _Draw()
     {
         Sprite.FlipH = FacingRight;
-        Sprite.Position = new Vector2(FacingRight? 4 : -4, 0);
+        Sprite.Position = new Vector2(-9, 0).Rotated((float)BodyR) * new Vector2(FacingRight?-1:1, 1);
+        Sprite.Rotation = FacingRight?-(float)BodyR:(float)BodyR;
 
         WingLSegments[0].Angle = WingM * (0.1 + 0.6 * Math.Sin(WingT));
         WingLSegments[1].Angle = WingM * (0.1 + 0.5 * Math.Sin(WingT+0.375));
@@ -100,25 +105,24 @@ public partial class Player : CharacterBody2D
 
         Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
         Vector2[] wingL2Points = new Vector2[WingLSegments.Length];
-        Vector2[] bodyPoints = new Vector2[WingLSegments.Length+1];
         Vector2 pointAccum = Vector2.Zero;
         double angleAccum = 0;
         for (int i = 0; i < WingLSegments.Length; i++) {
             WingSegment segment = WingLSegments[i];
             angleAccum += segment.Angle;
             pointAccum += new Vector2(8,0).Rotated((float)angleAccum);
-            wingLPoints[i] = new((FacingRight ? -pointAccum.X : pointAccum.X) * 1.5f, pointAccum.Y);
-            Vector2 l2BasePoint = WingL2PointsBase[i];
-            wingL2Points[i] = l2BasePoint.Rotated((float)BodyR) * new Vector2(FacingRight ? -1 : 1, 1);
-            bodyPoints[i] = wingL2Points[i];
+            wingLPoints[i] = new((FacingRight ? -pointAccum.X : pointAccum.X) * 1.2f, pointAccum.Y);
+            wingL2Points[i] = WingL2PointsBase[i].Rotated((float)BodyR) * new Vector2(FacingRight ? -1 : 1, 1);
         }
-        bodyPoints[WingLSegments.Length] = bodyPoints[WingLSegments.Length-1] + new Vector2(FacingRight ? -8 : 8, -5);
+        Vector2[] bodyPoints = new Vector2[BodyPointsBase.Length];
+        for (int i = 0; i < BodyPointsBase.Length; i++)
+            bodyPoints[i] = BodyPointsBase[i].Rotated((float)BodyR) * new Vector2(FacingRight ? -1 : 1, 1);
         Body.Points = bodyPoints;
 
         RenderingServer.CanvasItemClear(WingL);
         for (int i = 1; i < WingLSegments.Length; i++) {
             RenderingServer.CanvasItemAddPolygon(WingL, [wingLPoints[i-1], wingLPoints[i], wingL2Points[i-1]], WingPolygonColors);
-            RenderingServer.CanvasItemAddPolygon(WingL, [wingL2Points[i-1], wingLPoints[i], wingL2Points[i]], WingPolygonColors);
+            RenderingServer.CanvasItemAddPolygon(WingL, [wingL2Points[i-1], wingLPoints[i], wingL2Points[i]], WingPolygonColors2);
         }
         for (int i = 0; i < WingLSegments.Length; i++) {
             bool isEnd = i == 0 || i == WingLSegments.Length - 1;
@@ -140,6 +144,8 @@ public partial class Player : CharacterBody2D
 
     void Normal(double delta)
     {
+        float wallDirection = IsOnWallOnly() ? Math.Sign(GetWallNormal().X) : 0;
+
         Hunger = Math.Max(0, Hunger + delta * -0.01);
         Health = Math.Min(1, Health+delta * ((Hunger == 0) ? -0.05 : 0.005));
         if (Health <= 0) Die();
@@ -150,8 +156,8 @@ public partial class Player : CharacterBody2D
         Vector2 newVelocity = Velocity;
 
         if (Input.IsActionJustPressed("jump")) {
-            if (IsOnWallOnly()) {
-                newVelocity.X = GetWallNormal().X * WALL_JUMP_IMPULSE;
+            if (wallDirection != 0f) {
+                newVelocity.X = wallDirection * WALL_JUMP_IMPULSE;
                 DoubleJumpAvailable = true;
                 newVelocity.Y = JUMP_VELOCITY;
             } else if (IsOnFloor() || CoyoteTime > 0.0) {
@@ -188,7 +194,8 @@ public partial class Player : CharacterBody2D
             newVelocity.Y += (float)delta * Game.GRAVITY;
             CoyoteTime = Math.Max(CoyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
-            BodyR = 0.4;
+            if (wallDirection != 0f) BodyR = PI/2;
+            else BodyR = PI/4;
         }
 
         Velocity = newVelocity;
