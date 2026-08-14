@@ -105,7 +105,7 @@ public partial class Player : CharacterBody2D
 
         Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
         Vector2[] wingL2Points = new Vector2[WingLSegments.Length];
-        Vector2 pointAccum = Vector2.Zero;
+        Vector2 pointAccum = new(-4,-8);
         double angleAccum = 0;
         for (int i = 0; i < WingLSegments.Length; i++) {
             WingSegment segment = WingLSegments[i];
