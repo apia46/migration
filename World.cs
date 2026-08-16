@@ -80,7 +80,7 @@ public partial class World : Node2D
 	public override void _Input(InputEvent @event)
     {
 		#pragma warning disable CS0162
-		if (Game.DEBUG) {
+		if (Game.DEBUG_CONTROLS) {
 			if (@event.IsActionPressed("toggle")) {	
 				GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled = !GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled;
 				GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;

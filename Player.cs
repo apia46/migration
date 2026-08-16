@@ -1,7 +1,7 @@
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
-    const float LEG_SPEED = 30.0f;
+    const float LEG_SPEED = 300.0f;
     const float JUMP_VELOCITY = -350.0f;
     const float WALL_JUMP_IMPULSE = 300.0f;
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
@@ -17,7 +17,7 @@ public partial class Player : CharacterBody2D
     Skeleton2D Skeleton;
     Node2D LegTargetsNode;
 	Node2D[] LegTargets;
-    SkeletonModification2DCcdik[] LegSkeletonModifications;
+    SkeletonModification2DTwoBoneIK[] LegSkeletonModifications;
     #nullable enable
     readonly bool[] LegMoving = new bool[6];
 
@@ -89,9 +89,9 @@ public partial class Player : CharacterBody2D
         Skeleton = GetNode<Skeleton2D>("%Skeleton");
         LegTargetsNode = GetNode<Node2D>("%LegTargets");
         LegTargets = [..LegTargetsNode.GetChildren().Select(c=>(Node2D)c)];
-        LegSkeletonModifications = new SkeletonModification2DCcdik[6];
+        LegSkeletonModifications = new SkeletonModification2DTwoBoneIK[6];
         SkeletonModificationStack2D stack = Skeleton.GetModificationStack();
-        for (int i = 0; i < 6; i++) LegSkeletonModifications[i] = (SkeletonModification2DCcdik)stack.GetModification(i);
+        for (int i = 0; i < 6; i++) LegSkeletonModifications[i] = (SkeletonModification2DTwoBoneIK)stack.GetModification(i);
     }
 
     public override void _Process(double delta)
@@ -153,7 +153,7 @@ public partial class Player : CharacterBody2D
                 isEnd?WingEdgeColor:WingWithinColor, isEnd?2:1);
         }
         RenderingServer.CanvasItemAddPolyline(WingL, wingLPoints, WingLColors, 2);
-        RenderingServer.CanvasItemAddPolyline(WingL, wingL2Points, WingLColors, 2);
+        // RenderingServer.CanvasItemAddPolyline(WingL, wingL2Points, WingLColors, 2);
 
         Vector2 LocalPosition(Node2D node) => node.GlobalPosition - GlobalPosition;
 		void DrawLeg(bool rightSide, Bone2D leg1, Bone2D leg2, Node2D leg3, Color color)
@@ -177,8 +177,6 @@ public partial class Player : CharacterBody2D
 
     void Normal(double delta)
     {
-        bool previousFacingRight = FacingRight;
-
         float wallDirection = IsOnWallOnly() ? Math.Sign(GetWallNormal().X) : 0;
 
         #pragma warning disable CS0162
@@ -224,21 +222,14 @@ public partial class Player : CharacterBody2D
             newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
         }
 
-        // if (previousFacingRight != FacingRight)
-        // for (int i = 0; i < 6; i++) {
-        //     LegSkeletonModifications[i].SetCcdikJointConstraintAngleInvert(1, !FacingRight);
-        //     LegSkeletonModifications[i].SetCcdikJointConstraintAngleMin(1, FacingRight?180:90);
-        //     LegSkeletonModifications[i].SetCcdikJointConstraintAngleMax(1, FacingRight?90:360);
-        //     // GD.Print(i, ((SkeletonModification2DCcdik)Skeleton.GetModificationStack().GetModification(i)).GetCcdikJointConstraintAngleInvert(1));
-        // }
-
         if (IsOnFloor()) {
             DoubleJumpAvailable = true;
             CoyoteTime = 0.2f;
             newVelocity.X *= 0.8f;
             BodyR = 0;
         } else {
-            newVelocity.Y += (float)delta * Game.GRAVITY;
+            if (wallDirection != 0f && Velocity.Y > 0) newVelocity.Y += (float)delta * .5f * Game.GRAVITY;
+            else newVelocity.Y += (float)delta * Game.GRAVITY;
             CoyoteTime = Math.Max(CoyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
             if (wallDirection != 0f) BodyR = PI/2;
@@ -270,26 +261,52 @@ public partial class Player : CharacterBody2D
             // DebugDrawer.Evaluate();
         }
 
-        for (int i = 0; i < 6; i++)
-        {
-            Vector2 restPosition = new Vector2((i % 3 * 8) - 8 + (FacingRight ? 1 : -1) * (6+(float)(i/3)*3), 8) + Position;
+        float speed = Velocity.Length();
+
+        for (int i = 0; i < 6; i++) {
+            LegSkeletonModifications[i].FlipBendDirection = !FacingRight;
+
+            Vector2 restPosition;
             Node2D target = LegTargets[i];
-            DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
-            DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
-            if (LegMoving[i]) {
-                target.Position = target.Position.MoveToward(restPosition, Math.Abs(Velocity.X) + LEG_SPEED * (float)delta);
-				if (target.Position.DistanceSquaredTo(restPosition) < 50) {
-					target.Position = restPosition;
-					LegMoving[i] = false;
-				}
-            } else {
-                int legAfter = i switch {2 => 5, 5 => 2, _ => i+1};
-                int legBefore = i switch {0 => 3, 3 => 0, _ => i-1};
-                if (!LegMoving[legAfter] && !LegMoving[legBefore]
+            Bone2D bone = Skeleton.GetBone(i*2+1);
+            float legSpeed = speed + LEG_SPEED;
+
+            int legAfter = i switch {2 => 5, 5 => 2, _ => i+1};
+            int legBefore = i switch {0 => 3, 3 => 0, _ => i-1};
+
+            if (IsOnFloor()) {
+                bone.Position = new(((i % 3 * 7) - 6) * (FacingRight ? -1 : 1), 0);
+                restPosition = new Vector2((i % 3 * -8 + 14) * (FacingRight ? 1 : -1), 8) + Position;
+                if (LegMoving[i]) {
+                    target.Position = target.Position.MoveToward(restPosition, legSpeed * (float)delta);
+                    if (target.Position.DistanceSquaredTo(restPosition) < 16) {
+                        target.Position = restPosition;
+                        LegMoving[i] = false;
+                    }
+                } else if (!LegMoving[legAfter] && !LegMoving[legBefore]
                     && target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 1.3) LegMoving[i] = true;
+            } else if (wallDirection != 0f) {
+                bone.Position = new(0, (i % 3 * 7) - 6);
+                restPosition = new Vector2(-8 * (FacingRight ? -1 : 1), 4 + (i % 3 * 5) - 8) + Position;
+                if (LegMoving[i]) {
+                    target.Position = target.Position.MoveToward(restPosition, legSpeed * (float)delta);
+                    if (target.Position.DistanceSquaredTo(restPosition) < 16) {
+                        target.Position = restPosition;
+                        LegMoving[i] = false;
+                    }
+                } else if (!LegMoving[legAfter] && !LegMoving[legBefore]
+                    && target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 1.3) LegMoving[i] = true;
+            } else {
+                bone.Position = new(((i % 3 * 5) - 6) * (FacingRight ? -1 : 1), i % 3 * 3 - 4);
+                restPosition = new Vector2(((i % 3 * 5) - 7) * (FacingRight ? -1 : 1), i % 3 * 3 + 5) + Position;
+                target.Position = target.Position.MoveToward(restPosition, legSpeed * (float)delta);
             }
+
+            // DebugDrawer.AddCircle(bone.Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 1f), 1);
+            // DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f), 1);
+            // DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f), 1);
         }
-        DebugDrawer.Evaluate();
+        // DebugDrawer.Evaluate();
     }
 
     public void ResetTargets()

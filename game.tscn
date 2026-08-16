@@ -48,7 +48,7 @@ unique_name_in_owner = true
 
 [node name="Camera" type="Camera2D" parent="GameViewportContainer/SubViewport/World" unique_id=1429885777]
 unique_name_in_owner = true
-zoom = Vector2(8, 8)
+zoom = Vector2(2, 2)
 limit_enabled = false
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1762760900]
