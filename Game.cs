@@ -2,6 +2,7 @@ public partial class Game : Control
 {
 	public const bool DEBUG = false;
 	public const bool DEBUG_NO_PROCGEN = true;
+	public const bool DEBUG_NO_SURVIVAL = true;
 
 	public static readonly GameRandom RNG = new();
 	
@@ -95,5 +96,6 @@ public partial class Game : Control
 		GetNode<TextureRect>("%Title2").Modulate = Colors.Transparent;
 		Menu.Visible = false;
 		CanPause = true;
+		World.Player.ResetTargets();
 	}
 }

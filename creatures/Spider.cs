@@ -76,9 +76,12 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	}
 
 	bool ChasePlayer() {
+		#pragma warning disable CS0162
+		if (Game.DEBUG_NO_SURVIVAL) return false;
 		if (World.Player.State != Player.States.Normal) return false;
 		if (Home.DistanceSquaredTo(Position) > 1e7) return false;
 		return World.Player.Position.DistanceSquaredTo(Position) < (State == AIState.Chase ? 1e6 : 4e4);
+		#pragma warning restore CS0162
 	}
 
 	void UpdatePathfinding(bool reset=false)
@@ -158,7 +161,8 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 					target.Position = restPosition;
 					LegMoving[i] = false;
 				}
-			} else if (target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 0.7 && !LegMoving[(i+5) % 6] && !LegMoving[(i+1) % 6]) LegMoving[i] = true;
+			} else if (!LegMoving[(i+5) % 6] && !LegMoving[(i+1) % 6]
+				&& target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 0.7) LegMoving[i] = true;
 		}
 		DebugDrawer.Evaluate();
 		CreaturesManager.CreatureMoved(this);

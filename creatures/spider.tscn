@@ -24,8 +24,8 @@ joint_data/1/bone_index = 2
 joint_data/1/bone2d_node = NodePath("Center/Leg1A/Leg1B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = 209.99994
-joint_data/1/constraint_angle_max = 329.99988
+joint_data/1/constraint_angle_min = 209.99992
+joint_data/1/constraint_angle_max = 329.99985
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -70,8 +70,8 @@ joint_data/1/bone_index = 6
 joint_data/1/bone2d_node = NodePath("Center/Leg3A/Leg3B")
 joint_data/1/rotate_from_joint = false
 joint_data/1/enable_constraint = true
-joint_data/1/constraint_angle_min = 209.99992
-joint_data/1/constraint_angle_max = 329.99988
+joint_data/1/constraint_angle_min = 209.99991
+joint_data/1/constraint_angle_max = 329.99985
 joint_data/1/constraint_angle_invert = true
 joint_data/1/constraint_in_localspace = true
 joint_data/1/editor_draw_gizmo = true
@@ -199,7 +199,6 @@ end_cap_mode = 2
 
 [node name="Skeleton" type="Skeleton2D" parent="Visuals" unique_id=50322439]
 unique_name_in_owner = true
-visible = false
 modification_stack = SubResource("SkeletonModificationStack2D_w7rda")
 
 [node name="Center" type="Bone2D" parent="Visuals/Skeleton" unique_id=1083692271]
@@ -296,7 +295,7 @@ metadata/_local_pose_override_enabled_ = true
 position = Vector2(16, 0)
 
 [node name="Leg6A" type="Bone2D" parent="Visuals/Skeleton/Center" unique_id=1919426707]
-rotation = -0.00028042865
+rotation = -0.00028042868
 scale = Vector2(0.9998274, 0.9998274)
 rest = Transform2D(0.9999999, -1.813046e-05, 1.813046e-05, 0.9999999, -8.999999, -5.9999995)
 metadata/_local_pose_override_enabled_ = true

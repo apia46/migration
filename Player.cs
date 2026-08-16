@@ -1,9 +1,12 @@
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
+    const float LEG_SPEED = 30.0f;
     const float JUMP_VELOCITY = -350.0f;
     const float WALL_JUMP_IMPULSE = 300.0f;
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
+    
+    const float LEG_LENGTH = 12;
 
     #nullable disable
     public World World;
@@ -11,8 +14,16 @@ public partial class Player : CharacterBody2D
     DebugDrawer DebugDrawer;
     Line2D Body;
     Sprite2D Sprite;
+    Skeleton2D Skeleton;
+    Node2D LegTargetsNode;
+	Node2D[] LegTargets;
+    SkeletonModification2DCcdik[] LegSkeletonModifications;
     #nullable enable
+    readonly bool[] LegMoving = new bool[6];
+
     Rid WingL;
+    Rid LegsL;
+    Rid LegsR;
 
     bool DoubleJumpAvailable = false;
     double CoyoteTime = 0.0f;
@@ -55,6 +66,7 @@ public partial class Player : CharacterBody2D
     readonly Color WingEdgeColor = new("#d4d2b0");
     readonly Color WingWithinColor = new("#ffdaac");
     readonly Color WingBaseColor = new("#fffded");
+    readonly Color LegColor = new("#fffded");
 
     bool FacingRight = true;
 
@@ -63,6 +75,8 @@ public partial class Player : CharacterBody2D
         GrabArea = GetNode<Area2D>("%GrabArea");
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
         WingL = GetNode<Node2D>("%WingL").GetCanvasItem();
+        LegsL = GetNode<Node2D>("%LegsL").GetCanvasItem();
+        LegsR = GetNode<Node2D>("%LegsR").GetCanvasItem();
         WingLSegments = new WingSegment[5];
         WingLColors = FillArray(new Color[WingLSegments.Length], WingEdgeColor);
         WingPolygonColors = FillArray(new Color[3], WingBaseColor);
@@ -70,8 +84,14 @@ public partial class Player : CharacterBody2D
         RespawnPosition = Position;
         WingL2PointsBase = GetNode<Line2D>("%WingL2").Points;
         Body = GetNode<Line2D>("%Body");
-        Sprite = GetNode<Sprite2D>("%Sprite");
         BodyPointsBase = Body.Points;
+        Sprite = GetNode<Sprite2D>("%Sprite");
+        Skeleton = GetNode<Skeleton2D>("%Skeleton");
+        LegTargetsNode = GetNode<Node2D>("%LegTargets");
+        LegTargets = [..LegTargetsNode.GetChildren().Select(c=>(Node2D)c)];
+        LegSkeletonModifications = new SkeletonModification2DCcdik[6];
+        SkeletonModificationStack2D stack = Skeleton.GetModificationStack();
+        for (int i = 0; i < 6; i++) LegSkeletonModifications[i] = (SkeletonModification2DCcdik)stack.GetModification(i);
     }
 
     public override void _Process(double delta)
@@ -85,23 +105,27 @@ public partial class Player : CharacterBody2D
             } else if (WingT<wingTarget) WingT = wingTarget;
         }
 
-        DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
-        DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
-        DebugDrawer.Evaluate();
+        // DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
+        // DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
+        // DebugDrawer.Evaluate();
         QueueRedraw();
     }
 
     public override void _Draw()
     {
+        RenderingServer.CanvasItemClear(WingL);
+        RenderingServer.CanvasItemClear(LegsL);
+        RenderingServer.CanvasItemClear(LegsR);
+
         Sprite.FlipH = FacingRight;
         Sprite.Position = new Vector2(-9, 0).Rotated((float)BodyR) * new Vector2(FacingRight?-1:1, 1);
         Sprite.Rotation = FacingRight?-(float)BodyR:(float)BodyR;
 
-        WingLSegments[0].Angle = WingM * (0.1 + 0.6 * Math.Sin(WingT));
-        WingLSegments[1].Angle = WingM * (0.1 + 0.5 * Math.Sin(WingT+0.375));
-        WingLSegments[2].Angle = WingM * (0.1 + 0.3 * Math.Sin(WingT+0.75));
-        WingLSegments[3].Angle = WingM * (0.1 + 0.2 * Math.Sin(WingT+1.125));
-        WingLSegments[4].Angle = WingM * (0.1 + 0.1 * Math.Sin(WingT+1.5));
+        WingLSegments[0].Angle = WingM * (0.2 + 0.6 * Math.Sin(WingT));
+        WingLSegments[1].Angle = WingM * (0.2 + 0.5 * Math.Sin(WingT+0.375));
+        WingLSegments[2].Angle = WingM * (0.2 + 0.3 * Math.Sin(WingT+0.75));
+        WingLSegments[3].Angle = WingM * (0.2 + 0.2 * Math.Sin(WingT+1.125));
+        WingLSegments[4].Angle = WingM * (0.2 + 0.1 * Math.Sin(WingT+1.5));
 
         Vector2[] wingLPoints = new Vector2[WingLSegments.Length];
         Vector2[] wingL2Points = new Vector2[WingLSegments.Length];
@@ -119,10 +143,9 @@ public partial class Player : CharacterBody2D
             bodyPoints[i] = BodyPointsBase[i].Rotated((float)BodyR) * new Vector2(FacingRight ? -1 : 1, 1);
         Body.Points = bodyPoints;
 
-        RenderingServer.CanvasItemClear(WingL);
         for (int i = 1; i < WingLSegments.Length; i++) {
             RenderingServer.CanvasItemAddPolygon(WingL, [wingLPoints[i-1], wingLPoints[i], wingL2Points[i-1]], WingPolygonColors);
-            RenderingServer.CanvasItemAddPolygon(WingL, [wingL2Points[i-1], wingLPoints[i], wingL2Points[i]], WingPolygonColors2);
+            RenderingServer.CanvasItemAddPolygon(WingL, [wingL2Points[i-1], wingLPoints[i], wingL2Points[i]], WingPolygonColors);
         }
         for (int i = 0; i < WingLSegments.Length; i++) {
             bool isEnd = i == 0 || i == WingLSegments.Length - 1;
@@ -131,6 +154,15 @@ public partial class Player : CharacterBody2D
         }
         RenderingServer.CanvasItemAddPolyline(WingL, wingLPoints, WingLColors, 2);
         RenderingServer.CanvasItemAddPolyline(WingL, wingL2Points, WingLColors, 2);
+
+        Vector2 LocalPosition(Node2D node) => node.GlobalPosition - GlobalPosition;
+		void DrawLeg(bool rightSide, Bone2D leg1, Bone2D leg2, Node2D leg3, Color color)
+		{
+			RenderingServer.CanvasItemAddLine(rightSide ? LegsL : LegsR, LocalPosition(leg1), LocalPosition(leg2), color, 2);
+			RenderingServer.CanvasItemAddLine(rightSide ? LegsL : LegsR, LocalPosition(leg2), LocalPosition(leg3), color, 2);
+		}
+		for (int i = 0; i < 6; i++)
+			DrawLeg(i < 3, Skeleton.GetBone(i*2+1), Skeleton.GetBone(i*2+2), (Node2D)Skeleton.GetBone(i*2+2).GetChild(0), LegColor);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -140,15 +172,22 @@ public partial class Player : CharacterBody2D
             case States.Normal: Normal(delta); break;
             case States.Sheltering: Sheltering(delta); break;
         }
+        LegTargetsNode.Position = -Position;
     }
 
     void Normal(double delta)
     {
+        bool previousFacingRight = FacingRight;
+
         float wallDirection = IsOnWallOnly() ? Math.Sign(GetWallNormal().X) : 0;
 
-        Hunger = Math.Max(0, Hunger + delta * -0.01);
-        Health = Math.Min(1, Health+delta * ((Hunger == 0) ? -0.05 : 0.005));
-        if (Health <= 0) Die();
+        #pragma warning disable CS0162
+        if (!Game.DEBUG_NO_SURVIVAL) {
+            Hunger = Math.Max(0, Hunger + delta * -0.01);
+            Health = Math.Min(1, Health+delta * ((Hunger == 0) ? -0.05 : 0.005));
+            if (Health <= 0) Die();
+        }
+        #pragma warning restore CS0162
 
         float horizontalControl = IsOnFloor() ? 1.0f : 0.2f;
         float moveDirection = Input.GetAxis("move_left", "move_right");
@@ -185,6 +224,14 @@ public partial class Player : CharacterBody2D
             newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
         }
 
+        // if (previousFacingRight != FacingRight)
+        // for (int i = 0; i < 6; i++) {
+        //     LegSkeletonModifications[i].SetCcdikJointConstraintAngleInvert(1, !FacingRight);
+        //     LegSkeletonModifications[i].SetCcdikJointConstraintAngleMin(1, FacingRight?180:90);
+        //     LegSkeletonModifications[i].SetCcdikJointConstraintAngleMax(1, FacingRight?90:360);
+        //     // GD.Print(i, ((SkeletonModification2DCcdik)Skeleton.GetModificationStack().GetModification(i)).GetCcdikJointConstraintAngleInvert(1));
+        // }
+
         if (IsOnFloor()) {
             DoubleJumpAvailable = true;
             CoyoteTime = 0.2f;
@@ -195,7 +242,7 @@ public partial class Player : CharacterBody2D
             CoyoteTime = Math.Max(CoyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
             if (wallDirection != 0f) BodyR = PI/2;
-            else BodyR = PI/4;
+            else BodyR = 0.5;
         }
 
         Velocity = newVelocity;
@@ -222,7 +269,38 @@ public partial class Player : CharacterBody2D
             // DebugDrawer.AddText(new Vector2(40, 0), nextChunk.ToString(), Colors.White);
             // DebugDrawer.Evaluate();
         }
+
+        for (int i = 0; i < 6; i++)
+        {
+            Vector2 restPosition = new Vector2((i % 3 * 8) - 8 + (FacingRight ? 1 : -1) * (6+(float)(i/3)*3), 8) + Position;
+            Node2D target = LegTargets[i];
+            DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
+            DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f));
+            if (LegMoving[i]) {
+                target.Position = target.Position.MoveToward(restPosition, Math.Abs(Velocity.X) + LEG_SPEED * (float)delta);
+				if (target.Position.DistanceSquaredTo(restPosition) < 50) {
+					target.Position = restPosition;
+					LegMoving[i] = false;
+				}
+            } else {
+                int legAfter = i switch {2 => 5, 5 => 2, _ => i+1};
+                int legBefore = i switch {0 => 3, 3 => 0, _ => i-1};
+                if (!LegMoving[legAfter] && !LegMoving[legBefore]
+                    && target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 1.3) LegMoving[i] = true;
+            }
+        }
+        DebugDrawer.Evaluate();
     }
+
+    public void ResetTargets()
+	{
+		LegTargetsNode.Position = -Position;
+		for (int i = 0; i < 6; i++)
+		{
+			Node2D target = LegTargets[i];
+			target.Position = new Vector2(i % 3 * 10 - 10 + (FacingRight ? 5 : -5), 8) + Position;
+		}
+	}
 
     public void Hurt(double amount)
     {
@@ -271,8 +349,8 @@ public partial class Player : CharacterBody2D
         }
         if (@event.IsActionPressed("use")) {
             if (State == States.Sheltering) ExitShelter();
-            else if (grabbed is not null) UseItem();
-		} else if (@event.IsActionPressed("grab")) {
+            else if (State == States.Normal && grabbed is not null) UseItem();
+		} else if (State == States.Normal && @event.IsActionPressed("grab")) {
             if (grabbed is null) {
                 foreach (Area2D node in GrabArea.GetOverlappingAreas())
                     if (node is Shelter shelter) {

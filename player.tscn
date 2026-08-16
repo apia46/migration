@@ -14,6 +14,157 @@ radius = 25.0
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.663492, 0.6263066), -0.6641781, -0.6641781, 0, 0, Vector2(1, 0), -2.5702615, 0.0, 0, 0]
 point_count = 3
 
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_i3pqv"]
+target_nodepath = NodePath("../LegTargets/Leg1")
+tip_nodepath = NodePath("Center/Leg1A/Leg1B/Leg1C")
+ccdik_data_chain_length = 2
+joint_data/0/bone_index = 1
+joint_data/0/bone2d_node = NodePath("Center/Leg1A")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -90.0
+joint_data/0/constraint_angle_max = 90.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 2
+joint_data/1/bone2d_node = NodePath("Center/Leg1A/Leg1B")
+joint_data/1/rotate_from_joint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.0
+joint_data/1/constraint_angle_max = 360.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+editor/draw_gizmo = false
+
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_hqtel"]
+target_nodepath = NodePath("../LegTargets/Leg2")
+tip_nodepath = NodePath("Center/Leg2A/Leg2B/Leg2C")
+ccdik_data_chain_length = 2
+joint_data/0/bone_index = 3
+joint_data/0/bone2d_node = NodePath("Center/Leg2A")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -90.0
+joint_data/0/constraint_angle_max = 90.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 4
+joint_data/1/bone2d_node = NodePath("Center/Leg2A/Leg2B")
+joint_data/1/rotate_from_joint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.0
+joint_data/1/constraint_angle_max = 360.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+editor/draw_gizmo = false
+
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_sweqy"]
+target_nodepath = NodePath("../LegTargets/Leg3")
+tip_nodepath = NodePath("Center/Leg3A/Leg3B/Leg3C")
+ccdik_data_chain_length = 2
+joint_data/0/bone_index = 5
+joint_data/0/bone2d_node = NodePath("Center/Leg3A")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -90.0
+joint_data/0/constraint_angle_max = 90.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 6
+joint_data/1/bone2d_node = NodePath("Center/Leg3A/Leg3B")
+joint_data/1/rotate_from_joint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.0
+joint_data/1/constraint_angle_max = 360.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+editor/draw_gizmo = false
+
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_2hs0m"]
+target_nodepath = NodePath("../LegTargets/Leg4")
+tip_nodepath = NodePath("Center/Leg4A/Leg4B/Leg4C")
+ccdik_data_chain_length = 2
+joint_data/0/bone_index = 7
+joint_data/0/bone2d_node = NodePath("Center/Leg4A")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -90.0
+joint_data/0/constraint_angle_max = 90.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 8
+joint_data/1/bone2d_node = NodePath("Center/Leg4A/Leg4B")
+joint_data/1/rotate_from_joint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.0
+joint_data/1/constraint_angle_max = 360.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_1jxqw"]
+target_nodepath = NodePath("../LegTargets/Leg5")
+tip_nodepath = NodePath("Center/Leg5A/Leg5B/Leg5C")
+ccdik_data_chain_length = 2
+joint_data/0/bone_index = 9
+joint_data/0/bone2d_node = NodePath("Center/Leg5A")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = -270.0
+joint_data/0/constraint_angle_max = -90.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 10
+joint_data/1/bone2d_node = NodePath("Center/Leg5A/Leg5B")
+joint_data/1/rotate_from_joint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.0
+joint_data/1/constraint_angle_max = 360.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+
+[sub_resource type="SkeletonModification2DCCDIK" id="SkeletonModification2DCCDIK_dw050"]
+target_nodepath = NodePath("../LegTargets/Leg6")
+tip_nodepath = NodePath("Center/Leg6A/Leg6B/Leg6C")
+ccdik_data_chain_length = 2
+joint_data/0/bone_index = 11
+joint_data/0/bone2d_node = NodePath("Center/Leg6A")
+joint_data/0/rotate_from_joint = false
+joint_data/0/enable_constraint = true
+joint_data/0/constraint_angle_min = 90.0
+joint_data/0/constraint_angle_max = -90.0
+joint_data/0/constraint_angle_invert = true
+joint_data/0/constraint_in_localspace = true
+joint_data/0/editor_draw_gizmo = true
+joint_data/1/bone_index = 12
+joint_data/1/bone2d_node = NodePath("Center/Leg6A/Leg6B")
+joint_data/1/rotate_from_joint = false
+joint_data/1/enable_constraint = true
+joint_data/1/constraint_angle_min = 90.0
+joint_data/1/constraint_angle_max = 360.0
+joint_data/1/constraint_angle_invert = true
+joint_data/1/constraint_in_localspace = true
+joint_data/1/editor_draw_gizmo = true
+
+[sub_resource type="SkeletonModificationStack2D" id="SkeletonModificationStack2D_hqtel"]
+enabled = true
+modification_count = 6
+modifications/0 = SubResource("SkeletonModification2DCCDIK_i3pqv")
+modifications/1 = SubResource("SkeletonModification2DCCDIK_hqtel")
+modifications/2 = SubResource("SkeletonModification2DCCDIK_sweqy")
+modifications/3 = SubResource("SkeletonModification2DCCDIK_2hs0m")
+modifications/4 = SubResource("SkeletonModification2DCCDIK_1jxqw")
+modifications/5 = SubResource("SkeletonModification2DCCDIK_dw050")
+
 [node name="player" type="CharacterBody2D" unique_id=951441720]
 script = ExtResource("1_onrkg")
 
@@ -28,15 +179,12 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea" unique_id=339456093]
 shape = SubResource("CircleShape2D_onrkg")
 
-[node name="DebugDrawer" type="Node2D" parent="." unique_id=793793531]
+[node name="LegsR" type="Node2D" parent="." unique_id=1563341008]
 unique_name_in_owner = true
-visible = false
-script = ExtResource("3_i3pqv")
-metadata/_custom_type_script = "uid://dstfir57scngn"
 
 [node name="Body" type="Line2D" parent="." unique_id=1818213931]
 unique_name_in_owner = true
-points = PackedVector2Array(-5, -5, -1, -1, 5, 1, 14, 3, 25, 4, 37, 3)
+points = PackedVector2Array(-5, -8, -1, -4, 5, -2, 14, 0, 25, 1, 37, 0)
 width = 14.0
 width_curve = SubResource("Curve_i3pqv")
 default_color = Color(0.86754787, 0.86754787, 0.8675478, 1)
@@ -45,7 +193,7 @@ begin_cap_mode = 2
 [node name="WingL2" type="Line2D" parent="." unique_id=813249488]
 unique_name_in_owner = true
 visible = false
-points = PackedVector2Array(-5, -5, -1, -1, 5, 1, 14, 3, 25, 4)
+points = PackedVector2Array(-5, -8, -1, -4, 5, -2, 14, 0, 25, 1)
 width = 1.0
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=1141303818]
@@ -56,8 +204,148 @@ position = Vector2(-9, 0)
 texture = ExtResource("3_hqtel")
 offset = Vector2(0, -14)
 
+[node name="LegsL" type="Node2D" parent="." unique_id=466191772]
+unique_name_in_owner = true
+
 [node name="WingL" type="Node2D" parent="." unique_id=1379472332]
 unique_name_in_owner = true
 
 [node name="Face" type="Node2D" parent="." unique_id=572435034]
 unique_name_in_owner = true
+
+[node name="Skeleton" type="Skeleton2D" parent="." unique_id=826771332]
+unique_name_in_owner = true
+modification_stack = SubResource("SkeletonModificationStack2D_hqtel")
+
+[node name="Center" type="Bone2D" parent="Skeleton" unique_id=1433207158]
+rest = Transform2D(1, 0, 0, 1, 0, 0)
+editor_settings/show_bone_gizmo = false
+
+[node name="Leg1A" type="Bone2D" parent="Skeleton/Center" unique_id=417467614]
+visible = false
+position = Vector2(-6, 0)
+rest = Transform2D(1, 0, 0, 1, -6, 0)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg1B" type="Bone2D" parent="Skeleton/Center/Leg1A" unique_id=1346311169]
+position = Vector2(0, 6)
+rotation = 1.5707972
+scale = Vector2(0.9998737, 0.9998737)
+rest = Transform2D(1, 0, 0, 1, -5, 6)
+auto_calculate_length_and_angle = false
+length = 6.0
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg1C" type="Node2D" parent="Skeleton/Center/Leg1A/Leg1B" unique_id=995602762]
+position = Vector2(6, 0)
+
+[node name="Leg2A" type="Bone2D" parent="Skeleton/Center" unique_id=1193170274]
+visible = false
+position = Vector2(2, 0)
+rotation = -0.05875585
+scale = Vector2(0.99999976, 0.99999976)
+rest = Transform2D(1, 0, 0, 1, 3, 0)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg2B" type="Bone2D" parent="Skeleton/Center/Leg2A" unique_id=667928146]
+position = Vector2(0, 6)
+rest = Transform2D(1, 0, 0, 1, -5, 6)
+auto_calculate_length_and_angle = false
+length = 6.0
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg2C" type="Node2D" parent="Skeleton/Center/Leg2A/Leg2B" unique_id=1692053906]
+position = Vector2(6, 0)
+
+[node name="Leg3A" type="Bone2D" parent="Skeleton/Center" unique_id=101786910]
+visible = false
+position = Vector2(9, 0)
+rest = Transform2D(1, 0, 0, 1, 9, 0)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg3B" type="Bone2D" parent="Skeleton/Center/Leg3A" unique_id=958403365]
+position = Vector2(0, 6)
+rest = Transform2D(1, 0, 0, 1, -5, 6)
+auto_calculate_length_and_angle = false
+length = 6.0
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg3C" type="Node2D" parent="Skeleton/Center/Leg3A/Leg3B" unique_id=263837909]
+position = Vector2(6, 0)
+
+[node name="Leg4A" type="Bone2D" parent="Skeleton/Center" unique_id=2043083799]
+position = Vector2(-6, 0)
+rest = Transform2D(1, 0, 0, 1, -6, 0)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg4B" type="Bone2D" parent="Skeleton/Center/Leg4A" unique_id=1332031216]
+position = Vector2(0, 6)
+rest = Transform2D(1, 0, 0, 1, -5, 6)
+auto_calculate_length_and_angle = false
+length = 6.0
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg4C" type="Node2D" parent="Skeleton/Center/Leg4A/Leg4B" unique_id=92725442]
+position = Vector2(6, 0)
+
+[node name="Leg5A" type="Bone2D" parent="Skeleton/Center" unique_id=442225803]
+position = Vector2(2, 0)
+rest = Transform2D(1, 0, 0, 1, 3, 0)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg5B" type="Bone2D" parent="Skeleton/Center/Leg5A" unique_id=662872970]
+position = Vector2(0, 6)
+rest = Transform2D(1, 0, 0, 1, -5, 6)
+auto_calculate_length_and_angle = false
+length = 6.0
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg5C" type="Node2D" parent="Skeleton/Center/Leg5A/Leg5B" unique_id=1192327266]
+position = Vector2(6, 0)
+
+[node name="Leg6A" type="Bone2D" parent="Skeleton/Center" unique_id=674901552]
+position = Vector2(9, 0)
+rest = Transform2D(1, 0, 0, 1, 9, 0)
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg6B" type="Bone2D" parent="Skeleton/Center/Leg6A" unique_id=829576743]
+position = Vector2(0, 6)
+rest = Transform2D(1, 0, 0, 1, -5, 6)
+auto_calculate_length_and_angle = false
+length = 6.0
+bone_angle = 0.0
+metadata/_local_pose_override_enabled_ = true
+
+[node name="Leg6C" type="Node2D" parent="Skeleton/Center/Leg6A/Leg6B" unique_id=109328452]
+position = Vector2(6, 0)
+
+[node name="LegTargets" type="Node2D" parent="." unique_id=634316000]
+unique_name_in_owner = true
+
+[node name="Leg1" type="Node2D" parent="LegTargets" unique_id=753124618]
+position = Vector2(-6, 17)
+
+[node name="Leg2" type="Node2D" parent="LegTargets" unique_id=1440878363]
+position = Vector2(2, 17)
+
+[node name="Leg3" type="Node2D" parent="LegTargets" unique_id=809383765]
+position = Vector2(9, 17)
+
+[node name="Leg4" type="Node2D" parent="LegTargets" unique_id=1511592552]
+position = Vector2(-6, 17)
+
+[node name="Leg5" type="Node2D" parent="LegTargets" unique_id=989188303]
+position = Vector2(2, 17)
+
+[node name="Leg6" type="Node2D" parent="LegTargets" unique_id=429120949]
+position = Vector2(9, 17)
+
+[node name="DebugDrawer" type="Node2D" parent="." unique_id=793793531]
+unique_name_in_owner = true
+script = ExtResource("3_i3pqv")
+metadata/_custom_type_script = "uid://dstfir57scngn"
