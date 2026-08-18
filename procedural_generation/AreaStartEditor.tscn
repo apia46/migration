@@ -1,13 +1,14 @@
 [gd_scene format=4 uid="uid://cwhq2wvx53e7u"]
 
-[ext_resource type="TileSet" uid="uid://c60kxdm4cvm74" path="res://assets/tiles_pattern.tres" id="2_j7d4i"]
+[ext_resource type="TileSet" uid="uid://c60kxdm4cvm74" path="res://assets/tiles/tiles_pattern.tres" id="2_j7d4i"]
 [ext_resource type="Script" uid="uid://b2ef0pwgy86my" path="res://procedural_generation/ModelEditor.cs" id="2_pbn7k"]
-[ext_resource type="TileSet" uid="uid://b76oagfblrj2u" path="res://assets/tiles_converted.tres" id="3_pbn7k"]
+[ext_resource type="TileSet" uid="uid://b76oagfblrj2u" path="res://assets/tiles/tiles_converted.tres" id="3_pbn7k"]
 
-[node name="ModelEditor" type="Node2D" unique_id=75075194]
+[node name="AreaStartEditor" type="Node2D" unique_id=75075194]
 script = ExtResource("2_pbn7k")
 PatternSize = Vector2i(3, 3)
 ConversionScale = Vector2i(2, 2)
+PATH = "res://procedural_generation/models/start.tres"
 metadata/_custom_type_script = "uid://b2ef0pwgy86my"
 
 [node name="PatternLayer" type="TileMapLayer" parent="." unique_id=663908145]

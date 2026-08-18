@@ -15,10 +15,11 @@ public partial class ProceduralGenerator : Node
 
 	#nullable disable
 
-	TileMapLayer PatternLayer;
-	TileMapLayer ConvertedLayer;
+	[Export] public TileMapLayer PatternLayer;
+	[Export] public TileMapLayer ConvertedLayer;
 	
-	public Model Model;
+	Model StartModel = GD.Load<ModelResource>("res://procedural_generation/models/start.tres").ToModel();
+	Model PoolsModel = GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel();
 	// MUTEXED
 	TileCache PatternTiles;
 	// MUTEXED
@@ -84,13 +85,6 @@ public partial class ProceduralGenerator : Node
 			}
 		}
 		AddToQueue(position, false);
-	}
-
-	public void SetContext(TileMapLayer patternLayer, TileMapLayer convertedLayer, Model model)
-	{
-		PatternLayer = patternLayer;
-		ConvertedLayer = convertedLayer;
-		Model = model;
 	}
 
     public override void _Process(double delta)

@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" format=3 uid="uid://c60kxdm4cvm74"]
 
-[ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles.png" id="1_wawcx"]
+[ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles/tiles.png" id="1_mv1wr"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_n3cxo"]
 vertices = PackedVector2Array(8, 8, -8, 8, -8, -8)
@@ -45,7 +45,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vn8hm"]
-texture = ExtResource("1_wawcx")
+texture = ExtResource("1_mv1wr")
 1:1/0 = 0
 1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:1/0 = 0

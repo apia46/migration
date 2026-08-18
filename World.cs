@@ -22,7 +22,6 @@ public partial class World : Node2D
 		DetailManager = GetNode<DetailManager>("%DetailManager");
 		DetailManager.World = this;
 		ConvertedTileMapLayer = GetNode<TileMapLayer>("%ConvertedTileMapLayer");
-		ProceduralGenerator.SetContext(GetNode<TileMapLayer>("%PatternTileMapLayer"), ConvertedTileMapLayer, GD.Load<ModelResource>("res://procedural_generation/model.tres").ToModel());
 		ProceduralGenerator.StartingArea();
 	}
 

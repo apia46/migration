@@ -2,9 +2,7 @@
 [GlobalClass]
 public partial class ModelEditor : Node2D
 {
-	[Export] public Vector2I PatternSize;
-	[Export] public Vector2I ConversionScale;
-	const string PATH = "res://procedural_generation/model.tres";
+	[Export] public string PATH = "res://procedural_generation/model.tres";
 
 	[ExportToolButton("Generate Model")]
 	public Callable GenerateButton => Callable.From(Generate);
@@ -16,23 +14,23 @@ public partial class ModelEditor : Node2D
 		PatternLayer = GetNode<TileMapLayer>("%PatternLayer");
 		ConversionLayer = GetNode<TileMapLayer>("%ConversionLayer");
 
-        Model model = new(PatternSize, ConversionScale);
+        Model model = new();
 
 		foreach (Vector2I position in PatternLayer.GetUsedCells()) model.PatternTiles.RegisterTile(PatternLayer.GetCellAtlasCoords(position));
 		foreach (Vector2I position in ConversionLayer.GetUsedCells()) model.ConvertedTiles.RegisterTile(ConversionLayer.GetCellAtlasCoords(position));
 
 		foreach (Vector2I position in PatternLayer.GetUsedCells()) {
-			if (GetTilesAtCell(position, PatternSize, PatternLayer, model.PatternTiles) is int[] tiles) {
-				Vector2I ConversionPosition = position*ConversionScale+(PatternSize-new Vector2I(1,1))*ConversionScale/2;
-				if (GetTilesAtCell(ConversionPosition, ConversionScale, ConversionLayer, model.ConvertedTiles) is int[] conversion) {
+			if (GetTilesAtCell(position, Model.PatternSize, PatternLayer, model.PatternTiles) is int[] tiles) {
+				Vector2I ConversionPosition = position*Model.ConversionScale+(Model.PatternSize-new Vector2I(1,1))*Model.ConversionScale/2;
+				if (GetTilesAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer, model.ConvertedTiles) is int[] conversion) {
 					if (model.MatchPattern(tiles) is Pattern pattern) {
 						if (pattern.Conversion.SequenceEqual(conversion)) pattern.Frequency++;
 						else {
 							GD.Print($"duplicate with differing conversion at position {position}");
-							model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, ConversionScale, ConversionLayer)));
+							model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer)));
 						}
 					}
-					else model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, ConversionScale, ConversionLayer)));
+					else model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer)));
 				} else GD.Print($"position {position} has no conversion!");
 			}
 		}

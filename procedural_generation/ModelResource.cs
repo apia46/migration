@@ -1,7 +1,5 @@
 [GlobalClass]
 public partial class ModelResource : Resource {
-	[Export] public Vector2I PatternSize = new(0,0);
-	[Export] public Vector2I ConversionScale = new(0,0);
 	[Export] public Godot.Collections.Array<int[]> PatternTiles = [];
 	[Export] public Godot.Collections.Array<int> PatternFrequencies = [];
 	[Export] public Godot.Collections.Array<int[]> PatternConversions = [];
@@ -13,8 +11,6 @@ public partial class ModelResource : Resource {
 
 	public ModelResource(Model model)
 	{
-		PatternSize = model.PatternSize;
-		ConversionScale = model.ConversionScale;
 		PatternTiles = [.. model.Patterns.ConvertAll(pattern=>pattern.Tiles)];
 		PatternFrequencies = [.. model.Patterns.ConvertAll(pattern=>pattern.Frequency)];
 		PatternConversions = [.. model.Patterns.ConvertAll(pattern=>pattern.Conversion)];
@@ -25,7 +21,7 @@ public partial class ModelResource : Resource {
 
 	public Model ToModel()
 	{
-		Model model = new(PatternSize, ConversionScale);
+		Model model = new();
 		for (int i = 0; i < PatternTiles.Count; i++) {
 			model.Patterns.Add(new Pattern(
 				PatternFrequencies[i],

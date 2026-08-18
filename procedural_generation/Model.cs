@@ -1,16 +1,10 @@
-public class Model
+public class Model()
 {
-	public Vector2I PatternSize;
-    public Vector2I ConversionScale;
+	public static Vector2I PatternSize = new(3,3);
+    public static Vector2I ConversionScale = new(2,2);
 	public List<Pattern> Patterns = [];
 	public EnumeratedTileSet PatternTiles = new();
 	public EnumeratedTileSet ConvertedTiles = new();
-
-	public Model(Vector2I patternSize, Vector2I conversionScale)
-    {
-        PatternSize = patternSize;
-        ConversionScale = conversionScale;
-    }
 
     public Pattern? MatchPattern(int[] tiles)
     {

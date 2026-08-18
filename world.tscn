@@ -1,8 +1,8 @@
 [gd_scene format=4 uid="uid://8kb2bxnmkwwe"]
 
 [ext_resource type="Script" uid="uid://djuyflrxhl2xr" path="res://World.cs" id="1_aqk2v"]
-[ext_resource type="TileSet" uid="uid://c60kxdm4cvm74" path="res://assets/tiles_pattern.tres" id="2_dwbse"]
-[ext_resource type="TileSet" uid="uid://b76oagfblrj2u" path="res://assets/tiles_converted.tres" id="3_036b0"]
+[ext_resource type="TileSet" uid="uid://c60kxdm4cvm74" path="res://assets/tiles/tiles_pattern.tres" id="2_dwbse"]
+[ext_resource type="TileSet" uid="uid://b76oagfblrj2u" path="res://assets/tiles/tiles_converted.tres" id="3_036b0"]
 [ext_resource type="Script" uid="uid://d2j8xwqp52t78" path="res://procedural_generation/ProceduralGenerator.cs" id="4_036b0"]
 [ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
 [ext_resource type="Script" uid="uid://c6xw1uksf6027" path="res://creatures/CreaturesManager.cs" id="5_036b0"]
@@ -30,9 +30,11 @@ tile_set = ExtResource("3_036b0")
 unique_name_in_owner = true
 position = Vector2(0, -9)
 
-[node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112]
+[node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112 node_paths=PackedStringArray("PatternLayer", "ConvertedLayer")]
 unique_name_in_owner = true
 script = ExtResource("4_036b0")
+PatternLayer = NodePath("../PatternTileMapLayer")
+ConvertedLayer = NodePath("../ConvertedTileMapLayer")
 metadata/_custom_type_script = "uid://d2j8xwqp52t78"
 
 [node name="CreaturesManager" type="Node" parent="." unique_id=1558058252]
