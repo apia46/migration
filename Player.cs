@@ -1,7 +1,7 @@
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
-    const float LEG_SPEED = 300.0f;
+    const float LEG_SPEED = 3400.0f;
     const float JUMP_VELOCITY = -350.0f;
     const float WALL_JUMP_IMPULSE = 300.0f;
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
@@ -218,7 +218,7 @@ public partial class Player : CharacterBody2D
             newVelocity.X += moveDirection * MOVE_SPEED * (float)delta * horizontalControl;
             FacingRight = moveDirection > 0;
         } else {
-            WingM = Mathf.MoveToward(WingM, 0, (float)delta * 5);
+            WingM = Mathf.MoveToward(WingM, IsOnFloor() ? 0 : 1, (float)delta * 5);
             newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
         }
 
@@ -269,7 +269,6 @@ public partial class Player : CharacterBody2D
             Vector2 restPosition;
             Node2D target = LegTargets[i];
             Bone2D bone = Skeleton.GetBone(i*2+1);
-            float legSpeed = speed + LEG_SPEED;
 
             int legAfter = i switch {2 => 5, 5 => 2, _ => i+1};
             int legBefore = i switch {0 => 3, 3 => 0, _ => i-1};
@@ -278,7 +277,7 @@ public partial class Player : CharacterBody2D
                 bone.Position = new(((i % 3 * 7) - 6) * (FacingRight ? -1 : 1), 0);
                 restPosition = new Vector2((i % 3 * -8 + 14) * (FacingRight ? 1 : -1), 8) + Position;
                 if (LegMoving[i]) {
-                    target.Position = target.Position.MoveToward(restPosition, legSpeed * (float)delta);
+                    target.Position = target.Position.MoveToward(restPosition, LEG_SPEED * (float)delta);
                     if (target.Position.DistanceSquaredTo(restPosition) < 16) {
                         target.Position = restPosition;
                         LegMoving[i] = false;
@@ -289,7 +288,7 @@ public partial class Player : CharacterBody2D
                 bone.Position = new(0, (i % 3 * 7) - 6);
                 restPosition = new Vector2(-8 * (FacingRight ? -1 : 1), 4 + (i % 3 * 5) - 8) + Position;
                 if (LegMoving[i]) {
-                    target.Position = target.Position.MoveToward(restPosition, legSpeed * (float)delta);
+                    target.Position = target.Position.MoveToward(restPosition, LEG_SPEED * (float)delta);
                     if (target.Position.DistanceSquaredTo(restPosition) < 16) {
                         target.Position = restPosition;
                         LegMoving[i] = false;
@@ -299,7 +298,7 @@ public partial class Player : CharacterBody2D
             } else {
                 bone.Position = new(((i % 3 * 5) - 6) * (FacingRight ? -1 : 1), i % 3 * 3 - 4);
                 restPosition = new Vector2(((i % 3 * 5) - 7) * (FacingRight ? -1 : 1), i % 3 * 3 + 5) + Position;
-                target.Position = target.Position.MoveToward(restPosition, legSpeed * (float)delta);
+                target.Position = target.Position.MoveToward(restPosition, LEG_SPEED * (float)delta);
             }
 
             // DebugDrawer.AddCircle(bone.Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 1f), 1);

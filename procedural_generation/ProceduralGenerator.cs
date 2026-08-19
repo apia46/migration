@@ -18,8 +18,12 @@ public partial class ProceduralGenerator : Node
 	[Export] public TileMapLayer PatternLayer;
 	[Export] public TileMapLayer ConvertedLayer;
 	
-	Model StartModel = GD.Load<ModelResource>("res://procedural_generation/models/start.tres").ToModel();
-	Model PoolsModel = GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel();
+	public enum Areas {Start, Pools};
+	Model[] Models = [
+		GD.Load<ModelResource>("res://procedural_generation/models/start.tres").ToModel(),
+		GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel(),
+	];
+
 	// MUTEXED
 	TileCache PatternTiles;
 	// MUTEXED
@@ -45,7 +49,7 @@ public partial class ProceduralGenerator : Node
 		#pragma warning disable CS0162
 		if (Game.DEBUG_NO_PROCGEN) return;
 		Mutex.Lock();
-		Queue.Push(new(Vector2I.Zero, false, true));
+		Queue.Push(new(Areas.Start, Vector2I.Zero, false, true));
 		for (int i = 0; i < 4; i++) NextChunks(3);
 		for (int i = 0; i < 4; i++) NextChunks(5);
 		Mutex.Unlock();
@@ -63,6 +67,11 @@ public partial class ProceduralGenerator : Node
         }
         Mutex.Unlock();
 	}
+
+	Areas GetAreaFromChunk(Vector2I chunk)
+	{
+		return Areas.Start;
+	}
 	
 	void NextChunks(int chunks)
 	{
@@ -72,7 +81,7 @@ public partial class ProceduralGenerator : Node
 		}
 		void AddToQueue(Vector2I position, bool clearBefore) {
 			if (ChunkStates.ContainsKey(position)) return;
-			Queue.Push(new(position, clearBefore, true));
+			Queue.Push(new(GetAreaFromChunk(position), position, clearBefore, true));
 		}
 
 		Vector2I position = (Vector2I)(World.Player.Position / PATTERN_CHUNK_SIZE / World.PATTERN_TILE_SIZE).Round();
@@ -113,10 +122,11 @@ public partial class ProceduralGenerator : Node
 					for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
 						if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
 			}
+			Model model = Models[(int)task.Area];
 			Rect2I rect = task.Next();
 			if (task.IsEmpty()) Queue.Pop();
 			Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
-			PatternTiles = new(rect, Model.PatternSize-Vector2I.One, Model.PatternTiles, PatternLayer, 0);
+			PatternTiles = new(rect, Model.PatternSize-Vector2I.One, model.PatternTiles, PatternLayer, 0);
 			if (!PatternTiles.AnyEmpty()) {
 				Vector2I chunk = (Vector2I)(((Vector2)rect.Position)/8).Ceil();
 				if (!ChunkStates.ContainsKey(chunk)) GenCount++;
@@ -124,8 +134,8 @@ public partial class ProceduralGenerator : Node
 				Mutex.Unlock();
 				continue;
 			}
-			ConvertedTiles = new(convertedRect, Vector2I.Zero, Model.ConvertedTiles, ConvertedLayer, 0);
-			Thread.Start(Callable.From(()=>Generate(rect, task.CanRetry)));
+			ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, 0);
+			Thread.Start(Callable.From(()=>Generate(task.Area, rect, task.CanRetry)));
 			Mutex.Unlock();
 		}
     }
@@ -156,11 +166,11 @@ public partial class ProceduralGenerator : Node
 	}
 
 	// returns true if successful
-	bool Generate(Rect2I rect, bool canRetry)
+	bool Generate(Areas area, Rect2I rect, bool canRetry)
 	{
 		Mutex.Lock();
 		int tries = 0;
-		while (TryGenerate(rect)) {
+		while (TryGenerate(area, rect)) {
 			tries++;
 			for (int x = rect.Position.X; x < rect.End.X; x++)
 			for (int y = rect.Position.Y; y < rect.End.Y; y++)
@@ -168,7 +178,7 @@ public partial class ProceduralGenerator : Node
 			
 			if (tries > 3) {
 				if (canRetry) {
-					Task retry = new(new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
+					Task retry = new(area, new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
 					Queue.Push(retry);
 				}
 				Mutex.Unlock();
@@ -183,8 +193,9 @@ public partial class ProceduralGenerator : Node
 	}
 
 	// returns true if failed
-	bool TryGenerate(Rect2I rect)
+	bool TryGenerate(Areas area, Rect2I rect)
 	{
+		Model model = Models[(int)area];
 		Vector2I patternsMargin = Model.PatternSize - Vector2I.One;
 		Vector2I patternsRectSize = rect.Size + patternsMargin;
 		// setup
@@ -194,7 +205,7 @@ public partial class ProceduralGenerator : Node
 
 		for (int x = 0; x < patternsRectSize.X; x++)
 		for (int y = 0; y < patternsRectSize.Y; y++)
-			patterns[Fold(x,y,patternsRectSize)] = Model.MatchPatterns(GetTiles(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize));
+			patterns[Fold(x,y,patternsRectSize)] = model.MatchPatterns(GetTiles(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize));
 		for (int x = 0; x < rect.Size.X; x++)
 		for (int y = 0; y < rect.Size.Y; y++) {
 			Vector2I position = new(x,y);
@@ -202,19 +213,19 @@ public partial class ProceduralGenerator : Node
 				entropies[Fold(x,y,rect.Size)] = -1;
 				tilesCompleted++;
 			}
-			else entropies[Fold(x,y,rect.Size)] = GetEntropy(GetNearbyPatterns(position, patterns, patternsRectSize));
+			else entropies[Fold(x,y,rect.Size)] = GetEntropy(model, GetNearbyPatterns(position, patterns, patternsRectSize));
 		}
 		// loop
 		while (tilesCompleted < rect.Area) {
 			Vector2I collapsePosition = GetLowestEntropy(rect, entropies);
-			if (SelectPossibility(GetNearbyPatterns(collapsePosition, patterns, patternsRectSize)) is int tile) {
+			if (SelectPossibility(model, GetNearbyPatterns(collapsePosition, patterns, patternsRectSize)) is int tile) {
 				tilesCompleted++;
 				PatternTiles.SetTile(collapsePosition + rect.Position, tile);
 				entropies[Fold(collapsePosition,rect.Size)] = -1;
 				for (int px = 0; px < Model.PatternSize.X; px++)
 				for (int py = 0; py < Model.PatternSize.Y; py++) {
 					Vector2I updatePatternPosition = collapsePosition + new Vector2I(px,py);
-					patterns[Fold(updatePatternPosition,patternsRectSize)] = Model.MatchPatterns(
+					patterns[Fold(updatePatternPosition,patternsRectSize)] = model.MatchPatterns(
 						GetTiles(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
 						patterns[Fold(updatePatternPosition,patternsRectSize)]
 					);
@@ -224,7 +235,7 @@ public partial class ProceduralGenerator : Node
 					Vector2I updateEntropyPosition = collapsePosition + new Vector2I(px,py);
 					if (!rect.HasPoint(rect.Position + updateEntropyPosition)) continue;
 					if (entropies[Fold(updateEntropyPosition,rect.Size)] == -1) continue;
-					entropies[Fold(updateEntropyPosition,rect.Size)] = GetEntropy(GetNearbyPatterns(updateEntropyPosition, patterns, patternsRectSize));
+					entropies[Fold(updateEntropyPosition,rect.Size)] = GetEntropy(model, GetNearbyPatterns(updateEntropyPosition, patterns, patternsRectSize));
 				}
 			} else return true;
 		}
@@ -269,35 +280,35 @@ public partial class ProceduralGenerator : Node
 		return lowestPosition;
 	}
 
-	int[] CountTiles(List<Pattern> patterns, Vector2I at)
+	int[] CountTiles(Model model, List<Pattern> patterns, Vector2I at)
 	{
-		int[] counts = new int[Model.PatternTiles.Count];
+		int[] counts = new int[model.PatternTiles.Count];
 		foreach (Pattern pattern in patterns) counts[pattern.Tiles[Fold(at,Model.PatternSize)]]++;
 		return counts;
 	}
 	
-	double[] CollectPossibilities(List<Pattern>[] patterns)
+	double[] CollectPossibilities(Model model, List<Pattern>[] patterns)
 	{
-		double[] possibilities = new double[Model.PatternTiles.Count];
-		for (int i = 0; i < Model.PatternTiles.Count; i++) possibilities[i] = 1.0;
+		double[] possibilities = new double[model.PatternTiles.Count];
+		for (int i = 0; i < model.PatternTiles.Count; i++) possibilities[i] = 1.0;
 		for (int x = 0; x < Model.PatternSize.X; x++)
 		for (int y = 0; y < Model.PatternSize.Y; y++) {
-			int[] tiles = CountTiles(patterns[Fold(x,y,Model.PatternSize)], Model.PatternSize - new Vector2I(x,y) - Vector2I.One);
-			for (int i = 0; i < Model.PatternTiles.Count; i++)
+			int[] tiles = CountTiles(model, patterns[Fold(x,y,Model.PatternSize)], Model.PatternSize - new Vector2I(x,y) - Vector2I.One);
+			for (int i = 0; i < model.PatternTiles.Count; i++)
 				possibilities[i] *= tiles[i];
 		}
-		for (int i = 0; i < Model.PatternTiles.Count; i++) possibilities[i] = Math.Pow(possibilities[i], INVERSE_TEMPERATURE);
+		for (int i = 0; i < model.PatternTiles.Count; i++) possibilities[i] = Math.Pow(possibilities[i], INVERSE_TEMPERATURE);
 		return possibilities;
 	}
 
-	int? SelectPossibility(List<Pattern>[] patterns)
+	int? SelectPossibility(Model model, List<Pattern>[] patterns)
 	{
-		double[] possibilities = CollectPossibilities(patterns);
+		double[] possibilities = CollectPossibilities(model, patterns);
 		double totalFrequency = possibilities.Sum();
 		if (totalFrequency == 0) return null;
 		double randomValue = RNG.NextDouble() * totalFrequency;
 		double slidingWindow = 0;
-		for (int tile = 0; tile < Model.PatternTiles.Count; tile++) {
+		for (int tile = 0; tile < model.PatternTiles.Count; tile++) {
 			double slidingWindowNext = slidingWindow + possibilities[tile];
 			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) return tile;
 			slidingWindow = slidingWindowNext;
@@ -306,10 +317,10 @@ public partial class ProceduralGenerator : Node
 		return null;
 	}
 
-	double GetEntropy(List<Pattern>[] patterns)
+	double GetEntropy(Model model, List<Pattern>[] patterns)
 	{
 		double entropy = 0;
-		double[] possibilities = CollectPossibilities(patterns);
+		double[] possibilities = CollectPossibilities(model, patterns);
 		double scale = 1/possibilities.Sum();
 		foreach (double possibility in possibilities)
 		{
@@ -336,12 +347,14 @@ class Task
 	public bool CanRetry;
 	public Rect2I Rect;
 	readonly List<Rect2I> Subtasks;
+	public ProceduralGenerator.Areas Area;
 	int pointer = 0;
 
 	const int PATTERN_CHUNK_SIZE = ProceduralGenerator.PATTERN_CHUNK_SIZE;
 
-	public Task(Vector2I position, bool clearBefore, bool canRetry)
+	public Task(ProceduralGenerator.Areas area, Vector2I position, bool clearBefore, bool canRetry)
 	{
+		Area = area;
 		ClearBefore = clearBefore;
 		CanRetry = canRetry;
 		Rect = new (position*PATTERN_CHUNK_SIZE, Vector2I.One * PATTERN_CHUNK_SIZE);
@@ -356,8 +369,9 @@ class Task
 	// 	Subtasks = [Rect];
 	// }
 
-	public Task (Rect2I rect, bool clearBefore)
+	public Task (ProceduralGenerator.Areas area, Rect2I rect, bool clearBefore)
 	{
+		Area = area;
 		ClearBefore = clearBefore;
 		Rect = rect;
 		Subtasks = [];
