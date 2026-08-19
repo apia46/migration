@@ -283,7 +283,8 @@ public partial class Player : CharacterBody2D
                         LegMoving[i] = false;
                     }
                 } else if (!LegMoving[legAfter] && !LegMoving[legBefore]
-                    && target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 1.3) LegMoving[i] = true;
+                    && (target.Position.DistanceSquaredTo(restPosition) > LEG_LENGTH*LEG_LENGTH * 1.3
+                    || Math.Abs((target.Position - restPosition).Y) > 2)) LegMoving[i] = true;
             } else if (wallDirection != 0f) {
                 bone.Position = new(0, (i % 3 * 7) - 6);
                 restPosition = new Vector2(-8 * (FacingRight ? -1 : 1), 4 + (i % 3 * 5) - 8) + Position;
@@ -301,9 +302,8 @@ public partial class Player : CharacterBody2D
                 target.Position = target.Position.MoveToward(restPosition, LEG_SPEED * (float)delta);
             }
 
-            // DebugDrawer.AddCircle(bone.Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 1f), 1);
-            // DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f), 1);
-            // DebugDrawer.AddCircle(target.Position - Position, Color.FromHsv(i/6f, LegMoving[i] ? 0.5f : 1f, 0.5f), 1);
+            // DebugDrawer.AddCircle(restPosition - Position, Color.FromHsv(i/6f, 1f, 0.5f), 1);
+            // DebugDrawer.AddCircle(target.Position - Position, LegMoving[i] ? Colors.Green : Colors.Red, 1);
         }
         // DebugDrawer.Evaluate();
     }
