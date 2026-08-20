@@ -5,8 +5,7 @@ public partial class ProceduralGenerator : Node
 	public const int PATTERN_CHUNK_SIZE = 8;
 	public const int CONVERTED_CHUNK_SIZE = 16;
 	const double INVERSE_TEMPERATURE = 0.25;
-	const int EXPAND_RADIUS = 1;
-	public const int SIZE_THRESHOLD = 12;
+	public const int EXPAND_LIMIT = 4;
 
 
 	readonly GameRandom RNG = new();
@@ -18,8 +17,8 @@ public partial class ProceduralGenerator : Node
 	[Export] public TileMapLayer PatternLayer;
 	[Export] public TileMapLayer ConvertedLayer;
 	
-	public enum Areas {Start, Pools};
-	Model[] Models = [
+	public enum Areas {Start, Pools, Top, Restart, End, TransStartPools, TransStartEnd};
+	static readonly Model[] Models = [
 		GD.Load<ModelResource>("res://procedural_generation/models/start.tres").ToModel(),
 		GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel(),
 	];
@@ -41,7 +40,7 @@ public partial class ProceduralGenerator : Node
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
-	public const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
+	public const int GENERATE_CHUNKS_AROUND_PLAYER = 5;
 	const int DEGENERATE_CHUNKS_AROUND_PLAYER = 12;
 
 	public void StartingArea()
@@ -49,7 +48,7 @@ public partial class ProceduralGenerator : Node
 		#pragma warning disable CS0162
 		if (Game.DEBUG_NO_PROCGEN) return;
 		Mutex.Lock();
-		Queue.Push(new(Areas.Start, Vector2I.Zero, false, true));
+		Queue.Push(new(Areas.Start, Vector2I.Zero, 0, false));
 		for (int i = 0; i < 4; i++) NextChunks(3);
 		for (int i = 0; i < 4; i++) NextChunks(5);
 		Mutex.Unlock();
@@ -70,7 +69,11 @@ public partial class ProceduralGenerator : Node
 
 	Areas GetAreaFromChunk(Vector2I chunk)
 	{
-		return Areas.Start;
+		return chunk switch {
+			{Y: < -3} => Areas.Pools,
+			{Y: -3} => Areas.TransStartPools,
+			_ => Areas.Start
+		};
 	}
 	
 	void NextChunks(int chunks)
@@ -81,7 +84,7 @@ public partial class ProceduralGenerator : Node
 		}
 		void AddToQueue(Vector2I position, bool clearBefore) {
 			if (ChunkStates.ContainsKey(position)) return;
-			Queue.Push(new(GetAreaFromChunk(position), position, clearBefore, true));
+			Queue.Push(new(GetAreaFromChunk(position), position, 0, clearBefore));
 		}
 
 		Vector2I position = (Vector2I)(World.Player.Position / PATTERN_CHUNK_SIZE / World.PATTERN_TILE_SIZE).Round();
@@ -115,27 +118,28 @@ public partial class ProceduralGenerator : Node
 					PatternTiles.WriteTileMap();
 				} else CleanPass = false;
 			}
-			Task task = Queue.Peek();
-			if (task.IsNew() && task.ClearBefore) {
-				RectangleReverted(task.Rect);
-				for (int x = task.Rect.Position.X; x < task.Rect.End.X; x++)
-					for (int y = task.Rect.Position.Y; y < task.Rect.End.Y; y++)
-						if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
+			Task task = Queue.Pop();
+			Rect2I rect = task.GetRect();
+			if (task.ClearBefore) {
+				TaskReverted(task);
+				for (int x = rect.Position.X; x < rect.End.X; x++)
+				for (int y = rect.Position.Y; y < rect.End.Y; y++)
+					if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
 			}
-			Model model = Models[(int)task.Area];
-			Rect2I rect = task.Next();
-			if (task.IsEmpty()) Queue.Pop();
-			Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
-			PatternTiles = new(rect, Model.PatternSize-Vector2I.One, model.PatternTiles, PatternLayer, 0);
-			if (!PatternTiles.AnyEmpty()) {
-				Vector2I chunk = (Vector2I)(((Vector2)rect.Position)/8).Ceil();
-				if (!ChunkStates.ContainsKey(chunk)) GenCount++;
-				ChunkStates[chunk] = ChunkState.Generated;
-				Mutex.Unlock();
-				continue;
+			if (task.Area > Areas.End) GenerateTransition(task);
+			else {
+				Model model = Models[(int)task.Area];
+				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
+				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, model.PatternTiles, PatternLayer, (int)task.Area);
+				if (!PatternTiles.AnyEmpty()) {
+					if (!ChunkStates.ContainsKey(task.Chunk)) GenCount++;
+					ChunkStates[task.Chunk] = ChunkState.Generated;
+					Mutex.Unlock();
+					continue;
+				}
+				ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, (int)task.Area);
+				Thread.Start(Callable.From(()=>Generate(task)));
 			}
-			ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, 0);
-			Thread.Start(Callable.From(()=>Generate(task.Area, rect, task.CanRetry)));
 			Mutex.Unlock();
 		}
     }
@@ -144,7 +148,7 @@ public partial class ProceduralGenerator : Node
 	{
 		if (!ChunkStates.ContainsKey(position)) return;
 		Rect2I rect = new(position * PATTERN_CHUNK_SIZE, Vector2I.One * PATTERN_CHUNK_SIZE);
-		RectangleReverted(rect);
+		ChunkReverted(position);
 		for (int x = rect.Position.X; x < rect.End.X; x++)
 		for (int y = rect.Position.Y; y < rect.End.Y; y++) {
 			Vector2I patternTile = new(x,y);
@@ -156,46 +160,56 @@ public partial class ProceduralGenerator : Node
 
 	}
 
-	void RectangleReverted(Rect2I rect)
+	void TaskReverted(Task task)
 	{
-		Vector2I start = (Vector2I)(((Vector2)rect.Position)/8).Floor();
-		Vector2I end = (Vector2I)(((Vector2)rect.End)/8).Ceil();
-		for (int x = start.X; x < end.X; x++)
-		for (int y = start.Y; y < end.Y; y++)
-		if (ChunkStates.Remove(new(x,y))) GenCount--;
+		if (task.Expand > 0) {
+			for (int x = task.Chunk.X-1; x <= task.Chunk.X+1; x++)
+			for (int y = task.Chunk.Y-1; y <= task.Chunk.Y+1; y++)
+				ChunkReverted(new(x,y));
+		} else ChunkReverted(task.Chunk);
+	}
+
+	void ChunkReverted(Vector2I chunk)
+	{
+		if (ChunkStates.Remove(chunk)) GenCount--;
+	}
+
+	void GenerateTransition(Task task)
+	{
+		
 	}
 
 	// returns true if successful
-	bool Generate(Areas area, Rect2I rect, bool canRetry)
+	bool Generate(Task task)
 	{
+		Rect2I rect = task.GetRect();
 		Mutex.Lock();
 		int tries = 0;
-		while (TryGenerate(area, rect)) {
+		while (TryGenerate(task)) {
 			tries++;
 			for (int x = rect.Position.X; x < rect.End.X; x++)
 			for (int y = rect.Position.Y; y < rect.End.Y; y++)
 				if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
 			
 			if (tries > 3) {
-				if (canRetry) {
-					Task retry = new(area, new Rect2I(rect.Position - Vector2I.One*EXPAND_RADIUS, rect.Size + Vector2I.One*2*EXPAND_RADIUS), true);
-					Queue.Push(retry);
+				if (task.CanRetry()) {
+					Queue.Push(task.ExpandOnce());
 				}
 				Mutex.Unlock();
 				return false;
 			}
 		}
-		Vector2I chunk = (Vector2I)(((Vector2)rect.Position)/8).Ceil();
-		if (!ChunkStates.ContainsKey(chunk)) GenCount++;
-		ChunkStates[chunk] = ChunkState.Generated;
+		if (!ChunkStates.ContainsKey(task.Chunk)) GenCount++;
+		ChunkStates[task.Chunk] = ChunkState.Generated;
 		Mutex.Unlock();
 		return true;
 	}
 
 	// returns true if failed
-	bool TryGenerate(Areas area, Rect2I rect)
+	bool TryGenerate(Task task)
 	{
-		Model model = Models[(int)area];
+		Rect2I rect = task.GetRect();
+		Model model = Models[(int)task.Area];
 		Vector2I patternsMargin = Model.PatternSize - Vector2I.One;
 		Vector2I patternsRectSize = rect.Size + patternsMargin;
 		// setup
@@ -341,47 +355,65 @@ public partial class ProceduralGenerator : Node
 	}
 }
 
-class Task
+// class Task
+// {
+// 	public bool ClearBefore;
+// 	public bool CanRetry;
+// 	public Rect2I Rect;
+// 	readonly List<Subtask> Subtasks;
+// 	public ProceduralGenerator.Areas Area;
+// 	int pointer = 0;
+
+// 	const int PATTERN_CHUNK_SIZE = ProceduralGenerator.PATTERN_CHUNK_SIZE;
+
+// 	public Task(ProceduralGenerator.Areas area, Vector2I chunk, bool clearBefore, bool canRetry)
+// 	{
+// 		Area = area;
+// 		ClearBefore = clearBefore;
+// 		CanRetry = canRetry;
+// 		Subtasks = [new(chunk, area)];
+// 	}
+
+// 	// public Task (Rect2I rect, bool clearBefore, bool canRetry)
+// 	// {
+// 	// 	ClearBefore = clearBefore;
+// 	// 	CanRetry = canRetry;
+// 	// 	Rect = rect;
+// 	// 	Subtasks = [Rect];
+// 	// }
+
+// 	public Task (ProceduralGenerator.Areas area, Rect2I rect, bool clearBefore)
+// 	{
+// 		Area = area;
+// 		ClearBefore = clearBefore;
+// 		Rect = rect;
+// 		Subtasks = [];
+// 		CanRetry = rect.Size.X <= ProceduralGenerator.SIZE_THRESHOLD;
+// 		Subtasks.Add(Rect);
+// 	}
+
+// 	public Subtask Next() => Subtasks[pointer++];
+// 	public bool IsEmpty() => pointer == Subtasks.Count;
+// 	public bool IsNew() => pointer == 0;
+// }
+
+class Task(ProceduralGenerator.Areas area, Vector2I chunk, int expand, bool clearBefore)
 {
-	public bool ClearBefore;
-	public bool CanRetry;
-	public Rect2I Rect;
-	readonly List<Rect2I> Subtasks;
-	public ProceduralGenerator.Areas Area;
-	int pointer = 0;
+	public Vector2I Chunk = chunk;
+	public int Expand = expand;
+	public ProceduralGenerator.Areas Area = area;
+	public bool ClearBefore = clearBefore;
 
-	const int PATTERN_CHUNK_SIZE = ProceduralGenerator.PATTERN_CHUNK_SIZE;
+	public Rect2I GetRect() => new(
+		Chunk * ProceduralGenerator.PATTERN_CHUNK_SIZE - Vector2I.One * Expand,
+		Vector2I.One * (ProceduralGenerator.PATTERN_CHUNK_SIZE + 2*Expand));
+	
+	public bool CanRetry() => Expand < ProceduralGenerator.EXPAND_LIMIT;
 
-	public Task(ProceduralGenerator.Areas area, Vector2I position, bool clearBefore, bool canRetry)
-	{
-		Area = area;
-		ClearBefore = clearBefore;
-		CanRetry = canRetry;
-		Rect = new (position*PATTERN_CHUNK_SIZE, Vector2I.One * PATTERN_CHUNK_SIZE);
-		Subtasks = [Rect];
+	public Task ExpandOnce() {
+		Expand++;
+		return this;
 	}
-
-	// public Task (Rect2I rect, bool clearBefore, bool canRetry)
-	// {
-	// 	ClearBefore = clearBefore;
-	// 	CanRetry = canRetry;
-	// 	Rect = rect;
-	// 	Subtasks = [Rect];
-	// }
-
-	public Task (ProceduralGenerator.Areas area, Rect2I rect, bool clearBefore)
-	{
-		Area = area;
-		ClearBefore = clearBefore;
-		Rect = rect;
-		Subtasks = [];
-		CanRetry = rect.Size.X <= ProceduralGenerator.SIZE_THRESHOLD;
-		Subtasks.Add(Rect);
-	}
-
-	public Rect2I Next() => Subtasks[pointer++];
-	public bool IsEmpty() => pointer == Subtasks.Count;
-	public bool IsNew() => pointer == 0;
 }
 
 class TileCache
