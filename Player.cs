@@ -202,7 +202,7 @@ public partial class Player : CharacterBody2D
                 WingT = WING_UP+TAU;
                 WingFlapping = true;
             } else if (DoubleJumpAvailable) {
-                DoubleJumpAvailable = false;
+                // DoubleJumpAvailable = false;
                 newVelocity.Y = JUMP_VELOCITY;
                 if (WingT < 0) WingT = 3;
                 WingFlapping = true;
@@ -320,8 +320,12 @@ public partial class Player : CharacterBody2D
 
     public void Hurt(double amount)
     {
-        Health -= amount;
-        if (Health <= 0) Die();
+        #pragma warning disable CS0162
+        if (!Game.DEBUG_NO_SURVIVAL) {
+            Health -= amount;
+            if (Health <= 0) Die();
+        }
+        #pragma warning restore CS0162
     }
 
     void Die()

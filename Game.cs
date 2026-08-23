@@ -1,6 +1,6 @@
 public partial class Game : Control
 {
-	public const bool DEBUG_CONTROLS = false;
+	public const bool DEBUG_CONTROLS = true;
 	public const bool DEBUG_NO_PROCGEN = false;
 	public const bool DEBUG_NO_SURVIVAL = true;
 
