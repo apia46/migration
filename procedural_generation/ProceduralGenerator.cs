@@ -16,6 +16,7 @@ public partial class ProceduralGenerator : Node
 
 	[Export] public TileMapLayer PatternLayer;
 	[Export] public TileMapLayer ConvertedLayer;
+	[Export] public TileMapLayer WaterLayer;
 	
 	public enum Areas {Start, Pools, Top, Restart, End, TransStartPools, TransStartEnd};
 	static readonly Model[] Models = [
@@ -263,6 +264,7 @@ public partial class ProceduralGenerator : Node
 				ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
 				ConvertedTiles.SetTileRotation((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.ConversionRotation[Fold(cx,cy,Model.ConversionScale)]);
 			}
+			// WaterTiles.SetTile(rect.Position+position,)
 		}
 		return false;
 	}

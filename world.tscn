@@ -6,7 +6,16 @@
 [ext_resource type="Script" uid="uid://d2j8xwqp52t78" path="res://procedural_generation/ProceduralGenerator.cs" id="4_036b0"]
 [ext_resource type="PackedScene" uid="uid://bsak233nboe7d" path="res://player.tscn" id="4_aqk2v"]
 [ext_resource type="Script" uid="uid://c6xw1uksf6027" path="res://creatures/CreaturesManager.cs" id="5_036b0"]
+[ext_resource type="Material" uid="uid://c8jcnw1v8pakm" path="res://assets/water_material.tres" id="5_ioo17"]
 [ext_resource type="Script" uid="uid://dx6h71m1eq5pv" path="res://details/DetailManager.cs" id="7_gbfbk"]
+[ext_resource type="Texture2D" uid="uid://brwfw875jjm83" path="res://assets/water.png" id="9_wse8f"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wse8f"]
+texture = ExtResource("9_wse8f")
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_ic0uy"]
+sources/0 = SubResource("TileSetAtlasSource_wse8f")
 
 [node name="World" type="Node2D" unique_id=203491962]
 script = ExtResource("1_aqk2v")
@@ -20,15 +29,20 @@ tile_map_data = PackedByteArray("AAD5//z/AAABAAIAAAD5//3/AAABAAIAAAD5//7/AAABAAE
 enabled = false
 tile_set = ExtResource("2_dwbse")
 
+[node name="Player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
+unique_name_in_owner = true
+position = Vector2(0, -9)
+
 [node name="ConvertedTileMapLayer" type="TileMapLayer" parent="." unique_id=271356281]
 unique_name_in_owner = true
 texture_filter = 1
 scale = Vector2(2, 2)
 tile_set = ExtResource("3_036b0")
 
-[node name="Player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
+[node name="WaterMapLayer" type="TileMapLayer" parent="." unique_id=473386049]
 unique_name_in_owner = true
-position = Vector2(0, -9)
+material = ExtResource("5_ioo17")
+tile_set = SubResource("TileSet_ic0uy")
 
 [node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112 node_paths=PackedStringArray("PatternLayer", "ConvertedLayer")]
 unique_name_in_owner = true

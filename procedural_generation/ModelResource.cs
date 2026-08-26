@@ -18,7 +18,7 @@ public partial class ModelResource : Resource {
 		PatternConversionRotations = [.. model.Patterns.ConvertAll(pattern=>pattern.ConversionRotation)];
 		PatternTilesCoordsList = [.. model.PatternTiles.CoordsList];
 		ConvertedTilesCoordsList = [.. model.ConvertedTiles.CoordsList];
-		PatternWaters = [.. model.Patterns.ConvertAll(pattern=>pattern.Flags.Water)];
+		PatternWaters = [.. model.Patterns.ConvertAll(pattern=>pattern.Water)];
 	}
 
 	public Model ToModel()
@@ -30,7 +30,7 @@ public partial class ModelResource : Resource {
 				PatternTiles[i],
 				PatternConversions[i],
 				PatternConversionRotations[i],
-				new(PatternWaters[i])
+				PatternWaters[i]
 			));
 		}
 		foreach (Vector2I tileCoords in PatternTilesCoordsList) model.PatternTiles.RegisterTile(tileCoords);
