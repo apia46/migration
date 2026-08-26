@@ -6,6 +6,7 @@ public partial class ModelResource : Resource {
 	[Export] public Godot.Collections.Array<int[]> PatternConversionRotations = [];
 	[Export] public Godot.Collections.Array<Vector2I> PatternTilesCoordsList = [];
 	[Export] public Godot.Collections.Array<Vector2I> ConvertedTilesCoordsList =[];
+	[Export] public Godot.Collections.Array<bool> PatternWaters = [];
 
 	public ModelResource() {} // godot initialises your resource with no arguments
 
@@ -17,6 +18,7 @@ public partial class ModelResource : Resource {
 		PatternConversionRotations = [.. model.Patterns.ConvertAll(pattern=>pattern.ConversionRotation)];
 		PatternTilesCoordsList = [.. model.PatternTiles.CoordsList];
 		ConvertedTilesCoordsList = [.. model.ConvertedTiles.CoordsList];
+		PatternWaters = [.. model.Patterns.ConvertAll(pattern=>pattern.Flags.Water)];
 	}
 
 	public Model ToModel()
@@ -27,7 +29,8 @@ public partial class ModelResource : Resource {
 				PatternFrequencies[i],
 				PatternTiles[i],
 				PatternConversions[i],
-				PatternConversionRotations[i]
+				PatternConversionRotations[i],
+				new(PatternWaters[i])
 			));
 		}
 		foreach (Vector2I tileCoords in PatternTilesCoordsList) model.PatternTiles.RegisterTile(tileCoords);

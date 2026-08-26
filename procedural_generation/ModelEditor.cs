@@ -9,10 +9,12 @@ public partial class ModelEditor : Node2D
 
 	TileMapLayer? PatternLayer;
 	TileMapLayer? ConversionLayer;
+	TileMapLayer? FlagsLayer;
 
 	public void Generate() {
 		PatternLayer = GetNode<TileMapLayer>("%PatternLayer");
 		ConversionLayer = GetNode<TileMapLayer>("%ConversionLayer");
+		FlagsLayer = GetNodeOrNull<TileMapLayer>("%FlagsLayer");
 
         Model model = new();
 
@@ -27,10 +29,16 @@ public partial class ModelEditor : Node2D
 						if (pattern.Conversion.SequenceEqual(conversion)) pattern.Frequency++;
 						else {
 							GD.Print($"duplicate with differing conversion at position {position}");
-							model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer)));
+							model.Patterns.Add(new Pattern(tiles, conversion,
+								GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
+								GetTileFlagsAtCell(position, FlagsLayer)
+							));
 						}
 					}
-					else model.Patterns.Add(new Pattern(tiles, conversion, GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer)));
+					else model.Patterns.Add(new Pattern(tiles, conversion,
+						GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
+						GetTileFlagsAtCell(position, FlagsLayer)
+					));
 				} else GD.Print($"position {position} has no conversion!");
 			}
 		}
@@ -40,6 +48,13 @@ public partial class ModelEditor : Node2D
 		ResourceSaver.Save(resource);
 		// EditorInterface.Singleton.CallDeferred("edit_resource", resource);
     }
+
+	static PatternFlags GetTileFlagsAtCell(Vector2I position, TileMapLayer? flagsLayer) {
+		Vector2I tile = flagsLayer?.GetCellAtlasCoords(position) ?? new(-1,-1);
+		return new(
+			tile.X == 0
+		);
+	}
 
 	// returns whether or not to 
 	int[]? GetTilesAtCell(Vector2I position, Vector2I size, TileMapLayer layer, EnumeratedTileSet tileset)

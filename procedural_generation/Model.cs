@@ -35,21 +35,24 @@ public class Pattern
     public int[] Tiles;
     public int[] Conversion;
     public int[] ConversionRotation;
+    public PatternFlags Flags;
 
-    public Pattern(int[] tiles, int[] conversion, int[] conversionRotation)
+    public Pattern(int[] tiles, int[] conversion, int[] conversionRotation, PatternFlags flags)
     {
         Frequency = 1;
         Tiles = tiles;
         Conversion = conversion;
         ConversionRotation = conversionRotation;
+        Flags = flags;
     }
 
-    public Pattern(int frequency, int[] tiles, int[] conversion, int[] conversionRotation)
+    public Pattern(int frequency, int[] tiles, int[] conversion, int[] conversionRotation, PatternFlags flags)
     {
         Frequency = frequency;
         Tiles = tiles;
         Conversion = conversion;
         ConversionRotation = conversionRotation;
+        Flags = flags;
     }
 
     public bool Matches(int[] tiles)
@@ -57,6 +60,11 @@ public class Pattern
         for (int i = 0; i < tiles.Length; i++) if (tiles[i] != -1 && tiles[i] != Tiles[i]) return false;
         return true;
     }
+}
+
+public struct PatternFlags(bool water)
+{
+    public bool Water = water;
 }
 
 public class EnumeratedTileSet
