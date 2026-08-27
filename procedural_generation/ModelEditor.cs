@@ -9,12 +9,12 @@ public partial class ModelEditor : Node2D
 
 	TileMapLayer? PatternLayer;
 	TileMapLayer? ConversionLayer;
-	TileMapLayer? FlagsLayer;
+	TileMapLayer? WaterLayer;
 
 	public void Generate() {
 		PatternLayer = GetNode<TileMapLayer>("%PatternLayer");
 		ConversionLayer = GetNode<TileMapLayer>("%ConversionLayer");
-		FlagsLayer = GetNodeOrNull<TileMapLayer>("%FlagsLayer");
+		WaterLayer = GetNodeOrNull<TileMapLayer>("%WaterLayer");
 
         Model model = new();
 
@@ -31,13 +31,13 @@ public partial class ModelEditor : Node2D
 							GD.Print($"duplicate with differing conversion at position {position}");
 							model.Patterns.Add(new Pattern(tiles, conversion,
 								GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
-								GetWaterAtCell(position, FlagsLayer)
+								GetWaterAtCell(position, WaterLayer)
 							));
 						}
 					}
 					else model.Patterns.Add(new Pattern(tiles, conversion,
 						GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
-						GetWaterAtCell(position, FlagsLayer)
+						GetWaterAtCell(position+(Model.PatternSize-new Vector2I(1,1))/2, WaterLayer)
 					));
 				} else GD.Print($"position {position} has no conversion!");
 			}
@@ -49,7 +49,7 @@ public partial class ModelEditor : Node2D
 		// EditorInterface.Singleton.CallDeferred("edit_resource", resource);
     }
 
-	static bool GetWaterAtCell(Vector2I position, TileMapLayer? flagsLayer) => (flagsLayer?.GetCellAtlasCoords(position).X ?? -1) != -1;
+	static bool GetWaterAtCell(Vector2I position, TileMapLayer? waterLayer) => (waterLayer?.GetCellAtlasCoords(position).X ?? -1) != -1;
 
 	// returns whether or not to 
 	int[]? GetTilesAtCell(Vector2I position, Vector2I size, TileMapLayer layer, EnumeratedTileSet tileset)

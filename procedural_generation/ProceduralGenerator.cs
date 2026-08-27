@@ -25,9 +25,11 @@ public partial class ProceduralGenerator : Node
 	];
 
 	// MUTEXED
-	TileCache PatternTiles;
+	TileSetCache PatternTiles;
 	// MUTEXED
-	RotateableTileCache ConvertedTiles;
+	RotateableTileSetCache ConvertedTiles;
+	// MUTEXED
+	TileExistsCache WaterTiles;
 	#nullable enable
 
 	// MUTEXED
@@ -117,6 +119,7 @@ public partial class ProceduralGenerator : Node
 				if ((bool)Thread.WaitToFinish()) {
 					ConvertedTiles.WriteTileMap();
 					PatternTiles.WriteTileMap();
+					WaterTiles.WriteTileMap();
 				} else CleanPass = false;
 			}
 			Task task = Queue.Pop();
@@ -139,6 +142,7 @@ public partial class ProceduralGenerator : Node
 					continue;
 				}
 				ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, (int)task.Area);
+				WaterTiles = new(rect, Vector2I.One, WaterLayer, 0);
 				Thread.Start(Callable.From(()=>Generate(task)));
 			}
 			Mutex.Unlock();
@@ -264,7 +268,7 @@ public partial class ProceduralGenerator : Node
 				ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
 				ConvertedTiles.SetTileRotation((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.ConversionRotation[Fold(cx,cy,Model.ConversionScale)]);
 			}
-			// WaterTiles.SetTile(rect.Position+position,)
+			WaterTiles.SetTile(rect.Position+position, chosenPattern.Water);
 		}
 		return false;
 	}
@@ -418,52 +422,84 @@ class Task(ProceduralGenerator.Areas area, Vector2I chunk, int expand, bool clea
 	}
 }
 
-class TileCache
+abstract class TileCache<T>
 {
 	readonly public Rect2I Rect;
 	readonly public Vector2I Margin;
-	readonly public EnumeratedTileSet TileSet;
 	readonly public TileMapLayer TileMap;
 	readonly protected Vector2I TotalSize;
 	readonly protected int SourceId;
-	
-	readonly protected int[] Tiles;
+	readonly protected T[] Tiles;
 
-	public TileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
+	public TileCache(Rect2I rect, Vector2I margin, TileMapLayer tileMap, int sourceId)
 	{
 		Rect = rect;
 		Margin = margin;
-		TileSet = tileSet;
 		TileMap = tileMap;
 		SourceId = sourceId;
 		TotalSize = new(Rect.Size.X+2*Margin.X, Rect.Size.Y+2*Margin.Y);
-		Tiles = new int[TotalSize.X*TotalSize.Y];
-		for (int x = 0; x < TotalSize.X; x++)
-		for (int y = 0; y < TotalSize.Y; y++)
-			Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
+		Tiles = new T[TotalSize.X*TotalSize.Y];
 	}
 
-	public bool AnyEmpty()
+	public T GetTile(Vector2I absolutePosition) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
+	public void SetTile(Vector2I absolutePosition, T to) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
+	public abstract void WriteTileMap();
+}
+
+class TileExistsCache : TileCache<bool>
+{
+    public TileExistsCache(Rect2I rect, Vector2I margin, TileMapLayer tileMap, int sourceId)
+		: base(rect, margin, tileMap, sourceId)
+	{
+		for (int x = 0; x < TotalSize.X; x++)
+		for (int y = 0; y < TotalSize.Y; y++)
+			Tiles[Fold(x,y,TotalSize)] = TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)) != Vector2I.One * -1;
+	}
+
+	public override void WriteTileMap()
+	{
+		for (int x = 0; x < Rect.Size.X; x++)
+		for (int y = 0; y < Rect.Size.Y; y++) {
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId,
+				Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)] ? Vector2I.Zero : Vector2I.One * -1
+			);
+		}
+	}
+}
+
+class TileSetCache : TileCache<int>
+{
+	readonly public EnumeratedTileSet TileSet;
+
+    public TileSetCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
+		: base(rect, margin, tileMap, sourceId)
+	{
+		TileSet = tileSet;
+		for (int x = 0; x < TotalSize.X; x++)
+		for (int y = 0; y < TotalSize.Y; y++)
+			Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)));
+	}
+
+    public bool AnyEmpty()
 	{
 		foreach (int tile in Tiles) if (tile == -1) return true;
 		return false;
 	}
-
-	public int GetTile(Vector2I absolutePosition) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
-	public void SetTile(Vector2I absolutePosition, int to) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
-
-	public virtual void WriteTileMap()
+	
+	public override void WriteTileMap()
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
 		for (int y = 0; y < Rect.Size.Y; y++)
-			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]));
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId,
+				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)])
+			);
 	}
 }
 
-class RotateableTileCache : TileCache
+class RotateableTileSetCache : TileSetCache
 {
 	readonly int[] TileRotations;
-    public RotateableTileCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
+    public RotateableTileSetCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int sourceId)
 		: base(rect, margin, tileSet, tileMap, sourceId)
 	{
 		TileRotations = new int[TotalSize.X*TotalSize.Y];
@@ -479,6 +515,8 @@ class RotateableTileCache : TileCache
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
 		for (int y = 0; y < Rect.Size.Y; y++)
-			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId, TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId,
+				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]
+			);
 	}
 }
