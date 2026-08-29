@@ -123,6 +123,7 @@ public partial class ProceduralGenerator : Node
 			}
 			Task task = Queue.Pop();
 			Rect2I rect = task.GetRect();
+			World.DrawDebug(rect);
 			if (task.ClearBefore) {
 				TaskReverted(task);
 				for (int x = rect.Position.X; x < rect.End.X; x++)
@@ -412,12 +413,13 @@ class Task(ProceduralGenerator.Areas area, Vector2I chunk, int expand, bool clea
 	public Rect2I GetRect() => ExpandRect(new(
 		Chunk * ProceduralGenerator.PATTERN_CHUNK_SIZE,
 		Vector2I.One * ProceduralGenerator.PATTERN_CHUNK_SIZE
-	), 1);
+	), Expand);
 	
 	public bool CanRetry() => Expand < ProceduralGenerator.EXPAND_LIMIT;
 
 	public Task ExpandOnce() {
 		Expand++;
+		ClearBefore = true;
 		return this;
 	}
 }

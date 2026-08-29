@@ -83,6 +83,7 @@ public partial class Vine : Line2D
                 fromCollide.X *= 0.99f;
                 if (fromCollide.LengthSquared() > 512) continue;
                 float m = fromCollide.Y / fromCollide.X;
+                if (float.IsNaN(m)) continue;
                 Vector2 squareSurface = (Math.Abs(m) > 1 ? new Vector2(1/m,1)*Math.Sign(fromCollide.Y) : new Vector2(1,m)*Math.Sign(fromCollide.X)) * HALF_TILESIZE;
                 if (fromCollide.LengthSquared() < squareSurface.LengthSquared()) {
                     secondSegment.Position += squareSurface-fromCollide;

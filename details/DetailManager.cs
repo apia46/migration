@@ -28,6 +28,7 @@ public partial class DetailManager : Node
 
         ProceduralGenerator.Mutex.Lock();
 		for (int h = -DETAILED_CHUNKS_AROUND_PLAYER; h <= DETAILED_CHUNKS_AROUND_PLAYER; h++) {
+            UnplaceDetails(to + direction * -DETAILED_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
             PlaceDetails(to + direction * DETAILED_CHUNKS_AROUND_PLAYER + RotateCCW(direction) * h);
         }
         ProceduralGenerator.Mutex.Unlock();
@@ -41,6 +42,12 @@ public partial class DetailManager : Node
         detail.Position = position;
         World.AddChild(detail);
         return detail;
+    }
+
+    static void RemoveDetail<T>(T detail) where T : Node2D, IDetail<T>
+    {
+        detail.QueueFree();
+        T.Instances.Remove(detail.Id);
     }
 
     static void PlaceDetails(Vector2I chunk)
@@ -69,6 +76,16 @@ public partial class DetailManager : Node
             PlaceDetail<Shelter>(position).Rotation = rotation;
         }
         ProceduralGenerator.ChunkStates[chunk] = ProceduralGenerator.ChunkState.Detailed;
+    }
+
+    static void UnplaceDetails(Vector2I chunk)
+    {
+        void UnplaceType<T>() where T : Node2D, IDetail<T> {
+            foreach (T detail in T.Instances.Values)
+                if (World.PositionToChunk(detail.Position) == chunk) RemoveDetail(detail);
+        }
+        UnplaceType<VineGroup>();
+        UnplaceType<Shelter>();
     }
 
     static void CreateCircleColliders()

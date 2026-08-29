@@ -13,8 +13,11 @@
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wse8f"]
 texture = ExtResource("9_wse8f")
 0:0/0 = 0
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
 [sub_resource type="TileSet" id="TileSet_ic0uy"]
+physics_layer_0/collision_layer = 4
+physics_layer_0/collision_mask = 0
 sources/0 = SubResource("TileSetAtlasSource_wse8f")
 
 [node name="World" type="Node2D" unique_id=203491962]
@@ -44,6 +47,13 @@ unique_name_in_owner = true
 material = ExtResource("5_ioo17")
 scale = Vector2(4, 4)
 tile_set = SubResource("TileSet_ic0uy")
+
+[node name="DebugDraw" type="Line2D" parent="." unique_id=1252662449]
+unique_name_in_owner = true
+points = PackedVector2Array(-42, -44, 32, -17, 51, 28, -33, 45)
+closed = true
+begin_cap_mode = 1
+end_cap_mode = 1
 
 [node name="ProceduralGenerator" type="Node" parent="." unique_id=592980112 node_paths=PackedStringArray("PatternLayer", "ConvertedLayer", "WaterLayer")]
 unique_name_in_owner = true

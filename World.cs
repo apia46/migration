@@ -8,6 +8,7 @@ public partial class World : Node2D
 	public static Player Player;
 	public static CreaturesManager CreaturesManager;
 	public static DetailManager DetailManager;
+	public static Line2D DebugDraw;
 	#nullable enable
 	static double time = 0;
 
@@ -22,6 +23,7 @@ public partial class World : Node2D
 		DetailManager = GetNode<DetailManager>("%DetailManager");
 		DetailManager.World = this;
 		ConvertedTileMapLayer = GetNode<TileMapLayer>("%ConvertedTileMapLayer");
+		DebugDraw = GetNode<Line2D>("%DebugDraw");
 		ProceduralGenerator.StartingArea();
 	}
 
@@ -93,5 +95,13 @@ public partial class World : Node2D
 			}
 		}
 		#pragma warning restore CS0162
+	}
+
+	public static void DrawDebug(Rect2I rect)
+	{
+		DebugDraw.SetPointPosition(0, rect.Position * PATTERN_TILE_SIZE);
+		DebugDraw.SetPointPosition(1, new Vector2(rect.End.X, rect.Position.Y) * PATTERN_TILE_SIZE);
+		DebugDraw.SetPointPosition(2, rect.End * PATTERN_TILE_SIZE);
+		DebugDraw.SetPointPosition(3, new Vector2(rect.Position.X, rect.End.Y) * PATTERN_TILE_SIZE);
 	}
 }

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
@@ -11,6 +13,8 @@ public partial class Player : CharacterBody2D
     #nullable disable
     public World World;
     Area2D GrabArea;
+    Area2D WaterAreaBottom;
+    Area2D WaterAreaTop;
     DebugDrawer DebugDrawer;
     Line2D Body;
     Sprite2D Sprite;
@@ -73,6 +77,8 @@ public partial class Player : CharacterBody2D
     public override void _Ready()
     {
         GrabArea = GetNode<Area2D>("%GrabArea");
+        WaterAreaBottom = GetNode<Area2D>("%WaterAreaBottom");
+        WaterAreaTop = GetNode<Area2D>("%WaterAreaTop");
         DebugDrawer = GetNode<DebugDrawer>("%DebugDrawer");
         WingL = GetNode<Node2D>("%WingL").GetCanvasItem();
         LegsL = GetNode<Node2D>("%LegsL").GetCanvasItem();
@@ -213,26 +219,40 @@ public partial class Player : CharacterBody2D
             }
         }
 
+        bool InWater = true;
+        bool OnWaterSurface = false;
+        if (WaterAreaTop.GetOverlappingBodies().Count > 0) newVelocity.Y = Mathf.MoveToward(newVelocity.Y, -100f, (float)delta * 1000);
+        else if (WaterAreaBottom.GetOverlappingBodies().Count > 0) {
+            newVelocity.Y = Mathf.MoveToward(newVelocity.Y, 0f, (float)delta * 1000);
+            OnWaterSurface = true;
+        }
+        else InWater = false;
+
+        if (InWater) WingM = Mathf.MoveToward(WingM, OnWaterSurface ? 0 : 1, (float)delta * 5);
+
         if (moveDirection != 0.0f) {
-            WingM = Mathf.MoveToward(WingM, 1, (float)delta * 5);
+            if (!InWater) WingM = Mathf.MoveToward(WingM, 1, (float)delta * 5);
             newVelocity.X += moveDirection * MOVE_SPEED * (float)delta * horizontalControl;
             FacingRight = moveDirection > 0;
         } else {
-            WingM = Mathf.MoveToward(WingM, IsOnFloor() ? 0 : 1, (float)delta * 5);
+            if (!InWater) WingM = Mathf.MoveToward(WingM, IsOnFloor() ? 0 : 1, (float)delta * 5);
             newVelocity.X = Mathf.MoveToward(newVelocity.X, 0.0f, MOVE_SPEED * (float)delta * horizontalControl);
         }
 
+        DebugDrawer.Evaluate();
         if (IsOnFloor()) {
             DoubleJumpAvailable = true;
             CoyoteTime = 0.2f;
             newVelocity.X *= 0.8f;
-            BodyR = 0;
+            BodyR = (FacingRight ? 1:-1) * GetFloorNormal().AngleTo(Vector2.Up);
         } else {
-            if (wallDirection != 0f && Velocity.Y > 0) newVelocity.Y += (float)delta * .5f * Game.GRAVITY;
-            else newVelocity.Y += (float)delta * Game.GRAVITY;
+            if (!InWater)
+                if (wallDirection != 0f && Velocity.Y > 0) newVelocity.Y += (float)delta * .5f * Game.GRAVITY;
+                else newVelocity.Y += (float)delta * Game.GRAVITY;
             CoyoteTime = Math.Max(CoyoteTime - delta, 0);
             newVelocity.X *= 0.98f;
-            if (wallDirection != 0f) BodyR = PI/2;
+            if (OnWaterSurface) BodyR = 0;
+            else if (wallDirection != 0f) BodyR = PI/2;
             else BodyR = 0.5;
         }
 
@@ -261,8 +281,7 @@ public partial class Player : CharacterBody2D
             // DebugDrawer.Evaluate();
         }
 
-        float speed = Velocity.Length();
-
+        float LegRotate = (FacingRight ? -1 : 1) * (float)BodyR;
         for (int i = 0; i < 6; i++) {
             LegSkeletonModifications[i].FlipBendDirection = !FacingRight;
 
@@ -274,8 +293,8 @@ public partial class Player : CharacterBody2D
             int legBefore = i switch {0 => 3, 3 => 0, _ => i-1};
 
             if (IsOnFloor()) {
-                bone.Position = new(((i % 3 * 7) - 6) * (FacingRight ? -1 : 1), 0);
-                restPosition = new Vector2((i % 3 * -8 + 14) * (FacingRight ? 1 : -1), 8) + Position;
+                bone.Position = new Vector2(((i % 3 * 7) - 6) * (FacingRight ? -1 : 1), 0).Rotated(LegRotate);
+                restPosition = new Vector2((i % 3 * -8 + 14) * (FacingRight ? 1 : -1), 8).Rotated(LegRotate) + Position;
                 if (LegMoving[i]) {
                     target.Position = target.Position.MoveToward(restPosition, LEG_SPEED * (float)delta);
                     if (target.Position.DistanceSquaredTo(restPosition) < 16) {

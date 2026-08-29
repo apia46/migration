@@ -67,6 +67,12 @@ pause={
 ]
 }
 
+[layer_names]
+
+2d_physics/layer_1="Player"
+2d_physics/layer_2="Creatures"
+2d_physics/layer_3="Water"
+
 [physics]
 
 common/max_physics_steps_per_frame=12

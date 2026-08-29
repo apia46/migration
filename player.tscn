@@ -4,11 +4,17 @@
 [ext_resource type="Texture2D" uid="uid://cm4d4amhwqleh" path="res://assets/head.png" id="3_hqtel"]
 [ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="3_i3pqv"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_onrkg"]
-size = Vector2(16, 16)
+[sub_resource type="CircleShape2D" id="CircleShape2D_i3pqv"]
+radius = 8.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_onrkg"]
 radius = 25.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_i3pqv"]
+size = Vector2(16, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hqtel"]
+size = Vector2(16, 6)
 
 [sub_resource type="Curve" id="Curve_i3pqv"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.663492, 0.6263066), -0.6641781, -0.6641781, 0, 0, Vector2(1, 0), -2.5702615, 0.0, 0, 0]
@@ -76,7 +82,7 @@ modifications/5 = SubResource("SkeletonModification2DTwoBoneIK_dw050")
 script = ExtResource("1_onrkg")
 
 [node name="collision" type="CollisionShape2D" parent="." unique_id=780854719]
-shape = SubResource("RectangleShape2D_onrkg")
+shape = SubResource("CircleShape2D_i3pqv")
 
 [node name="GrabArea" type="Area2D" parent="." unique_id=1245861732]
 unique_name_in_owner = true
@@ -85,6 +91,24 @@ collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea" unique_id=339456093]
 shape = SubResource("CircleShape2D_onrkg")
+
+[node name="WaterAreaBottom" type="Area2D" parent="." unique_id=1675970685]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WaterAreaBottom" unique_id=48269896]
+position = Vector2(0, 3)
+shape = SubResource("RectangleShape2D_i3pqv")
+
+[node name="WaterAreaTop" type="Area2D" parent="." unique_id=184003690]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WaterAreaTop" unique_id=325640701]
+position = Vector2(0, -5)
+shape = SubResource("RectangleShape2D_hqtel")
 
 [node name="LegsR" type="Node2D" parent="." unique_id=1563341008]
 unique_name_in_owner = true
@@ -115,6 +139,7 @@ unique_name_in_owner = true
 
 [node name="WingL" type="Node2D" parent="." unique_id=1379472332]
 unique_name_in_owner = true
+visible = false
 
 [node name="Face" type="Node2D" parent="." unique_id=572435034]
 unique_name_in_owner = true
