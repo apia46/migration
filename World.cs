@@ -47,14 +47,19 @@ public partial class World : Node2D
 	{
 		#pragma warning disable CS0162
 		if (Game.DEBUG_NO_PROCGEN) return;
-		if (to.X != from.X && to.Y != from.Y) {
-			PlayerCrossedChunkBoundary(new(to.X, 0), from);
-			PlayerCrossedChunkBoundary(to, new(to.X, from.Y));
-			return;
+
+		void Update(Vector2I nextTo, Vector2I direction) {
+			DetailManager.PlayerCrossedChunkBoundary(nextTo,direction);
+			CreaturesManager.PlayerCrossedChunkBoundary(nextTo,direction);
+			ProceduralGenerator.PlayerCrossedChunkBoundary(nextTo,direction);
 		}
-		DetailManager.PlayerCrossedChunkBoundary(to,from);
-		CreaturesManager.PlayerCrossedChunkBoundary(to,from);
-		ProceduralGenerator.PlayerCrossedChunkBoundary(to,from);
+
+		Vector2I difference = to-from;
+		Vector2I direction = difference.Sign();
+		for (int i = 1; i <= Math.Abs(difference.X); i++)
+			Update(from+new Vector2I(direction.X*i, 0), new(direction.X,0));
+		for (int i = 1; i <= Math.Abs(difference.Y); i++)
+			Update(from+new Vector2I(difference.X, direction.Y*i), new(0, direction.Y));
 		#pragma warning restore CS0162
 	}
 

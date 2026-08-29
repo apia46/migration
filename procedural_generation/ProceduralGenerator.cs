@@ -58,9 +58,8 @@ public partial class ProceduralGenerator : Node
 		#pragma warning restore CS0162
 	}
 
-	public void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+	public void PlayerCrossedChunkBoundary(Vector2I to, Vector2I direction)
 	{
-        Vector2I direction = to - from;
         static Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
 
         Mutex.Lock();
@@ -142,7 +141,7 @@ public partial class ProceduralGenerator : Node
 					continue;
 				}
 				ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, (int)task.Area);
-				WaterTiles = new(rect, Vector2I.One, WaterLayer, 0);
+				WaterTiles = new(ExpandRect(rect, 1), Vector2I.Zero, WaterLayer, 0);
 				Thread.Start(Callable.From(()=>Generate(task)));
 			}
 			Mutex.Unlock();
@@ -410,9 +409,10 @@ class Task(ProceduralGenerator.Areas area, Vector2I chunk, int expand, bool clea
 	public ProceduralGenerator.Areas Area = area;
 	public bool ClearBefore = clearBefore;
 
-	public Rect2I GetRect() => new(
-		Chunk * ProceduralGenerator.PATTERN_CHUNK_SIZE - Vector2I.One * Expand,
-		Vector2I.One * (ProceduralGenerator.PATTERN_CHUNK_SIZE + 2*Expand));
+	public Rect2I GetRect() => ExpandRect(new(
+		Chunk * ProceduralGenerator.PATTERN_CHUNK_SIZE,
+		Vector2I.One * ProceduralGenerator.PATTERN_CHUNK_SIZE
+	), 1);
 	
 	public bool CanRetry() => Expand < ProceduralGenerator.EXPAND_LIMIT;
 

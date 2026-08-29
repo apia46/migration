@@ -22,9 +22,8 @@ public partial class DetailManager : Node
         ProceduralGenerator.Mutex.Unlock();
     }
 
-    public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I from)
+    public static void PlayerCrossedChunkBoundary(Vector2I to, Vector2I direction)
 	{
-        Vector2I direction = to - from;
         static Vector2I RotateCCW(Vector2I v) => new(-v.Y, v.X);
 
         ProceduralGenerator.Mutex.Lock();
