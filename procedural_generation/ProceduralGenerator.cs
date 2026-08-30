@@ -7,6 +7,8 @@ public partial class ProceduralGenerator : Node
 	const double INVERSE_TEMPERATURE = 0.25;
 	public const int EXPAND_LIMIT = 4;
 
+	// in chunks
+	public const int START_POOLS_TRANSITION = -3;
 
 	readonly GameRandom RNG = new();
 	readonly GodotThread Thread = new();
@@ -72,8 +74,8 @@ public partial class ProceduralGenerator : Node
 	Areas GetAreaFromChunk(Vector2I chunk)
 	{
 		return chunk switch {
-			{Y: < -3} => Areas.Pools,
-			{Y: -3} => Areas.TransStartPools,
+			{Y: < START_POOLS_TRANSITION} => Areas.Pools,
+			{Y: START_POOLS_TRANSITION} => Areas.TransStartPools,
 			_ => Areas.Start
 		};
 	}

@@ -110,7 +110,9 @@ public partial class Player : CharacterBody2D
                 WingT += TAU;
             } else if (WingT<wingTarget) WingT = wingTarget;
         }
-
+        World.CanvasModulate.Color = Color.FromHsv(0,0,Mathf.Clamp(
+            Position.Y/ProceduralGenerator.CONVERTED_CHUNK_SIZE/World.CONVERTED_TILE_SIZE
+            - ProceduralGenerator.START_POOLS_TRANSITION,0.05f,0.8f));
         // DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
         // DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
         // DebugDrawer.Evaluate();

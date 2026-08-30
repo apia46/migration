@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://cwry062tn6awj" path="res://Player.cs" id="1_onrkg"]
 [ext_resource type="Texture2D" uid="uid://cm4d4amhwqleh" path="res://assets/head.png" id="3_hqtel"]
 [ext_resource type="Script" uid="uid://dstfir57scngn" path="res://DebugDrawer.cs" id="3_i3pqv"]
+[ext_resource type="Texture2D" uid="uid://ddusu73styitb" path="res://assets/neutral_pointlight.webp" id="4_hqtel"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_i3pqv"]
 radius = 8.0
@@ -139,7 +140,6 @@ unique_name_in_owner = true
 
 [node name="WingL" type="Node2D" parent="." unique_id=1379472332]
 unique_name_in_owner = true
-visible = false
 
 [node name="Face" type="Node2D" parent="." unique_id=572435034]
 unique_name_in_owner = true
@@ -279,3 +279,14 @@ position = Vector2(9, 17)
 unique_name_in_owner = true
 script = ExtResource("3_i3pqv")
 metadata/_custom_type_script = "uid://dstfir57scngn"
+
+[node name="PointLight2D" type="PointLight2D" parent="." unique_id=717652969]
+color = Color(0.46229059, 0.46229059, 0.46229059, 1)
+shadow_enabled = true
+shadow_filter = 1
+shadow_filter_smooth = 5.3
+texture = ExtResource("4_hqtel")
+
+[node name="PointLight2D2" type="PointLight2D" parent="." unique_id=1853957713]
+color = Color(0.53038955, 0.53038955, 0.53038955, 1)
+texture = ExtResource("4_hqtel")
