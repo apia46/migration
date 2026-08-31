@@ -283,7 +283,7 @@ metadata/_custom_type_script = "uid://dstfir57scngn"
 [node name="Light1" type="PointLight2D" parent="." unique_id=717652969]
 unique_name_in_owner = true
 z_index = -1
-color = Color(0.46229059, 0.46229059, 0.46229059, 1)
+color = Color(0.46, 0.43132666, 0.3818, 1)
 shadow_enabled = true
 shadow_filter = 1
 shadow_filter_smooth = 5.3
@@ -291,5 +291,5 @@ texture = ExtResource("4_hqtel")
 
 [node name="Light2" type="PointLight2D" parent="." unique_id=1853957713]
 unique_name_in_owner = true
-color = Color(0.53038955, 0.53038955, 0.53038955, 1)
+color = Color(0.46, 0.43132666, 0.3818, 1)
 texture = ExtResource("4_hqtel")

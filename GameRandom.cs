@@ -4,4 +4,6 @@ public class GameRandom : Random
     public int Range(int low, int high) => (int)NextInt64(low, high);
     public float Range(float low, float high) => NextSingle() * (high-low) + low;
     public double Range(double low, double high) => NextDouble() * (high-low) + low;
+
+    public Vector2 Offset(float magnitude) => new(Range(-magnitude, magnitude), Range(-magnitude, magnitude));
 }

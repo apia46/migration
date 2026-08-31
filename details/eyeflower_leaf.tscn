@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://drcu8hrxcqdah"]
+
+[ext_resource type="Texture2D" uid="uid://bgh3s55jhbrxe" path="res://details/eyeflower_leaf.png" id="1_8rixj"]
+[ext_resource type="Script" uid="uid://dueye06s6c3od" path="res://details/EyeflowerLeaf.cs" id="1_xbs2d"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_xbs2d"]
+radius = 6.0
+
+[node name="EyeflowerLeaf" type="Area2D" unique_id=361163942]
+script = ExtResource("1_xbs2d")
+metadata/_custom_type_script = "uid://dueye06s6c3od"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=982488241]
+texture_filter = 1
+position = Vector2(11, 0)
+texture = ExtResource("1_8rixj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2043056655]
+position = Vector2(13, 0)
+shape = SubResource("CircleShape2D_xbs2d")
+
+[node name="Hallucination" type="Node2D" parent="." unique_id=355182226]
+unique_name_in_owner = true
+z_index = 1

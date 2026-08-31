@@ -1,7 +1,7 @@
 public partial class Game : Control
 {
 	public const bool DEBUG_CONTROLS = true;
-	public const bool DEBUG_NO_PROCGEN = false;
+	public const bool DEBUG_NO_PROCGEN = true;
 	public const bool DEBUG_NO_SURVIVAL = true;
 
 	public static readonly GameRandom RNG = new();

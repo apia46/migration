@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 [GlobalClass]
 public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 {
