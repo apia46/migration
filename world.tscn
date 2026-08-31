@@ -35,7 +35,7 @@ enabled = false
 tile_set = ExtResource("2_dwbse")
 
 [node name="EyeflowerGroup" parent="." unique_id=879304907 instance=ExtResource("11_ic0uy")]
-position = Vector2(-45, -155)
+position = Vector2(134, -2299)
 
 [node name="Player" parent="." unique_id=18897498 instance=ExtResource("4_aqk2v")]
 unique_name_in_owner = true

@@ -6,6 +6,9 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_xbs2d"]
 radius = 6.0
 
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_xbs2d"]
+light_mode = 1
+
 [node name="EyeflowerLeaf" type="Area2D" unique_id=361163942]
 script = ExtResource("1_xbs2d")
 metadata/_custom_type_script = "uid://dueye06s6c3od"
@@ -21,4 +24,5 @@ shape = SubResource("CircleShape2D_xbs2d")
 
 [node name="Hallucination" type="Node2D" parent="." unique_id=355182226]
 unique_name_in_owner = true
-z_index = 1
+z_index = 2
+material = SubResource("CanvasItemMaterial_xbs2d")

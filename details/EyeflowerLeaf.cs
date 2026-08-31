@@ -4,7 +4,7 @@ public partial class EyeflowerLeaf : Area2D
     public static PackedScene Scene = GD.Load<PackedScene>("res://details/eyeflower_leaf.tscn");
 
     static readonly Vector2 PUPIL_CENTER = new(13,0);
-    static readonly Color HALLUCINATION_COLOR = new Color("#aaaaaa55");
+    static readonly Color HALLUCINATION_COLOR = new Color("#eeeeee33");
     static readonly Color[] EYE_COLORS = [HALLUCINATION_COLOR,HALLUCINATION_COLOR,HALLUCINATION_COLOR,HALLUCINATION_COLOR];
     const int PUPIL_INNER_RADIUS = 6;
     const int PUPIL_OUTER_RADIUS = 8;
