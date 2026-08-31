@@ -9,7 +9,6 @@ public partial class World : Node2D
 	public static CreaturesManager CreaturesManager;
 	public static DetailManager DetailManager;
 	public static Line2D DebugDraw;
-	public static CanvasModulate CanvasModulate;
 	#nullable enable
 	static double time = 0;
 
@@ -25,7 +24,6 @@ public partial class World : Node2D
 		DetailManager.World = this;
 		ConvertedTileMapLayer = GetNode<TileMapLayer>("%ConvertedTileMapLayer");
 		DebugDraw = GetNode<Line2D>("%DebugDraw");
-		CanvasModulate = GetNode<CanvasModulate>("%CanvasModulate");
 		ProceduralGenerator.StartingArea();
 	}
 

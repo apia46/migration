@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 public partial class Player : CharacterBody2D
 {
     const float MOVE_SPEED = 3000.0f;
@@ -22,6 +20,8 @@ public partial class Player : CharacterBody2D
     Node2D LegTargetsNode;
 	Node2D[] LegTargets;
     SkeletonModification2DTwoBoneIK[] LegSkeletonModifications;
+    public PointLight2D Light1;
+    public PointLight2D Light2;
     #nullable enable
     readonly bool[] LegMoving = new bool[6];
 
@@ -83,6 +83,8 @@ public partial class Player : CharacterBody2D
         WingL = GetNode<Node2D>("%WingL").GetCanvasItem();
         LegsL = GetNode<Node2D>("%LegsL").GetCanvasItem();
         LegsR = GetNode<Node2D>("%LegsR").GetCanvasItem();
+        Light1 = GetNode<PointLight2D>("%Light1");
+        Light2 = GetNode<PointLight2D>("%Light2");
         WingLSegments = new WingSegment[5];
         WingLColors = FillArray(new Color[WingLSegments.Length], WingEdgeColor);
         WingPolygonColors = FillArray(new Color[3], WingBaseColor);
@@ -110,9 +112,6 @@ public partial class Player : CharacterBody2D
                 WingT += TAU;
             } else if (WingT<wingTarget) WingT = wingTarget;
         }
-        World.CanvasModulate.Color = Color.FromHsv(0,0,Mathf.Clamp(
-            Position.Y/ProceduralGenerator.CONVERTED_CHUNK_SIZE/World.CONVERTED_TILE_SIZE
-            - ProceduralGenerator.START_POOLS_TRANSITION,0.05f,0.8f));
         // DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
         // DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
         // DebugDrawer.Evaluate();

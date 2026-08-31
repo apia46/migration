@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://86x40c1cc5vi"]
+
+[ext_resource type="Script" uid="uid://bo14f465p2uv8" path="res://Pools.cs" id="1_r7imy"]
+[ext_resource type="Texture2D" uid="uid://q4j6y26ahvae" path="res://assets/tiles/pools_bg.png" id="2_eavp3"]
+
+[node name="Pools" type="Node2D" unique_id=263735144]
+script = ExtResource("1_r7imy")
+metadata/_custom_type_script = "uid://bo14f465p2uv8"
+
+[node name="Bg" type="TextureRect" parent="." unique_id=1922613307]
+unique_name_in_owner = true
+z_index = -1
+texture_filter = 1
+offset_right = 1920.0
+offset_bottom = 960.0
+scale = Vector2(2, 2)
+pivot_offset_ratio = Vector2(1, 2)
+texture = ExtResource("2_eavp3")
+stretch_mode = 1
+
+[node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=1733593080]
+unique_name_in_owner = true
+color = Color(0.09239701, 0.09239709, 0.09239703, 1)
