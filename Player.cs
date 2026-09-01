@@ -474,6 +474,12 @@ public partial class Player : CharacterBody2D
             CreaturesManager.RemoveCreature(aawaga);
             Hunger += 0.3;
             grabbed = null;
+        } else if (grabbed is Fish fish) {
+            // eat
+            if (Hunger >= 1.0) return;
+            CreaturesManager.RemoveCreature(fish);
+            Hunger += 0.3;
+            grabbed = null;
         }
     }
 

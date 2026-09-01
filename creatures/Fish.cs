@@ -44,7 +44,7 @@ public partial class Fish : CharacterBody2D, IGrabbable, ICreature<Fish>
             int friends = 0;
             foreach (Fish fish in Creatures.Values) {
                 if (fish == this) continue;
-                float distanceSquared = fish.Position.DistanceSquaredTo(Position);
+                float distanceSquared = Mathf.Max(1f,fish.Position.DistanceSquaredTo(Position));
                 if (distanceSquared > FRIEND_RADIUS_SQUARED) continue;
                 friendForce += fish.Velocity / distanceSquared;
                 avoidForce += (Position-fish.Position).Normalized() / distanceSquared;
@@ -56,7 +56,7 @@ public partial class Fish : CharacterBody2D, IGrabbable, ICreature<Fish>
                 newVelocity += avoidForce / friends * World.CreaturesManager.FISH_AVOID_EACHOTHER_FORCE * effectiveDelta;
                 newVelocity += cohesionForce / friends * World.CreaturesManager.FISH_COHESION_FORCE * effectiveDelta;
             }
-            float distanceSquaredToPlayer = Position.DistanceSquaredTo(World.Player.Position);
+            float distanceSquaredToPlayer = Mathf.Max(1f,Position.DistanceSquaredTo(World.Player.Position));
             Light.Enabled = distanceSquaredToPlayer < Player.OFFSCREEN_RANGE_SQUARED;
             if (distanceSquaredToPlayer < AVOID_PLAYER_DISTANCE_SQUARED) {
                 newVelocity += (Position-World.Player.Position).Normalized() / distanceSquaredToPlayer * World.CreaturesManager.FISH_AVOID_PLAYER_FORCE * effectiveDelta;
