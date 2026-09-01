@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://btqjt3xevk3n6"]
+
+[ext_resource type="Script" uid="uid://cnkb3ssityjsl" path="res://details/Eyeflower.cs" id="1_nee4m"]
+[ext_resource type="Texture2D" uid="uid://ghh8a1e57jap" path="res://details/eyeflower_flower.png" id="2_whg6f"]
+[ext_resource type="Texture2D" uid="uid://41vgippfujjs" path="res://details/eyeflower_pupil.png" id="3_whg6f"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_j03lc"]
+radius = 9.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_nee4m"]
+light_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_whg6f"]
+light_mode = 1
+
+[node name="Eyeflower" type="Area2D" unique_id=643974971]
+script = ExtResource("1_nee4m")
+metadata/_custom_type_script = "uid://cnkb3ssityjsl"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2130862689]
+texture_filter = 1
+position = Vector2(16, 0)
+texture = ExtResource("2_whg6f")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1920898265]
+position = Vector2(18.5, 0)
+shape = SubResource("CircleShape2D_j03lc")
+
+[node name="Hallucination" type="Node2D" parent="." unique_id=1070026018]
+unique_name_in_owner = true
+z_index = 2
+material = SubResource("CanvasItemMaterial_nee4m")
+
+[node name="HallucinationLine" type="Line2D" parent="." unique_id=600443694]
+unique_name_in_owner = true
+visible = false
+points = PackedVector2Array(-6, 0, 7, -10, 18.5, -13, 30, -10, 44, 0, 30, 9, 18.5, 13, 7, 9, -6, 0)
+width = 2.0
+begin_cap_mode = 1
+end_cap_mode = 1
+
+[node name="Pupil" type="Sprite2D" parent="." unique_id=2134578870]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.5882353)
+z_index = 2
+texture_filter = 1
+material = SubResource("CanvasItemMaterial_whg6f")
+position = Vector2(18.5, 0)
+texture = ExtResource("3_whg6f")

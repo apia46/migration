@@ -16,7 +16,6 @@ public partial class EyeflowerGroup : Node2D, IDetail<EyeflowerGroup>
 
     Node2D[] Nodes = [];
     Vector2[] NodePositions = []; // +2 margin
-    EyeflowerLeaf[] Leaves = [];
 
     public override void _Ready()
     {
@@ -25,7 +24,6 @@ public partial class EyeflowerGroup : Node2D, IDetail<EyeflowerGroup>
         Vector2 start = new(0,0);
         Vector2 end = new(100,100);
         Nodes = new Node2D[Game.RNG.Range(6, 10)];
-        Leaves = new EyeflowerLeaf[Nodes.Length];
         NodePositions = new Vector2[Nodes.Length+2];
         for (int i = -1; i < Nodes.Length+1; i++) {
             NodePositions[i+1] = start.Lerp(end, (float)i/Nodes.Length);
@@ -35,11 +33,11 @@ public partial class EyeflowerGroup : Node2D, IDetail<EyeflowerGroup>
         }
         for (int i = 0; i < Nodes.Length; i++) {
             float angle = ((NodePositions[i+1]-NodePositions[i]).Angle() + (NodePositions[i+2]-NodePositions[i+1]).Angle())/2;
-            Leaves[i] = EyeflowerLeaf.Scene.Instantiate<EyeflowerLeaf>();
-            Leaves[i].Position = NodePositions[i+1];
-            Leaves[i].Rotation = (Game.RNG.FlipCoin() ? PI/2 : -PI/2) + Game.RNG.Range(-0.3f,0.3f) + angle;
-            Leaves[i].Scale = Vector2.One * Game.RNG.Range(0.8f, 1);
-            AddChild(Leaves[i]);
+            Nodes[i] = Game.RNG.FlipCoin(0.8f) ? EyeflowerLeaf.Scene.Instantiate<EyeflowerLeaf>() : Eyeflower.Scene.Instantiate<Eyeflower>();
+            Nodes[i].Position = NodePositions[i+1];
+            Nodes[i].Rotation = (Game.RNG.FlipCoin() ? PI/2 : -PI/2) + Game.RNG.Range(-0.3f,0.3f) + angle;
+            Nodes[i].Scale = Vector2.One * Game.RNG.Range(0.8f, 1);
+            AddChild(Nodes[i]);
         }
         Line.Points = NodePositions;
     }
