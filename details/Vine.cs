@@ -34,7 +34,7 @@ public partial class Vine : Line2D
         if (Game.State != Game.States.Play) return;
         if (!Simulated) return;
         if (!Settings.FancyVisuals) return;
-        if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
+        if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > Player.OFFSCREEN_RANGE_SQUARED) return;
         for (int i = 0; i < Segments.Length; i++) {
             Segment segment = Segments[i];
             Vector2 velocity = segment.Position - segment.OldPosition;
@@ -98,7 +98,7 @@ public partial class Vine : Line2D
     public override void _Process(double delta)
     {
         if (!Simulated) return;
-        if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > 400000) return;
+        if (GlobalPosition.DistanceSquaredTo(World.Player.GlobalPosition) > Player.OFFSCREEN_RANGE_SQUARED) return;
         if (!Settings.FancyVisuals) {
             Points = [Vector2.Zero, new(0, SEGMENT_LENGTH * Segments.Length)];
             return;

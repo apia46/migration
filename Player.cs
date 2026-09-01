@@ -5,7 +5,9 @@ public partial class Player : CharacterBody2D
     const float JUMP_VELOCITY = -350.0f;
     const float WALL_JUMP_IMPULSE = 300.0f;
     const float DOUBLE_JUMP_REDIRECT = 250.0f;
-    
+
+    public const float OFFSCREEN_RANGE_SQUARED = 400000;
+ 
     const float LEG_LENGTH = 12;
 
     #nullable disable
@@ -478,7 +480,6 @@ public partial class Player : CharacterBody2D
     void TryGrab()
     {
         foreach (Node2D node in GrabArea.GetOverlappingBodies()) {
-            GD.Print(node);
             if (node is IGrabbable creature) {
                 if (creature.Grabbable()) {
                     grabbed = creature;

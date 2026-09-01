@@ -92,15 +92,23 @@ public partial class CreaturesManager : Node
 
     static void SpawnCreatures(Vector2I chunk)
     {
-        for (int i = 0; i < 2; i++)
+        int spawns = chunk.Y < ProceduralGenerator.START_POOLS_TRANSITION ? 3 : 2;
+        for (int i = 0; i < spawns; i++)
         {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
             if (!World.InteriorTile(tile)) continue;
             Vector2 position = tile * World.CONVERTED_TILE_SIZE + Vector2.One * World.CONVERTED_TILE_SIZE * 0.5f;
-            switch (Game.RNG.Range(0,3))  {
-                case < 2: SpawnCreature<Aawaga>(position); break;
-                default: SpawnCreature<Spider>(position); break;
-            };
+            if (chunk.Y < ProceduralGenerator.START_POOLS_TRANSITION) {
+                switch (Game.RNG.Range(0,5))  {
+                    case < 4: SpawnCreature<Fish>(position); break;
+                    default: SpawnCreature<Spider>(position); break;
+                };
+            } else {
+                switch (Game.RNG.Range(0,3))  {
+                    case < 2: SpawnCreature<Aawaga>(position); break;
+                    default: SpawnCreature<Spider>(position); break;
+                };
+            }
         }
     }
 
@@ -112,6 +120,7 @@ public partial class CreaturesManager : Node
         }
         DespawnType<Aawaga>();
         DespawnType<Spider>();
+        DespawnType<Fish>();
     }
 }
 

@@ -107,7 +107,7 @@ public partial class DetailManager : Node
     static void CreateCircleColliders()
     {
         static IEnumerable<CircleCollider> GetCreatureColliders<T>() where T : Node2D, ICreature<T> {
-            return T.Creatures.Values.Where(c=>c.CollisionRadius != 0 && c.Position.DistanceSquaredTo(World.Player.Position) < 400000).Select(c=>new CircleCollider(c.Position, c.CollisionRadius));
+            return T.Creatures.Values.Where(c=>c.CollisionRadius != 0 && c.Position.DistanceSquaredTo(World.Player.Position) < Player.OFFSCREEN_RANGE_SQUARED).Select(c=>new CircleCollider(c.Position, c.CollisionRadius));
         }
         if (!World.Player.Visible) CircleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>()];
         else CircleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>(), new CircleCollider(World.Player.Position, 15)];

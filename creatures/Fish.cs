@@ -57,6 +57,7 @@ public partial class Fish : CharacterBody2D, IGrabbable, ICreature<Fish>
                 newVelocity += cohesionForce / friends * World.CreaturesManager.FISH_COHESION_FORCE * effectiveDelta;
             }
             float distanceSquaredToPlayer = Position.DistanceSquaredTo(World.Player.Position);
+            Light.Enabled = distanceSquaredToPlayer < Player.OFFSCREEN_RANGE_SQUARED;
             if (distanceSquaredToPlayer < AVOID_PLAYER_DISTANCE_SQUARED) {
                 newVelocity += (Position-World.Player.Position).Normalized() / distanceSquaredToPlayer * World.CreaturesManager.FISH_AVOID_PLAYER_FORCE * effectiveDelta;
             }
@@ -65,6 +66,7 @@ public partial class Fish : CharacterBody2D, IGrabbable, ICreature<Fish>
             Rotation = Velocity.Angle();
         }
         MoveAndSlide();
+        CreaturesManager.CreatureMoved(this);
     }
 
     public bool Grabbable() => true;

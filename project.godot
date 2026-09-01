@@ -76,4 +76,4 @@ pause={
 
 [physics]
 
-common/max_physics_steps_per_frame=12
+common/max_physics_steps_per_frame=20

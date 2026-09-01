@@ -26,9 +26,6 @@ public partial class Eyeflower : Area2D
 
     public override void _Process(double delta)
     {
-        float A = Mathf.Clamp(1-(float)HurtTimer/2, 0, 1);
-        Hallucination.Modulate = new(Hallucination.Modulate){A=A};
-        Pupil.Modulate = new(Pupil.Modulate){A=A};
         Timer -= delta;
         if (Timer < 0f) {
             Timer = Game.RNG.Range(0.3, 0.4);
@@ -36,14 +33,22 @@ public partial class Eyeflower : Area2D
         }
         Vector2 IntendedPosition = PUPIL_CENTER+5*(World.Player.GlobalPosition-GlobalPosition-PUPIL_CENTER).Normalized().Rotated(-Rotation);
         Pupil.Position += (IntendedPosition-Pupil.Position) * 0.5f * (float)delta;
+        
+        float minDistanceSquared = 1e8f;
+        foreach (Fish fish in Fish.Creatures.Values)
+            minDistanceSquared = Mathf.Min(GlobalPosition.DistanceSquaredTo(fish.GlobalPosition), minDistanceSquared);
+        
         if (HurtTimer > 0) HurtTimer -= delta;
-        else foreach (Node2D body in GetOverlappingBodies()) {
+        else if (minDistanceSquared > 1e4) foreach (Node2D body in GetOverlappingBodies()) {
              if (body is Player player) {
                 player.Hurt(0.5);
                 player.Velocity = Vector2.Zero;
                 HurtTimer = 2f;
             }
         }
+        float A = Mathf.Clamp(1-(float)HurtTimer/2, 0, 1) * Mathf.Clamp(minDistanceSquared/1e5f, 0, 1);
+        Hallucination.Modulate = new(Hallucination.Modulate){A=A};
+        Pupil.Modulate = new(Pupil.Modulate){A=A};
     }
 
     public override void _Draw()
