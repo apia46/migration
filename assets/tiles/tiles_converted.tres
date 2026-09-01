@@ -1,7 +1,7 @@
 [gd_resource type="TileSet" format=3 uid="uid://b76oagfblrj2u"]
 
-[ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles/tiles.png" id="1_n3cxo"]
-[ext_resource type="Texture2D" uid="uid://77bijshogcjn" path="res://assets/tiles/tiles_2.png" id="2_6dfvd"]
+[ext_resource type="Texture2D" uid="uid://ehdclwmvlfys" path="res://assets/tiles/tiles_debug.png" id="1_6dfvd"]
+[ext_resource type="Texture2D" uid="uid://cwy4bhhua561v" path="res://assets/tiles/tiles_debug_2.png" id="2_6dfvd"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6dfvd"]
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8)
@@ -52,7 +52,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, 4, -4, 4, -4, 8, -8
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_js125"]
-texture = ExtResource("1_n3cxo")
+texture = ExtResource("1_6dfvd")
 1:1/next_alternative_id = 2
 1:1/0 = 0
 1:1/0/z_index = 1

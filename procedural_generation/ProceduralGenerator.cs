@@ -36,11 +36,13 @@ public partial class ProceduralGenerator : Node
 
 	// MUTEXED
 	readonly Stack<Task> Queue = [];
-	// MUTEXED
 	public enum ChunkState {Generated, Detailed};
+	// MUTEXED
 	public static readonly Dictionary<Vector2I, ChunkState> ChunkStates = []; // in chunks
 	// should be mutexed but doesnt matter
 	public static int GenCount = 0;
+
+	enum GenerateResult {Fail, Succeed, SucceedTransition};
 
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
@@ -117,10 +119,11 @@ public partial class ProceduralGenerator : Node
 				}
 			}
 			if (Thread.IsStarted()) {
-				if ((bool)Thread.WaitToFinish()) {
-					ConvertedTiles.WriteTileMap();
-					PatternTiles.WriteTileMap();
-					WaterTiles.WriteTileMap();
+				GenerateResult result = (GenerateResult)(int)Thread.WaitToFinish();
+				if (result != GenerateResult.Fail) {
+					ConvertedTiles.WriteTileMap(result == GenerateResult.SucceedTransition);
+					PatternTiles.WriteTileMap(result == GenerateResult.SucceedTransition);
+					WaterTiles.WriteTileMap(result == GenerateResult.SucceedTransition);
 				} else CleanPass = false;
 			}
 			Task task = Queue.Pop();
@@ -132,7 +135,9 @@ public partial class ProceduralGenerator : Node
 				for (int y = rect.Position.Y; y < rect.End.Y; y++)
 					if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
 			}
-			if (task.Area > Areas.End) GenerateTransition(task);
+			if (task.Area > Areas.End) {
+				
+			}
 			else {
 				Model model = Models[(int)task.Area];
 				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
@@ -181,13 +186,8 @@ public partial class ProceduralGenerator : Node
 		if (ChunkStates.Remove(chunk)) GenCount--;
 	}
 
-	void GenerateTransition(Task task)
-	{
-		
-	}
-
 	// returns true if successful
-	bool Generate(Task task)
+	GenerateResult Generate(Task task)
 	{
 		Rect2I rect = task.GetRect();
 		Mutex.Lock();
@@ -203,13 +203,13 @@ public partial class ProceduralGenerator : Node
 					Queue.Push(task.ExpandOnce());
 				}
 				Mutex.Unlock();
-				return false;
+				return GenerateResult.Fail;
 			}
 		}
 		if (!ChunkStates.ContainsKey(task.Chunk)) GenCount++;
 		ChunkStates[task.Chunk] = ChunkState.Generated;
 		Mutex.Unlock();
-		return true;
+		return GenerateResult.Succeed;
 	}
 
 	// returns true if failed
@@ -447,7 +447,6 @@ abstract class TileCache<T>
 
 	public T GetTile(Vector2I absolutePosition) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
 	public void SetTile(Vector2I absolutePosition, T to) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
-	public abstract void WriteTileMap();
 }
 
 class TileExistsCache : TileCache<bool>
@@ -460,14 +459,16 @@ class TileExistsCache : TileCache<bool>
 			Tiles[Fold(x,y,TotalSize)] = TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)) != Vector2I.One * -1;
 	}
 
-	public override void WriteTileMap()
+	public void WriteTileMap(bool canWriteTransition)
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
-		for (int y = 0; y < Rect.Size.Y; y++) {
+		for (int y = 0; y < Rect.Size.Y; y++)
+		if (canWriteTransition ||
+			!(ProceduralGenerator.START_POOLS_TRANSITION*ProceduralGenerator.PATTERN_CHUNK_SIZE <= y+Rect.Position.Y
+			&& y+Rect.Position.Y < (ProceduralGenerator.START_POOLS_TRANSITION+1)*ProceduralGenerator.PATTERN_CHUNK_SIZE))
 			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId,
 				Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)] ? Vector2I.Zero : Vector2I.One * -1
 			);
-		}
 	}
 }
 
@@ -490,10 +491,13 @@ class TileSetCache : TileCache<int>
 		return false;
 	}
 	
-	public override void WriteTileMap()
+	public void WriteTileMap(bool canWriteTransition)
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
 		for (int y = 0; y < Rect.Size.Y; y++)
+		if (canWriteTransition ||
+			!(ProceduralGenerator.START_POOLS_TRANSITION*ProceduralGenerator.PATTERN_CHUNK_SIZE <= y+Rect.Position.Y
+			&& y+Rect.Position.Y < (ProceduralGenerator.START_POOLS_TRANSITION+1)*ProceduralGenerator.PATTERN_CHUNK_SIZE))
 			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId,
 				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)])
 			);
@@ -515,10 +519,13 @@ class RotateableTileSetCache : TileSetCache
 	public int GetTileRotation(Vector2I absolutePosition) => TileRotations[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
 	public void SetTileRotation(Vector2I absolutePosition, int to) => TileRotations[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
 
-	public override void WriteTileMap()
+	public new void WriteTileMap(bool canWriteTransition)
 	{
 		for (int x = 0; x < Rect.Size.X; x++)
 		for (int y = 0; y < Rect.Size.Y; y++)
+		if (canWriteTransition ||
+			!(ProceduralGenerator.START_POOLS_TRANSITION*ProceduralGenerator.CONVERTED_CHUNK_SIZE <= y+Rect.Position.Y
+			&& y+Rect.Position.Y < (ProceduralGenerator.START_POOLS_TRANSITION+1)*ProceduralGenerator.CONVERTED_CHUNK_SIZE))
 			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceId,
 				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]
 			);

@@ -6,6 +6,8 @@ public partial class ModelEditor : Node2D
 
 	[ExportToolButton("Generate Model")]
 	public Callable GenerateButton => Callable.From(Generate);
+	[ExportToolButton("Generate Transition Model")]
+	public Callable GenerateTransitionButton => Callable.From(GenerateTransition);
 
 	TileMapLayer? PatternLayer;
 	TileMapLayer? ConversionLayer;
@@ -49,6 +51,49 @@ public partial class ModelEditor : Node2D
 		// EditorInterface.Singleton.CallDeferred("edit_resource", resource);
     }
 
+	public void GenerateTransition() {
+		PatternLayer = GetNode<TileMapLayer>("%PatternLayer");
+		ConversionLayer = GetNode<TileMapLayer>("%ConversionLayer");
+		WaterLayer = GetNodeOrNull<TileMapLayer>("%WaterLayer");
+
+        TransitionModel model = new();
+
+		foreach (Vector2I position in PatternLayer.GetUsedCells()) model.PatternTiles.RegisterTile(GetTileDetails(PatternLayer,position));
+		foreach (Vector2I position in ConversionLayer.GetUsedCells()) model.ConvertedTiles.RegisterTile(GetTileDetails(ConversionLayer,position));
+
+		foreach (Vector2I position in PatternLayer.GetUsedCells()) {
+			if (GetTilesAtCell(position, Model.PatternSize, PatternLayer, model.PatternTiles) is int[] tiles) {
+				Vector2I ConversionPosition = position*Model.ConversionScale+(Model.PatternSize-new Vector2I(1,1))*Model.ConversionScale/2;
+				int[] sourceIds = GetTileSourceIdsAtCell(position, Model.PatternSize, PatternLayer);
+				int[] conversionSourceIds = GetTileSourceIdsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer);
+				if (GetTilesAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer, model.ConvertedTiles) is int[] conversion) {
+					if (model.MatchPattern(tiles, sourceIds) is TransitionPattern pattern) {
+						if (pattern.Conversion.SequenceEqual(conversion) && pattern.ConversionSourceIds.SequenceEqual(conversionSourceIds)) pattern.Frequency++;
+						else {
+							GD.Print($"duplicate with differing conversion at position {position}");
+							model.Patterns.Add(new TransitionPattern(tiles, conversion,
+								GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
+								sourceIds, conversionSourceIds,
+								GetWaterAtCell(position, WaterLayer)
+							));
+						}
+					}
+					else model.Patterns.Add(new TransitionPattern(tiles, conversion,
+						GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
+						GetTileSourceIdsAtCell(position, Model.PatternSize, PatternLayer),
+						GetTileSourceIdsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
+						GetWaterAtCell(position+(Model.PatternSize-new Vector2I(1,1))/2, WaterLayer)
+					));
+				} else GD.Print($"position {position} has no conversion!");
+			}
+		}
+
+		TransitionModelResource resource = new(model);
+		resource.TakeOverPath(PATH);
+		ResourceSaver.Save(resource);
+		// EditorInterface.Singleton.CallDeferred("edit_resource", resource);
+    }
+
 	static bool GetWaterAtCell(Vector2I position, TileMapLayer? waterLayer) => (waterLayer?.GetCellAtlasCoords(position).X ?? -1) != -1;
 
 	// returns whether or not to 
@@ -66,6 +111,22 @@ public partial class ModelEditor : Node2D
 		return pattern;
 	}
 
+	int[]? GetTilesAtCell(Vector2I position, Vector2I size, TileMapLayer layer, TransitionEnumeratedTileSet tileset)
+	{
+		int[] pattern = new int[size.X*size.Y];
+		for (int x = 0; x < size.Y; x++) {
+			for (int y = 0; y < size.X; y++) {
+				Vector2I tilePosition = position + new Vector2I(x, y);
+				Vector2I tile = layer.GetCellAtlasCoords(tilePosition);
+				int sourceId = layer.GetCellSourceId(tilePosition);
+				if (tile == Vector2I.One * -1) return null;
+				pattern[Fold(x,y,size)] = tileset.Convert(xyz(tile, sourceId));
+			}
+		}
+		return pattern;
+	}
+
+
 	int[] GetTileRotationsAtCell(Vector2I position, Vector2I size, TileMapLayer layer)
 	{
 		int[] pattern = new int[size.X*size.Y];
@@ -73,6 +134,18 @@ public partial class ModelEditor : Node2D
 			for (int y = 0; y < size.X; y++) {
 				Vector2I tilePosition = position + new Vector2I(x, y);
 				pattern[Fold(x,y,size)] = layer.GetCellAlternativeTile(tilePosition);
+			}
+		}
+		return pattern;
+	}
+
+	int[] GetTileSourceIdsAtCell(Vector2I position, Vector2I size, TileMapLayer layer)
+	{
+		int[] pattern = new int[size.X*size.Y];
+		for (int x = 0; x < size.Y; x++) {
+			for (int y = 0; y < size.X; y++) {
+				Vector2I tilePosition = position + new Vector2I(x, y);
+				pattern[Fold(x,y,size)] = layer.GetCellSourceId(tilePosition);
 			}
 		}
 		return pattern;

@@ -6,8 +6,6 @@
 
 [node name="AreaStartEditor" type="Node2D" unique_id=75075194]
 script = ExtResource("2_pbn7k")
-PatternSize = Vector2i(3, 3)
-ConversionScale = Vector2i(2, 2)
 PATH = "res://procedural_generation/models/start.tres"
 metadata/_custom_type_script = "uid://b2ef0pwgy86my"
 

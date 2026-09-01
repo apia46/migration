@@ -25,5 +25,8 @@ namespace migration
             Vector2I atlasCoords = tileMapLayer.GetCellAtlasCoords(tile);
             return new(atlasCoords.X, atlasCoords.Y, tileMapLayer.GetCellSourceId(tile));
         }
+
+        public static Vector3I xyz(Vector2I a, int b) => new(a.X,a.Y,b);
+        public static Vector2I xy(Vector3I a) => new(a.X,a.Y);
     }
 }
