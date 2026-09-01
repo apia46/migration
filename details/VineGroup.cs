@@ -67,10 +67,4 @@ public partial class VineGroup : Node2D, IDetail<VineGroup>
 
 		DebugDrawer.Evaluate();
 	}
-
-    // public override void _Process(double delta)
-    // {
-    //     foreach (Vector2 tile in TileColliders) DebugDrawer.AddCircle(tile-Position,Colors.Green);
-		
-    // }
 }

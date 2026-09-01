@@ -1,7 +1,7 @@
 public partial class Game : Control
 {
 	public const bool DEBUG_CONTROLS = true;
-	public const bool DEBUG_NO_PROCGEN = true;
+	public const bool DEBUG_NO_PROCGEN = false;
 	public const bool DEBUG_NO_SURVIVAL = true;
 
 	public static readonly GameRandom RNG = new();
@@ -63,8 +63,7 @@ public partial class Game : Control
 			MinimapCamera.Position = World.Player.Position;
 			HungerBar.Value = World.Player.Hunger;
 			HealthBar.Value = World.Player.Health;
-			Color modulate = Ouchies.Modulate;
-			Ouchies.Modulate = new(modulate){A=1-(float)World.Player.Health};
+			Ouchies.Modulate = new(Ouchies.Modulate){A=1-(float)World.Player.Health};
 			HeightLabel.Text = ((int)(World.Player.Position.Y/-World.PATTERN_TILE_SIZE)).ToString() + "m";
 			ScreenSize = GameViewportContainer.Size;
 			GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);

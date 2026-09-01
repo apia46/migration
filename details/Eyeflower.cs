@@ -4,6 +4,7 @@ public partial class Eyeflower : Area2D
     public static PackedScene Scene = GD.Load<PackedScene>("res://details/eyeflower.tscn");
 
     #nullable disable
+    Node2D Hallucination;
     Sprite2D Pupil;
     #nullable restore
 
@@ -11,18 +12,23 @@ public partial class Eyeflower : Area2D
     static readonly Color HALLUCINATION_COLOR = new Color("#eeeeee33");
     const float EYE_OFFSET_MAGNITUDE = 2;
     Vector2[] HallucinationBaseLine = [];
-    Rid Hallucination;
+    Rid HallucinationItem;
     double Timer;
+    double HurtTimer = 0;
 
     public override void _Ready()
     {
-        Hallucination = GetNode<Node2D>("%Hallucination").GetCanvasItem();
+        Hallucination = GetNode<Node2D>("%Hallucination");
+        HallucinationItem = Hallucination.GetCanvasItem();
         HallucinationBaseLine = GetNode<Line2D>("%HallucinationLine").Points;
         Pupil = GetNode<Sprite2D>("%Pupil");
     }
 
     public override void _Process(double delta)
     {
+        float A = Mathf.Clamp(1-(float)HurtTimer/2, 0, 1);
+        Hallucination.Modulate = new(Hallucination.Modulate){A=A};
+        Pupil.Modulate = new(Pupil.Modulate){A=A};
         Timer -= delta;
         if (Timer < 0f) {
             Timer = Game.RNG.Range(0.3, 0.4);
@@ -30,11 +36,19 @@ public partial class Eyeflower : Area2D
         }
         Vector2 IntendedPosition = PUPIL_CENTER+5*(World.Player.GlobalPosition-GlobalPosition-PUPIL_CENTER).Normalized().Rotated(-Rotation);
         Pupil.Position += (IntendedPosition-Pupil.Position) * 0.5f * (float)delta;
+        if (HurtTimer > 0) HurtTimer -= delta;
+        else foreach (Node2D body in GetOverlappingBodies()) {
+             if (body is Player player) {
+                player.Hurt(0.5);
+                player.Velocity = Vector2.Zero;
+                HurtTimer = 2f;
+            }
+        }
     }
 
     public override void _Draw()
     {
-        RenderingServer.CanvasItemClear(Hallucination);
+        RenderingServer.CanvasItemClear(HallucinationItem);
         for (int j = 0; j < 5; j++) {
             Vector2[] Eye = new Vector2[HallucinationBaseLine.Length];
             Color[] EyeColor = new Color[HallucinationBaseLine.Length];
@@ -42,7 +56,7 @@ public partial class Eyeflower : Area2D
                 Eye[i] = HallucinationBaseLine[i] + Game.RNG.Offset(EYE_OFFSET_MAGNITUDE);
                 EyeColor[i] = HALLUCINATION_COLOR;
             }
-            RenderingServer.CanvasItemAddPolyline(Hallucination, Eye, EyeColor, 2);
+            RenderingServer.CanvasItemAddPolyline(HallucinationItem, Eye, EyeColor, 2);
         }
     }
 }

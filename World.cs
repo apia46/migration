@@ -70,18 +70,40 @@ public partial class World : Node2D
 
 	public static bool InteriorTile(Vector2I tile)
 	{
-        return ConvertedTileMapLayer.GetCellAtlasCoords(tile) switch {
-        	{Y:0} or {X:1,Y:1} or {X:1,Y:2} => false,
+        return GetTileDetails(ConvertedTileMapLayer, tile) switch {
+        	{Y:0,Z:0} or {X:1,Y:1 or 2,Z:0} => false,
+			{X:0,Y:1,Z:1} => true,
+			{Y:2,Z:1} => true,
+			{Z:1} => false,
             _ => true,
         };
     }
 	public static bool SolidTile(Vector2I tile)
 	{
-        return ConvertedTileMapLayer.GetCellAtlasCoords(tile) switch {
-            {X:1,Y:0} or {X:1,Y:1} => true,
+        return GetTileDetails(ConvertedTileMapLayer, tile) switch {
+            {X:1,Y:0 or 1,Z:0} or {X:0,Y:0,Z:1} => true,
             _ => false,
         };
     }
+
+	public static float? TileSlopeNormal(Vector2I tile)
+	{
+        return GetTileDetails(ConvertedTileMapLayer, tile) switch {
+            {X:1,Y:0,Z:1} => PI/4,
+            {X:1,Y:1,Z:1} => -PI/4,
+            {X:2,Y:0,Z:1} => 3*PI/4,
+            {X:2,Y:1,Z:1} => -3*PI/4,
+            _ => null,
+        };
+    }
+
+	public static bool TileCorridorCenter(Vector2I tile)
+	{
+		return GetTileDetails(ConvertedTileMapLayer, tile) switch {
+			{X:0 or 2,Y:1,Z:0} or {X:1,Y:2,Z:1} => true,
+			_ => false,
+		};
+	}
 
 	public override void _Input(InputEvent @event)
     {

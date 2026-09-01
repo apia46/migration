@@ -209,7 +209,9 @@ public partial class Player : CharacterBody2D
                 WingT = WING_UP+TAU;
                 WingFlapping = true;
             } else if (DoubleJumpAvailable) {
-                // DoubleJumpAvailable = false;
+                #pragma warning disable CS0162
+                if (!Game.DEBUG_CONTROLS) DoubleJumpAvailable = false;
+                #pragma warning restore CS0162
                 newVelocity.Y = JUMP_VELOCITY;
                 if (WingT < 0) WingT = 3;
                 WingFlapping = true;

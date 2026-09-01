@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" format=3 uid="uid://c60kxdm4cvm74"]
 
-[ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles/tiles.png" id="1_mv1wr"]
+[ext_resource type="Texture2D" uid="uid://ehdclwmvlfys" path="res://assets/tiles/tiles_debug.png" id="1_05hmv"]
 [ext_resource type="Texture2D" uid="uid://cwy4bhhua561v" path="res://assets/tiles/tiles_debug_2.png" id="2_05hmv"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_n3cxo"]
@@ -46,7 +46,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vn8hm"]
-texture = ExtResource("1_mv1wr")
+texture = ExtResource("1_05hmv")
 1:1/0 = 0
 1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:1/0 = 0
@@ -68,12 +68,6 @@ texture = ExtResource("1_mv1wr")
 2:2/0 = 0
 2:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_fj52u")
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_2reg4"]
-vertices = PackedVector2Array(8, 8, -8, 8, -8, -8, 8, -8)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)])
-agent_radius = 0.0
-
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_05hmv"]
 vertices = PackedVector2Array(8, 8, -8, 8, -8, -8, 8, -8)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
@@ -89,7 +83,6 @@ texture = ExtResource("2_05hmv")
 2:0/0 = 0
 2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8)
 0:1/0 = 0
-0:1/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_2reg4")
 1:1/0 = 0
 1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, 8, -8, 8)
 2:1/0 = 0

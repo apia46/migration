@@ -1,3 +1,5 @@
+using System.Xml.XPath;
+
 [GlobalClass]
 public partial class EyeflowerGroup : Node2D, IDetail<EyeflowerGroup>
 {
@@ -21,8 +23,25 @@ public partial class EyeflowerGroup : Node2D, IDetail<EyeflowerGroup>
     {
         MainDraw = GetCanvasItem();
         Line = GetNode<Line2D>("%Line");
-        Vector2 start = new(0,0);
-        Vector2 end = new(100,100);
+        PhysicsDirectSpaceState2D spaceState = GetWorld2D().DirectSpaceState;
+        int attempts = 0;
+        Vector2 start;
+        Vector2 end;
+        while (true) {
+            attempts++;
+            if (attempts > 10) {
+                DetailManager.RemoveDetail(this);
+                return;
+            }
+            float angle = Game.RNG.Range(0,TAU);
+            Godot.Collections.Dictionary result = spaceState.IntersectRay(PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + 160*Vector2.Right.Rotated(angle), 8));
+            if (!result.ContainsKey("position")) continue;
+            start = (Vector2)result["position"] - GlobalPosition;
+            result = spaceState.IntersectRay(PhysicsRayQueryParameters2D.Create(GlobalPosition, GlobalPosition + 160*Vector2.Right.Rotated(angle+Game.RNG.Range(PI-0.5f, PI+0.5f)), 8));
+            if (!result.ContainsKey("position")) continue;
+            end = (Vector2)result["position"] - GlobalPosition;
+            break;
+        }
         Nodes = new Node2D[Game.RNG.Range(6, 10)];
         NodePositions = new Vector2[Nodes.Length+2];
         for (int i = -1; i < Nodes.Length+1; i++) {
