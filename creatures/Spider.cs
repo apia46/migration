@@ -7,7 +7,6 @@ public partial class Spider : CharacterBody2D, ICreature<Spider>
 	float Speed;
 	readonly Color LEG_COLOR = new("#004928");
 
-    public bool Grabbed { get; set; }
     public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("res://creatures/spider.tscn");
     public static Dictionary<int, Spider> Creatures { get; set; } = [];
     public static int IdIterator { get; set; }

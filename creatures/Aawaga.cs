@@ -3,7 +3,6 @@ public partial class Aawaga : RigidBody2D, IGrabbable, ICreature<Aawaga>
 {
 	public int Id { get; set; }
 
-    public bool Grabbed { get; set; }
     public static PackedScene Scene { get; set; } = GD.Load<PackedScene>("res://creatures/aawaga.tscn");
     public static Dictionary<int, Aawaga> Creatures { get; set; } = [];
     public static int IdIterator { get; set; }

@@ -71,6 +71,10 @@ metadata/_custom_type_script = "uid://d2j8xwqp52t78"
 [node name="CreaturesManager" type="Node" parent="." unique_id=1558058252]
 unique_name_in_owner = true
 script = ExtResource("5_036b0")
+FISH_FRIEND_FORCE = 400.0
+FISH_AVOID_EACHOTHER_FORCE = 80000.0
+FISH_COHESION_FORCE = 4.0
+FISH_RANDOM_FORCE = 40.0
 metadata/_custom_type_script = "uid://c6xw1uksf6027"
 
 [node name="DetailManager" type="Node" parent="." unique_id=1848559869]

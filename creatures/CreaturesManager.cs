@@ -3,6 +3,13 @@ using System.Text.RegularExpressions;
 [GlobalClass]
 public partial class CreaturesManager : Node
 {
+    [Export] public float FISH_FRIEND_FORCE = 200;
+    [Export] public float FISH_AVOID_EACHOTHER_FORCE = 20000;
+    [Export] public float FISH_AVOID_PLAYER_FORCE = 400000;
+    [Export] public float FISH_COHESION_FORCE = 9;
+    [Export] public float FISH_RANDOM_FORCE = 10;
+
+
     #nullable disable
     public static World World;
     #nullable enable

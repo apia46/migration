@@ -113,7 +113,7 @@ public partial class World : Node2D
 				GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled = !GetNode<TileMapLayer>("%PatternTileMapLayer").Enabled;
 				GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled = !GetNode<TileMapLayer>("%ConvertedTileMapLayer").Enabled;
 			} else if (@event.IsActionPressed("spawn")) {	
-				CreaturesManager.SpawnCreature<Aawaga>(Player.Position + new Vector2(30,-30));
+				CreaturesManager.SpawnCreature<Fish>(Player.Position + new Vector2(30,-30));
 			}
 		}
 		#pragma warning restore CS0162

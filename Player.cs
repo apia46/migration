@@ -32,7 +32,7 @@ public partial class Player : CharacterBody2D
     bool DoubleJumpAvailable = false;
     double CoyoteTime = 0.0f;
 
-    Aawaga? grabbed = null;
+    IGrabbable? grabbed = null;
 
     public double Hunger = 0.5;
     public double Health = 1.0;
@@ -266,10 +266,10 @@ public partial class Player : CharacterBody2D
         distanceAccum *= STILLNESS_DECAY;
         Stillness = Math.Max(STILLNESS_CUTOFF - distanceAccum.LengthSquared(), 0) / STILLNESS_CUTOFF;
 
-        if (grabbed is not null) {
-            Transform2D grabTransform = grabbed.GlobalTransform;
+        if (grabbed is Node2D creature) {
+            Transform2D grabTransform = creature.GlobalTransform;
             grabTransform.Origin = Position + GetLocalMousePosition().Normalized()*10;
-            grabbed.GlobalTransform = grabTransform;
+            creature.GlobalTransform = grabTransform;
         }
 
         CameraPosition += (Position - CameraPosition) * Math.Min(CameraSpeed * (float)delta, 1f);
@@ -478,7 +478,8 @@ public partial class Player : CharacterBody2D
     void TryGrab()
     {
         foreach (Node2D node in GrabArea.GetOverlappingBodies()) {
-            if (node is Aawaga creature) {
+            GD.Print(node);
+            if (node is IGrabbable creature) {
                 if (creature.Grabbable()) {
                     grabbed = creature;
                     creature.Grab();

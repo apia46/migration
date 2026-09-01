@@ -111,7 +111,6 @@ public partial class DetailManager : Node
         }
         if (!World.Player.Visible) CircleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>()];
         else CircleColliders = [..GetCreatureColliders<Aawaga>(), ..GetCreatureColliders<Spider>(), new CircleCollider(World.Player.Position, 15)];
-        GD.Print(CircleColliders.Length);
     }
 }
 
