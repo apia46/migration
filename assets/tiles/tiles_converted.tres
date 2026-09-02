@@ -1,7 +1,7 @@
 [gd_resource type="TileSet" format=3 uid="uid://b76oagfblrj2u"]
 
 [ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles/tiles.png" id="1_6dfvd"]
-[ext_resource type="Texture2D" uid="uid://cwy4bhhua561v" path="res://assets/tiles/tiles_debug_2.png" id="2_6dfvd"]
+[ext_resource type="Texture2D" uid="uid://77bijshogcjn" path="res://assets/tiles/tiles_2.png" id="2_jec8k"]
 [ext_resource type="Texture2D" uid="uid://dplem5tarlt0f" path="res://assets/tiles/tiles_3.png" id="3_jec8k"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6dfvd"]
@@ -121,7 +121,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, -8, 8)])
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_63ufn"]
-texture = ExtResource("2_6dfvd")
+texture = ExtResource("2_jec8k")
 0:0/0 = 0
 0:0/0/z_index = 1
 0:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_206g6")
