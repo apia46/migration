@@ -15,16 +15,27 @@ public partial class Pools : Node2D
 
     public override void _Process(double delta)
     {
-        // 1 for start, 0 for pools
-        float transition = Mathf.Clamp(
-            World.Player.Position.Y/ProceduralGenerator.CONVERTED_CHUNK_SIZE/World.CONVERTED_TILE_SIZE
-            - ProceduralGenerator.START_POOLS_TRANSITION,0f,1f);
-        CanvasModulate.Color = Color.FromHsv(0,0,Mathf.Lerp(0.05f,0.7f,transition));
+        // 1 for light, 0 for dark
+        float chunk = World.Player.Position.Y/ProceduralGenerator.CONVERTED_CHUNK_SIZE/World.CONVERTED_TILE_SIZE;
+        if (chunk<ProceduralGenerator.START_POOLS_TRANSITION-1)
+        {
+            Game.Sky.Visible = true;
+            float transition = Mathf.Clamp(ProceduralGenerator.POOLS_END_TRANSITION-chunk+0.75f,0f,1f);    
+            CanvasModulate.Color = Color.FromHsv(0,0,Mathf.Lerp(0.05f,1f,transition));
+            World.Player.Light1.Energy = Mathf.Lerp(1,0f,transition);
+            World.Player.Light2.Energy = Mathf.Lerp(1,0f,transition);        
+        } else {
+            Game.Sky.Visible = false;
+            float transition = Mathf.Clamp(chunk - ProceduralGenerator.START_POOLS_TRANSITION,0f,1f);
+            CanvasModulate.Color = Color.FromHsv(0,0,Mathf.Lerp(0.05f,0.7f,transition));
+            World.Player.Light1.Energy = Mathf.Lerp(1,0.4f,transition);
+            World.Player.Light2.Energy = Mathf.Lerp(1,0.4f,transition);
+        }
         Vector2 newBgPosition = IntendedBgPosition+(World.Camera.Position-IntendedBgPosition) * 0.3f;
         newBgPosition.X = World.Camera.Position.X+(newBgPosition.X-World.Camera.Position.X)%World.CONVERTED_TILE_SIZE;
-        if (newBgPosition.Y < IntendedBgPosition.Y) newBgPosition.Y = Mathf.Min(newBgPosition.Y,World.Camera.Position.Y+(newBgPosition.Y-World.Camera.Position.Y)%World.CONVERTED_TILE_SIZE+World.CONVERTED_TILE_SIZE*15);
+        if (newBgPosition.Y < IntendedBgPosition.Y) newBgPosition.Y = Mathf.Min(newBgPosition.Y,
+            Mathf.Max(IntendedBgPosition.Y-ProceduralGenerator.CONVERTED_CHUNK_SIZE*World.CONVERTED_TILE_SIZE*(ProceduralGenerator.START_POOLS_TRANSITION-ProceduralGenerator.POOLS_END_TRANSITION-3),
+                World.Camera.Position.Y+(newBgPosition.Y-World.Camera.Position.Y)%World.CONVERTED_TILE_SIZE+World.CONVERTED_TILE_SIZE*15));
         Bg.Position = newBgPosition;
-        World.Player.Light1.Energy = Mathf.Lerp(1,0.4f,transition);
-        World.Player.Light2.Energy = Mathf.Lerp(1,0.4f,transition);
     }
 }

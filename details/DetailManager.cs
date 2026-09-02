@@ -54,6 +54,7 @@ public partial class DetailManager : Node
     static void PlaceDetails(Vector2I chunk)
     {
         if (!ProceduralGenerator.ChunkStates.TryGetValue(chunk, out ProceduralGenerator.ChunkState value) || value == ProceduralGenerator.ChunkState.Detailed) return;
+        if (chunk.Y > ProceduralGenerator.POOLS_END_TRANSITION)
         for (int i = 0; i < 20; i++) {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
             if (!World.InteriorTile(tile)) continue;
@@ -63,6 +64,7 @@ public partial class DetailManager : Node
             PlaceDetail<VineGroup>(position);
             cont:;
         }
+        if (chunk.Y > ProceduralGenerator.POOLS_END_TRANSITION)
         for (int i = 0; i < 5; i++) {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));
             float? tileSlopeNormal = World.TileSlopeNormal(tile);
@@ -79,6 +81,7 @@ public partial class DetailManager : Node
             PlaceDetail<Shelter>(position).Rotation = rotation;
             cont:;
         }
+        if (chunk.Y > ProceduralGenerator.POOLS_END_TRANSITION)
         if (chunk.Y < ProceduralGenerator.START_POOLS_TRANSITION)
         for (int i = 0; i < 5; i++) {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));

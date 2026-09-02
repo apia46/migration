@@ -93,6 +93,7 @@ public partial class CreaturesManager : Node
     static void SpawnCreatures(Vector2I chunk)
     {
         int spawns = chunk.Y < ProceduralGenerator.START_POOLS_TRANSITION ? 3 : 2;
+        if (chunk.Y <= ProceduralGenerator.POOLS_END_TRANSITION) return;
         for (int i = 0; i < spawns; i++)
         {
             Vector2I tile = chunk * ProceduralGenerator.CONVERTED_CHUNK_SIZE + new Vector2I(Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE), Game.RNG.Range(0, ProceduralGenerator.CONVERTED_CHUNK_SIZE));

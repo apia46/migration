@@ -54,7 +54,7 @@ public partial class Player : CharacterBody2D
     public States State = States.Normal;
 
     const double REST_FOOD_COST = 0.5;
-    Vector2 RespawnPosition;
+    public Vector2 RespawnPosition;
     Shelter? RespawnShelter;
 
     WingSegment[] WingLSegments = [];

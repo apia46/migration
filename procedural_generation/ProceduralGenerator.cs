@@ -8,8 +8,8 @@ public partial class ProceduralGenerator : Node
 	public const int EXPAND_LIMIT = 4;
 
 	// in chunks
-	public const int POOLS_END_TRANSITION = -10;
-	public const int START_POOLS_TRANSITION = -3;
+	public const int POOLS_END_TRANSITION = -16;
+	public const int START_POOLS_TRANSITION = -8;
 
 	readonly GameRandom RNG = new();
 	readonly GodotThread Thread = new();
@@ -52,7 +52,7 @@ public partial class ProceduralGenerator : Node
 	bool CleanPass = false;
 	bool InitialGenFinished = false;
 
-	public const int GENERATE_CHUNKS_AROUND_PLAYER = 5;
+	public const int GENERATE_CHUNKS_AROUND_PLAYER = 8;
 	const int DEGENERATE_CHUNKS_AROUND_PLAYER = 12;
 
 	public void StartingArea()
@@ -103,8 +103,8 @@ public partial class ProceduralGenerator : Node
 			_=>true
 		},
 		Areas.TransPoolsEnd => absolutePosition switch {
-			{Y:<=1+POOLS_END_TRANSITION*PATTERN_CHUNK_SIZE}=>pattern.TileSourceIds[0]==2,
-			{Y:>(POOLS_END_TRANSITION+1)*PATTERN_CHUNK_SIZE-3}=>pattern.TileSourceIds[0]==1,
+			{Y:<=2+POOLS_END_TRANSITION*PATTERN_CHUNK_SIZE}=>pattern.TileSourceIds[0]==2,
+			{Y:>(POOLS_END_TRANSITION+1)*PATTERN_CHUNK_SIZE-2}=>pattern.TileSourceIds[0]==1,
 			_=>true
 		},
 		_=>true // should be impossible
@@ -196,6 +196,8 @@ public partial class ProceduralGenerator : Node
 	void Degenerate(Vector2I position)
 	{
 		if (!ChunkStates.ContainsKey(position)) return;
+		Vector2I dist = (World.PositionToChunk(World.Player.RespawnPosition)-position).Abs();
+		if (Math.Max(dist.X,dist.Y) < DEGENERATE_CHUNKS_AROUND_PLAYER) return;
 		Rect2I rect = new(position * PATTERN_CHUNK_SIZE, Vector2I.One * PATTERN_CHUNK_SIZE);
 		ChunkReverted(position);
 		for (int x = rect.Position.X; x < rect.End.X; x++)
@@ -235,7 +237,7 @@ public partial class ProceduralGenerator : Node
 			for (int y = rect.Position.Y; y < rect.End.Y; y++)
 				if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
 			
-			if (tries > 3) {
+			if (tries > 5) {
 				if (task.CanRetry()) {
 					Queue.Push(task.ExpandOnce());
 				}
@@ -260,7 +262,7 @@ public partial class ProceduralGenerator : Node
 			for (int y = rect.Position.Y; y < rect.End.Y; y++)
 				if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
 			
-			if (tries > 3) {
+			if (tries > 5) {
 				if (task.CanRetry()) {
 					Queue.Push(task.ExpandOnce());
 				}
@@ -326,6 +328,7 @@ public partial class ProceduralGenerator : Node
 		for (int y = -1; y < rect.Size.Y+1; y++) {
 			Vector2I position = new(x,y);
 			List<Pattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
+			if (convertPatterns.Count == 0) return true;
 			Pattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
 			for (int cx = 0; cx < Model.ConversionScale.X; cx++)
 			for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
@@ -395,7 +398,8 @@ public partial class ProceduralGenerator : Node
 			for (int y = -1; y < rect.Size.Y+1; y++) {
 				Vector2I position = new(x,y);
 				List<TransitionPattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
-				TransitionPattern chosenPattern = convertPatterns[Math.Min((int)(RNG.NextDouble() * convertPatterns.Count),convertPatterns.Count-1)];
+				if (convertPatterns.Count == 0) return true;
+				TransitionPattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
 				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
 				for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
 					ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);

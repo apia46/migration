@@ -75,6 +75,7 @@ public partial class World : Node2D
 			{X:0,Y:1,Z:1} => true,
 			{Y:2,Z:1} => true,
 			{Z:1} => false,
+			{X:1,Y:1,Z:2} => true,
             _ => true,
         };
     }
@@ -82,6 +83,8 @@ public partial class World : Node2D
 	{
         return GetTileDetails(ConvertedTileMapLayer, tile) switch {
             {X:1,Y:0 or 1,Z:0} or {X:0,Y:0,Z:1} => true,
+			{X:1,Y:1,Z:2} => false,
+			{Z:2} => true,
             _ => false,
         };
     }

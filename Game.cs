@@ -23,6 +23,7 @@ public partial class Game : Control
 	public static Label ShelterLabel;
 	public static Button StartButton;
 	public static Control Menu;
+	public static TextureRect Sky;
 	#nullable enable
 	public static Vector2 ScreenSize = new Vector2(400, 400);
 	
@@ -46,6 +47,7 @@ public partial class Game : Control
 		StartButton = GetNode<Button>("%StartButton");
 		LivingUI = GetNode<Control>("%LivingUI");
 		YouDied = GetNode<TextureRect>("%YouDied");
+		Sky = GetNode<TextureRect>("%Sky");
 		ShelterLabel = GetNode<Label>("%ShelterLabel");
 		Menu = GetNode<Control>("%Menu");
 		GameViewportShader = (ShaderMaterial)GameViewportContainer.Material;
@@ -64,7 +66,7 @@ public partial class Game : Control
 			HungerBar.Value = World.Player.Hunger;
 			HealthBar.Value = World.Player.Health;
 			Ouchies.Modulate = new(Ouchies.Modulate){A=1-(float)World.Player.Health};
-			HeightLabel.Text = ((int)(World.Player.Position.Y/-World.PATTERN_TILE_SIZE)).ToString() + "m";
+			HeightLabel.Text = ((int)(World.Player.Position.Y/-World.PATTERN_TILE_SIZE)-128).ToString() + "m";
 			ScreenSize = GameViewportContainer.Size;
 			GameViewportShader.SetShaderParameter("ScreenSize", ScreenSize);
 			GameViewportShader.SetShaderParameter("CameraPosition", World.Player.Position);
