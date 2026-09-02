@@ -138,7 +138,7 @@ public partial class ProceduralGenerator : Node
 			}
 			Task task = Queue.Pop();
 			Rect2I rect = task.GetRect();
-			World.DrawDebug(rect);
+			// World.DrawDebug(rect);
 			if (task.ClearBefore) {
 				TaskReverted(task);
 				for (int x = rect.Position.X; x < rect.End.X; x++)
@@ -319,6 +319,12 @@ public partial class ProceduralGenerator : Node
 		return false;
 	}
 
+	bool FilterTransitionPattern(Vector2I absolutePosition, TransitionPattern pattern) => absolutePosition switch { 
+		{Y:<=1+START_POOLS_TRANSITION*PATTERN_CHUNK_SIZE}=>pattern.TileSourceIds[0]==1,
+		{Y:>(START_POOLS_TRANSITION+1)*PATTERN_CHUNK_SIZE-3}=>pattern.TileSourceIds[0]==0,
+		_=>true
+	};
+
 	bool TryGenerateTransition(Task task)
 	{
 		Rect2I rect = task.GetRect();
@@ -331,10 +337,13 @@ public partial class ProceduralGenerator : Node
 			int tilesCompleted = 0;
 
 			for (int x = 0; x < patternsRectSize.X; x++)
-			for (int y = 0; y < patternsRectSize.Y; y++)
+			for (int y = 0; y < patternsRectSize.Y; y++) {
+				Vector2I absolutePosition = rect.Position + new Vector2I(x,y) - patternsMargin;
 				patterns[Fold(x,y,patternsRectSize)] = model.MatchPatterns(
-					GetTiles(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize),
-					GetSourceIds(rect.Position + new Vector2I(x,y) - patternsMargin, Model.PatternSize));
+					GetTiles(absolutePosition, Model.PatternSize),
+					GetSourceIds(absolutePosition, Model.PatternSize)).FindAll(
+						pattern => FilterTransitionPattern(absolutePosition, pattern));
+			}
 			for (int x = 0; x < rect.Size.X; x++)
 			for (int y = 0; y < rect.Size.Y; y++) {
 				Vector2I position = new(x,y);
@@ -354,11 +363,12 @@ public partial class ProceduralGenerator : Node
 					for (int px = 0; px < Model.PatternSize.X; px++)
 					for (int py = 0; py < Model.PatternSize.Y; py++) {
 						Vector2I updatePatternPosition = collapsePosition + new Vector2I(px,py);
+						Vector2I absolutePosition = updatePatternPosition-patternsMargin+rect.Position;
 						patterns[Fold(updatePatternPosition,patternsRectSize)] = model.MatchPatterns(
-							GetTiles(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
-							GetSourceIds(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
+							GetTiles(absolutePosition,Model.PatternSize),
+							GetSourceIds(absolutePosition,Model.PatternSize),
 							patterns[Fold(updatePatternPosition,patternsRectSize)]
-						);
+						).FindAll(pattern => FilterTransitionPattern(absolutePosition, pattern));
 					}
 					for (int px = 1-Model.PatternSize.X; px < Model.PatternSize.X; px++)
 					for (int py = 1-Model.PatternSize.Y; py < Model.PatternSize.Y; py++) {
@@ -543,7 +553,7 @@ public partial class ProceduralGenerator : Node
 		int[] tiles = new int[size.X*size.Y];
 		for (int y = 0; y < size.Y; y++)
 		for (int x = 0; x < size.X; x++)
-			tiles[Fold(x,y,size)] = PatternTiles.GetTile(absolutePosition+new Vector2I(x,y));
+			tiles[Fold(x,y,size)] = ((TransitionEnumeratedTileSet)PatternTiles.TileSet).Convert(PatternTiles.GetTile(absolutePosition+new Vector2I(x,y))).Z;
 		return tiles;
 	}
 }
@@ -672,7 +682,7 @@ class TileSetCache : TileCache<int>
 		if (tileSet is TransitionEnumeratedTileSet tileset)
 			Tiles[Fold(x,y,TotalSize)] = tileset.Convert(GetTileDetails(TileMap, Rect.Position - Margin + new Vector2I(x,y)));
 		else
-			Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)));
+			Tiles[Fold(x,y,TotalSize)] = TileSet.MaybeConvert(TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)));
 	}
 
     public bool AnyEmpty()

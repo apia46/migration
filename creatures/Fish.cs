@@ -23,16 +23,17 @@ public partial class Fish : CharacterBody2D, IGrabbable, ICreature<Fish>
 
     public override void _Ready()
     {
-        Color color = Color.FromHsv(Game.RNG.Range(0.5f,0.8f), 0.25f, 1);
+        float hue = Game.RNG.Range(0.5f,0.8f);
         Sprite = GetNode<Sprite2D>("%Sprite");
         Light = GetNode<PointLight2D>("%Light");
-        Sprite.Modulate = color;
-        Light.Color = color;
+        Sprite.Modulate = Color.FromHsv(hue, 0.6f, 1);
+        Light.Color = Color.FromHsv(hue, 0.25f, 1);
     }
 
     public override void _PhysicsProcess(double delta)
     {
         if (Grabbed) return;
+        if (Game.State != Game.States.Play) return;
         ThinkTimer += delta;
         if (ThinkTimer > 0.05) {
             float effectiveDelta = (float)ThinkTimer;

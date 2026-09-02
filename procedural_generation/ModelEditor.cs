@@ -30,14 +30,14 @@ public partial class ModelEditor : Node2D
 					if (model.MatchPattern(tiles) is Pattern pattern) {
 						if (pattern.Conversion.SequenceEqual(conversion)) pattern.Frequency++;
 						else {
-							GD.Print($"duplicate with differing conversion at position {position}");
-							model.Patterns.Add(new Pattern(tiles, conversion,
+							GD.Print($"duplicate with differing conversion at position {position} from {pattern.Source}");
+							model.Patterns.Add(new Pattern(position, tiles, conversion,
 								GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
 								GetWaterAtCell(position, WaterLayer)
 							));
 						}
 					}
-					else model.Patterns.Add(new Pattern(tiles, conversion,
+					else model.Patterns.Add(new Pattern(position, tiles, conversion,
 						GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
 						GetWaterAtCell(position+(Model.PatternSize-new Vector2I(1,1))/2, WaterLayer)
 					));
@@ -70,15 +70,15 @@ public partial class ModelEditor : Node2D
 					if (model.MatchPattern(tiles, sourceIds) is TransitionPattern pattern) {
 						if (pattern.Conversion.SequenceEqual(conversion) && pattern.ConversionSourceIds.SequenceEqual(conversionSourceIds)) pattern.Frequency++;
 						else {
-							GD.Print($"duplicate with differing conversion at position {position}");
-							model.Patterns.Add(new TransitionPattern(tiles, conversion,
+							GD.Print($"duplicate with differing conversion at position {position} from {pattern.Source}");
+							model.Patterns.Add(new TransitionPattern(position, tiles, conversion,
 								GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
 								sourceIds, conversionSourceIds,
 								GetWaterAtCell(position, WaterLayer)
 							));
 						}
 					}
-					else model.Patterns.Add(new TransitionPattern(tiles, conversion,
+					else model.Patterns.Add(new TransitionPattern(position, tiles, conversion,
 						GetTileRotationsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),
 						GetTileSourceIdsAtCell(position, Model.PatternSize, PatternLayer),
 						GetTileSourceIdsAtCell(ConversionPosition, Model.ConversionScale, ConversionLayer),

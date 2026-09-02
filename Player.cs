@@ -117,6 +117,7 @@ public partial class Player : CharacterBody2D
         // DebugDrawer.AddText(new(20, 20), WingT.ToString(), Colors.White);
         // DebugDrawer.AddText(new(20, 40), WingM.ToString(), Colors.White);
         // DebugDrawer.Evaluate();
+        World.DrawDebug(new(World.PositionToChunk(Position)*ProceduralGenerator.PATTERN_CHUNK_SIZE,ProceduralGenerator.PATTERN_CHUNK_SIZE*Vector2I.One));
         QueueRedraw();
     }
 

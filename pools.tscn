@@ -9,7 +9,7 @@ metadata/_custom_type_script = "uid://bo14f465p2uv8"
 
 [node name="Bg" type="TextureRect" parent="." unique_id=1922613307]
 unique_name_in_owner = true
-z_index = -1
+z_index = -2
 texture_filter = 1
 offset_right = 1920.0
 offset_bottom = 960.0

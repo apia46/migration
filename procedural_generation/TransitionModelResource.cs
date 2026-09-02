@@ -25,6 +25,7 @@ public partial class TransitionModelResource : ModelResource {
         TransitionModel model = new();
 		for (int i = 0; i < PatternTiles.Count; i++) {
 			model.Patterns.Add(new TransitionPattern(
+				Vector2I.Zero,
 				PatternFrequencies[i],
 				PatternTiles[i],
 				PatternConversions[i],

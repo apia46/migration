@@ -1,7 +1,7 @@
 [gd_resource type="TileSet" format=3 uid="uid://b76oagfblrj2u"]
 
-[ext_resource type="Texture2D" uid="uid://ehdclwmvlfys" path="res://assets/tiles/tiles_debug.png" id="1_6dfvd"]
-[ext_resource type="Texture2D" uid="uid://cwy4bhhua561v" path="res://assets/tiles/tiles_debug_2.png" id="2_6dfvd"]
+[ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles/tiles.png" id="1_6dfvd"]
+[ext_resource type="Texture2D" uid="uid://77bijshogcjn" path="res://assets/tiles/tiles_2.png" id="2_jec8k"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6dfvd"]
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8)
@@ -120,7 +120,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, -8, 8)])
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_63ufn"]
-texture = ExtResource("2_6dfvd")
+texture = ExtResource("2_jec8k")
 0:0/0 = 0
 0:0/0/z_index = 1
 0:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_206g6")
@@ -134,7 +134,7 @@ texture = ExtResource("2_6dfvd")
 2:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_abuy3")
 2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8)
 0:1/0 = 0
-0:1/0/z_index = -1
+0:1/0/z_index = 1
 1:1/0 = 0
 1:1/0/z_index = 1
 1:1/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_l2mty")
@@ -144,7 +144,7 @@ texture = ExtResource("2_6dfvd")
 2:1/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_r5qpf")
 2:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(8, -8, 8, 8, -8, 8)
 0:2/0 = 0
-0:2/0/z_index = -1
+0:2/0/z_index = 1
 1:2/0 = 0
 1:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_63ufn")
 2:2/0 = 0

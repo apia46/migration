@@ -26,6 +26,7 @@ public partial class ModelResource : Resource {
 		Model model = new();
 		for (int i = 0; i < PatternTiles.Count; i++) {
 			model.Patterns.Add(new Pattern(
+				Vector2I.Zero,
 				PatternFrequencies[i],
 				PatternTiles[i],
 				PatternConversions[i],

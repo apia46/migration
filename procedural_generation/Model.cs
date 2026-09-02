@@ -36,9 +36,12 @@ public class Pattern
     public int[] Conversion;
     public int[] ConversionRotation;
     public bool Water;
+    public Vector2I Source;
 
-    public Pattern(int[] tiles, int[] conversion, int[] conversionRotation, bool water)
+
+    public Pattern(Vector2I source, int[] tiles, int[] conversion, int[] conversionRotation, bool water)
     {
+        Source = source;
         Frequency = 1;
         Tiles = tiles;
         Conversion = conversion;
@@ -46,8 +49,9 @@ public class Pattern
         Water = water;
     }
 
-    public Pattern(int frequency, int[] tiles, int[] conversion, int[] conversionRotation, bool water)
+    public Pattern(Vector2I source, int frequency, int[] tiles, int[] conversion, int[] conversionRotation, bool water)
     {
+        Source = source;
         Frequency = frequency;
         Tiles = tiles;
         Conversion = conversion;
@@ -79,6 +83,7 @@ public class EnumeratedTileSet
 		Count++;
 	}
 
+    public int MaybeConvert(Vector2I tile) => tile == EMPTY ? -1 : (CoordsMap.TryGetValue(tile, out int value) ? value : -1);
     public int Convert(Vector2I tile) => tile == EMPTY ? -1 : CoordsMap[tile];
     public Vector2I Convert(int tile) => tile == -1 ? EMPTY : CoordsList[tile];
 }
@@ -117,15 +122,15 @@ public class TransitionPattern : Pattern
     public int[] TileSourceIds;
     public int[] ConversionSourceIds;
 
-    public TransitionPattern(int[] tiles, int[] conversion, int[] conversionRotation, int[] tileSourceIds, int[] conversionSourceIds, bool water)
-        : base(tiles, conversion, conversionRotation, water)
+    public TransitionPattern(Vector2I source, int[] tiles, int[] conversion, int[] conversionRotation, int[] tileSourceIds, int[] conversionSourceIds, bool water)
+        : base(source, tiles, conversion, conversionRotation, water)
     {
         TileSourceIds = tileSourceIds;
         ConversionSourceIds = conversionSourceIds;
     }
 
-    public TransitionPattern(int frequency, int[] tiles, int[] conversion, int[] conversionRotation, int[] tileSourceIds, int[] conversionSourceIds, bool water)
-        : base(frequency, tiles, conversion, conversionRotation, water)
+    public TransitionPattern(Vector2I source, int frequency, int[] tiles, int[] conversion, int[] conversionRotation, int[] tileSourceIds, int[] conversionSourceIds, bool water)
+        : base(source, frequency, tiles, conversion, conversionRotation, water)
     {
         TileSourceIds = tileSourceIds;
         ConversionSourceIds = conversionSourceIds;
