@@ -8,6 +8,7 @@ public partial class ProceduralGenerator : Node
 	public const int EXPAND_LIMIT = 4;
 
 	// in chunks
+	public const int POOLS_END_TRANSITION = -10;
 	public const int START_POOLS_TRANSITION = -3;
 
 	readonly GameRandom RNG = new();
@@ -24,8 +25,9 @@ public partial class ProceduralGenerator : Node
 	static readonly Model[] Models = [
 		GD.Load<ModelResource>("res://procedural_generation/models/start.tres").ToModel(),
 		GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel(),
-		GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel(),
+		GD.Load<ModelResource>("res://procedural_generation/models/end.tres").ToModel(),
 		GD.Load<TransitionModelResource>("res://procedural_generation/models/trans_start_pools.tres").ToModel(),
+		GD.Load<TransitionModelResource>("res://procedural_generation/models/trans_pools_end.tres").ToModel(),
 	];
 
 	// MUTEXED
@@ -79,6 +81,8 @@ public partial class ProceduralGenerator : Node
 	public static Areas GetAreaFromChunk(Vector2I chunk)
 	{
 		return chunk switch {
+			{Y: < POOLS_END_TRANSITION} => Areas.End,
+			{Y: POOLS_END_TRANSITION} => Areas.TransPoolsEnd,
 			{Y: < START_POOLS_TRANSITION} => Areas.Pools,
 			{Y: START_POOLS_TRANSITION} => Areas.TransStartPools,
 			_ => Areas.Start
@@ -90,6 +94,20 @@ public partial class ProceduralGenerator : Node
 		Areas.Pools => 1,
 		Areas.End => 2,
 		_ => null
+	};
+
+	static bool FilterTransitionPattern(Vector2I absolutePosition, TransitionPattern pattern, Areas area) => area switch {
+		Areas.TransStartPools => absolutePosition switch {
+			{Y:<=1+START_POOLS_TRANSITION*PATTERN_CHUNK_SIZE}=>pattern.TileSourceIds[0]==1,
+			{Y:>(START_POOLS_TRANSITION+1)*PATTERN_CHUNK_SIZE-3}=>pattern.TileSourceIds[0]==0,
+			_=>true
+		},
+		Areas.TransPoolsEnd => absolutePosition switch {
+			{Y:<=1+POOLS_END_TRANSITION*PATTERN_CHUNK_SIZE}=>pattern.TileSourceIds[0]==2,
+			{Y:>(POOLS_END_TRANSITION+1)*PATTERN_CHUNK_SIZE-3}=>pattern.TileSourceIds[0]==1,
+			_=>true
+		},
+		_=>true // should be impossible
 	};
 	
 	void NextChunks(int chunks)
@@ -319,12 +337,6 @@ public partial class ProceduralGenerator : Node
 		return false;
 	}
 
-	bool FilterTransitionPattern(Vector2I absolutePosition, TransitionPattern pattern) => absolutePosition switch { 
-		{Y:<=1+START_POOLS_TRANSITION*PATTERN_CHUNK_SIZE}=>pattern.TileSourceIds[0]==1,
-		{Y:>(START_POOLS_TRANSITION+1)*PATTERN_CHUNK_SIZE-3}=>pattern.TileSourceIds[0]==0,
-		_=>true
-	};
-
 	bool TryGenerateTransition(Task task)
 	{
 		Rect2I rect = task.GetRect();
@@ -342,7 +354,7 @@ public partial class ProceduralGenerator : Node
 				patterns[Fold(x,y,patternsRectSize)] = model.MatchPatterns(
 					GetTiles(absolutePosition, Model.PatternSize),
 					GetSourceIds(absolutePosition, Model.PatternSize)).FindAll(
-						pattern => FilterTransitionPattern(absolutePosition, pattern));
+						pattern => FilterTransitionPattern(absolutePosition, pattern, task.Area));
 			}
 			for (int x = 0; x < rect.Size.X; x++)
 			for (int y = 0; y < rect.Size.Y; y++) {
@@ -368,7 +380,7 @@ public partial class ProceduralGenerator : Node
 							GetTiles(absolutePosition,Model.PatternSize),
 							GetSourceIds(absolutePosition,Model.PatternSize),
 							patterns[Fold(updatePatternPosition,patternsRectSize)]
-						).FindAll(pattern => FilterTransitionPattern(absolutePosition, pattern));
+						).FindAll(pattern => FilterTransitionPattern(absolutePosition, pattern, task.Area));
 					}
 					for (int px = 1-Model.PatternSize.X; px < Model.PatternSize.X; px++)
 					for (int py = 1-Model.PatternSize.Y; py < Model.PatternSize.Y; py++) {
@@ -383,7 +395,7 @@ public partial class ProceduralGenerator : Node
 			for (int y = -1; y < rect.Size.Y+1; y++) {
 				Vector2I position = new(x,y);
 				List<TransitionPattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
-				TransitionPattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
+				TransitionPattern chosenPattern = convertPatterns[Math.Min((int)(RNG.NextDouble() * convertPatterns.Count),convertPatterns.Count-1)];
 				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
 				for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
 					ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);

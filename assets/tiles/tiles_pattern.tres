@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://ehdclwmvlfys" path="res://assets/tiles/tiles_debug.png" id="1_05hmv"]
 [ext_resource type="Texture2D" uid="uid://cwy4bhhua561v" path="res://assets/tiles/tiles_debug_2.png" id="2_05hmv"]
+[ext_resource type="Texture2D" uid="uid://yoj7qp7inyfc" path="res://assets/tiles/tiles_debug_3.png" id="3_2reg4"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_n3cxo"]
 vertices = PackedVector2Array(8, 8, -8, 8, -8, -8)
@@ -99,8 +100,29 @@ texture = ExtResource("2_05hmv")
 0:2/0 = 0
 0:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_05hmv")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_gr4po"]
+texture = ExtResource("3_2reg4")
+0:0/0 = 0
+0:0/0/z_index = 1
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:0/0 = 0
+1:0/0/z_index = 1
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+0:1/0 = 0
+0:1/0/z_index = 1
+0:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:1/0 = 0
+1:1/0/z_index = 1
+0:2/0 = 0
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:2/0 = 0
+1:2/0/z_index = 1
+1:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+2:0/0 = 0
+
 [resource]
 physics_layer_0/collision_layer = 3
 navigation_layer_0/layers = 1
 sources/0 = SubResource("TileSetAtlasSource_vn8hm")
 sources/1 = SubResource("TileSetAtlasSource_1dw3r")
+sources/2 = SubResource("TileSetAtlasSource_gr4po")

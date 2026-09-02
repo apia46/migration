@@ -284,6 +284,7 @@ offset_right = 72.5
 offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
+disabled = true
 text = "Loading Map (288/289)"
 
 [node name="Controls" type="TextureRect" parent="Menu" unique_id=1206867571]

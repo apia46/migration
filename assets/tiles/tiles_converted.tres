@@ -1,7 +1,8 @@
 [gd_resource type="TileSet" format=3 uid="uid://b76oagfblrj2u"]
 
 [ext_resource type="Texture2D" uid="uid://ctba00w3jcemo" path="res://assets/tiles/tiles.png" id="1_6dfvd"]
-[ext_resource type="Texture2D" uid="uid://77bijshogcjn" path="res://assets/tiles/tiles_2.png" id="2_jec8k"]
+[ext_resource type="Texture2D" uid="uid://cwy4bhhua561v" path="res://assets/tiles/tiles_debug_2.png" id="2_6dfvd"]
+[ext_resource type="Texture2D" uid="uid://yoj7qp7inyfc" path="res://assets/tiles/tiles_debug_3.png" id="3_jec8k"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6dfvd"]
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8)
@@ -120,7 +121,7 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, -8, 8)])
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_63ufn"]
-texture = ExtResource("2_jec8k")
+texture = ExtResource("2_6dfvd")
 0:0/0 = 0
 0:0/0/z_index = 1
 0:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_206g6")
@@ -150,6 +151,27 @@ texture = ExtResource("2_jec8k")
 2:2/0 = 0
 2:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_6dfvd")
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_t66nr"]
+texture = ExtResource("3_jec8k")
+0:0/0 = 0
+0:0/0/z_index = 1
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:0/0 = 0
+1:0/0/z_index = 1
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+0:1/0 = 0
+0:1/0/z_index = 1
+0:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+0:2/0 = 0
+0:2/0/z_index = 1
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:2/0 = 0
+1:2/0/z_index = 1
+1:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:1/0 = 0
+2:0/0 = 0
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
 [resource]
 occlusion_layer_0/light_mask = 1
 physics_layer_0/collision_layer = 11
@@ -157,3 +179,4 @@ physics_layer_0/collision_mask = 0
 navigation_layer_0/layers = 1
 sources/0 = SubResource("TileSetAtlasSource_js125")
 sources/1 = SubResource("TileSetAtlasSource_63ufn")
+sources/2 = SubResource("TileSetAtlasSource_t66nr")
