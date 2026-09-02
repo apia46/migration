@@ -55,6 +55,7 @@ tile_set = SubResource("TileSet_ic0uy")
 
 [node name="DebugDraw" type="Line2D" parent="." unique_id=1252662449]
 unique_name_in_owner = true
+visible = false
 points = PackedVector2Array(-42, -44, 32, -17, 51, 28, -33, 45)
 closed = true
 begin_cap_mode = 1
