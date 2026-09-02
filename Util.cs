@@ -21,10 +21,8 @@ namespace migration
         public static Rect2I ExpandRect(Rect2I input, Vector2I amount) => new(input.Position-amount, input.Size+amount*2);
         public static Rect2I ExpandRect(Rect2I input, int amount) => ExpandRect(input, new Vector2I(amount, amount));
 
-        public static Vector3I GetTileDetails(TileMapLayer tileMapLayer, Vector2I tile) {
-            Vector2I atlasCoords = tileMapLayer.GetCellAtlasCoords(tile);
-            return new(atlasCoords.X, atlasCoords.Y, tileMapLayer.GetCellSourceId(tile));
-        }
+        public static Vector3I GetTileDetails(TileMapLayer tileMapLayer, Vector2I tile)
+            => xyz(tileMapLayer.GetCellAtlasCoords(tile), tileMapLayer.GetCellSourceId(tile));
 
         public static Vector3I xyz(Vector2I a, int b) => new(a.X,a.Y,b);
         public static Vector2I xy(Vector3I a) => new(a.X,a.Y);

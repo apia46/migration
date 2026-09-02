@@ -27,7 +27,6 @@ script = ExtResource("1_80nbo")
 
 [node name="GameViewportContainer" type="SubViewportContainer" parent="." unique_id=521328173]
 unique_name_in_owner = true
-visible = false
 texture_filter = 1
 material = SubResource("ShaderMaterial_fc0e3")
 layout_mode = 1
@@ -41,7 +40,7 @@ stretch = true
 [node name="SubViewport" type="SubViewport" parent="GameViewportContainer" unique_id=631701495]
 handle_input_locally = false
 size = Vector2i(1152, 648)
-render_target_update_mode = 0
+render_target_update_mode = 4
 
 [node name="World" parent="GameViewportContainer/SubViewport" unique_id=203491962 instance=ExtResource("2_e2o6t")]
 unique_name_in_owner = true
@@ -52,7 +51,6 @@ zoom = Vector2(2, 2)
 limit_enabled = false
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1762760900]
-visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -71,7 +69,7 @@ stretch = true
 unique_name_in_owner = true
 handle_input_locally = false
 size = Vector2i(500, 348)
-render_target_update_mode = 0
+render_target_update_mode = 4
 
 [node name="MinimapCamera" type="Camera2D" parent="SubViewportContainer/SubViewport" unique_id=26055832]
 unique_name_in_owner = true
@@ -285,7 +283,6 @@ offset_right = 72.5
 offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
-disabled = true
 text = "Loading Map (288/289)"
 
 [node name="Controls" type="TextureRect" parent="Menu" unique_id=1206867571]

@@ -20,10 +20,12 @@ public partial class ProceduralGenerator : Node
 	[Export] public TileMapLayer ConvertedLayer;
 	[Export] public TileMapLayer WaterLayer;
 	
-	public enum Areas {Start, Pools, Top, Restart, End, TransStartPools, TransStartEnd};
+	public enum Areas {Start, Pools, End, TransStartPools, TransPoolsEnd};
 	static readonly Model[] Models = [
 		GD.Load<ModelResource>("res://procedural_generation/models/start.tres").ToModel(),
 		GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel(),
+		GD.Load<ModelResource>("res://procedural_generation/models/pools.tres").ToModel(),
+		GD.Load<TransitionModelResource>("res://procedural_generation/models/trans_start_pools.tres").ToModel(),
 	];
 
 	// MUTEXED
@@ -74,7 +76,7 @@ public partial class ProceduralGenerator : Node
         Mutex.Unlock();
 	}
 
-	Areas GetAreaFromChunk(Vector2I chunk)
+	public static Areas GetAreaFromChunk(Vector2I chunk)
 	{
 		return chunk switch {
 			{Y: < START_POOLS_TRANSITION} => Areas.Pools,
@@ -82,6 +84,13 @@ public partial class ProceduralGenerator : Node
 			_ => Areas.Start
 		};
 	}
+
+	public static int? GetSourceIdFromArea(Areas area) => area switch {
+		Areas.Start => 0,
+		Areas.Pools => 1,
+		Areas.End => 2,
+		_ => null
+	};
 	
 	void NextChunks(int chunks)
 	{
@@ -136,21 +145,30 @@ public partial class ProceduralGenerator : Node
 				for (int y = rect.Position.Y; y < rect.End.Y; y++)
 					if (!STARTING_AREA.HasPoint(new(x,y))) PatternLayer.SetCell(new Vector2I(x,y));
 			}
-			if (task.Area > Areas.End) {
-				
-			}
-			else {
-				Model model = Models[(int)task.Area];
+			Model model = Models[(int)task.Area];
+			if (model is TransitionModel transitionModel) {
 				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
-				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, model.PatternTiles, PatternLayer, (int)task.Area);
+				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, transitionModel.PatternTiles, PatternLayer, GetSourceIdFromArea(task.Area));
 				if (!PatternTiles.AnyEmpty()) {
 					if (!ChunkStates.ContainsKey(task.Chunk)) GenCount++;
 					ChunkStates[task.Chunk] = ChunkState.Generated;
 					Mutex.Unlock();
 					continue;
 				}
-				ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, (int)task.Area);
-				WaterTiles = new(ExpandRect(rect, 1), Vector2I.Zero, WaterLayer, 0);
+				ConvertedTiles = new(convertedRect, Vector2I.Zero, transitionModel.ConvertedTiles, ConvertedLayer, GetSourceIdFromArea(task.Area));
+				WaterTiles = new(ExpandRect(rect, 1), Vector2I.Zero, WaterLayer);
+				Thread.Start(Callable.From(()=>GenerateTransition(task)));
+			} else {
+				Rect2I convertedRect = new((rect.Position-Vector2I.One)*Model.ConversionScale, (rect.Size+Vector2I.One*2)*Model.ConversionScale);
+				PatternTiles = new(rect, Model.PatternSize-Vector2I.One, model.PatternTiles, PatternLayer, GetSourceIdFromArea(task.Area));
+				if (!PatternTiles.AnyEmpty()) {
+					if (!ChunkStates.ContainsKey(task.Chunk)) GenCount++;
+					ChunkStates[task.Chunk] = ChunkState.Generated;
+					Mutex.Unlock();
+					continue;
+				}
+				ConvertedTiles = new(convertedRect, Vector2I.Zero, model.ConvertedTiles, ConvertedLayer, GetSourceIdFromArea(task.Area));
+				WaterTiles = new(ExpandRect(rect, 1), Vector2I.Zero, WaterLayer);
 				Thread.Start(Callable.From(()=>Generate(task)));
 			}
 			Mutex.Unlock();
@@ -211,6 +229,31 @@ public partial class ProceduralGenerator : Node
 		ChunkStates[task.Chunk] = ChunkState.Generated;
 		Mutex.Unlock();
 		return GenerateResult.Succeed;
+	}
+
+	GenerateResult GenerateTransition(Task task)
+	{
+		Rect2I rect = task.GetRect();
+		Mutex.Lock();
+		int tries = 0;
+		while (TryGenerateTransition(task)) {
+			tries++;
+			for (int x = rect.Position.X; x < rect.End.X; x++)
+			for (int y = rect.Position.Y; y < rect.End.Y; y++)
+				if (!STARTING_AREA.HasPoint(new(x,y))) PatternTiles.SetTile(new Vector2I(x,y), -1);
+			
+			if (tries > 3) {
+				if (task.CanRetry()) {
+					Queue.Push(task.ExpandOnce());
+				}
+				Mutex.Unlock();
+				return GenerateResult.Fail;
+			}
+		}
+		if (!ChunkStates.ContainsKey(task.Chunk)) GenCount++;
+		ChunkStates[task.Chunk] = ChunkState.Generated;
+		Mutex.Unlock();
+		return GenerateResult.SucceedTransition;
 	}
 
 	// returns true if failed
@@ -313,6 +356,7 @@ public partial class ProceduralGenerator : Node
 						Vector2I updatePatternPosition = collapsePosition + new Vector2I(px,py);
 						patterns[Fold(updatePatternPosition,patternsRectSize)] = model.MatchPatterns(
 							GetTiles(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
+							GetSourceIds(updatePatternPosition-patternsMargin+rect.Position,Model.PatternSize),
 							patterns[Fold(updatePatternPosition,patternsRectSize)]
 						);
 					}
@@ -328,8 +372,8 @@ public partial class ProceduralGenerator : Node
 			for (int x = -1; x < rect.Size.X+1; x++)
 			for (int y = -1; y < rect.Size.Y+1; y++) {
 				Vector2I position = new(x,y);
-				List<Pattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
-				Pattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
+				List<TransitionPattern> convertPatterns = patterns[Fold(position+(Model.PatternSize-Vector2I.One)/2,patternsRectSize)];
+				TransitionPattern chosenPattern = convertPatterns[(int)(RNG.NextDouble() * convertPatterns.Count)];
 				for (int cx = 0; cx < Model.ConversionScale.X; cx++)
 				for (int cy = 0; cy < Model.ConversionScale.Y; cy++) {
 					ConvertedTiles.SetTile((rect.Position+position)*Model.ConversionScale + new Vector2I(cx,cy), chosenPattern.Conversion[Fold(cx,cy,Model.ConversionScale)]);
@@ -354,6 +398,18 @@ public partial class ProceduralGenerator : Node
 		return result;
 	}
 
+	List<TransitionPattern>[] GetNearbyPatterns(Vector2I relativePosition, List<TransitionPattern>[] patterns, Vector2I patternsRectSize)
+	{
+		List<TransitionPattern>[] result = new List<TransitionPattern>[Model.PatternSize.X*Model.PatternSize.Y];
+		for (int x = 0; x < Model.PatternSize.X; x++)
+		for (int y = 0; y < Model.PatternSize.Y; y++) {
+			Vector2I position = relativePosition + new Vector2I(x,y);
+			result[Fold(x,y,Model.PatternSize)] = patterns[Fold(position,patternsRectSize)];
+		}
+		return result;
+	}
+
+
 	Vector2I GetLowestEntropy(Rect2I rect, double[] entropies)
 	{
 		double lowest = -1;
@@ -376,6 +432,13 @@ public partial class ProceduralGenerator : Node
 		foreach (Pattern pattern in patterns) counts[pattern.Tiles[Fold(at,Model.PatternSize)]]++;
 		return counts;
 	}
+
+	int[] CountTiles(TransitionModel model, List<TransitionPattern> patterns, Vector2I at)
+	{
+		int[] counts = new int[model.PatternTiles.Count];
+		foreach (Pattern pattern in patterns) counts[pattern.Tiles[Fold(at,Model.PatternSize)]]++;
+		return counts;
+	}
 	
 	double[] CollectPossibilities(Model model, List<Pattern>[] patterns)
 	{
@@ -390,6 +453,21 @@ public partial class ProceduralGenerator : Node
 		for (int i = 0; i < model.PatternTiles.Count; i++) possibilities[i] = Math.Pow(possibilities[i], INVERSE_TEMPERATURE);
 		return possibilities;
 	}
+
+	double[] CollectPossibilities(TransitionModel model, List<TransitionPattern>[] patterns)
+	{
+		double[] possibilities = new double[model.PatternTiles.Count];
+		for (int i = 0; i < model.PatternTiles.Count; i++) possibilities[i] = 1.0;
+		for (int x = 0; x < Model.PatternSize.X; x++)
+		for (int y = 0; y < Model.PatternSize.Y; y++) {
+			int[] tiles = CountTiles(model, patterns[Fold(x,y,Model.PatternSize)], Model.PatternSize - new Vector2I(x,y) - Vector2I.One);
+			for (int i = 0; i < model.PatternTiles.Count; i++)
+				possibilities[i] *= tiles[i];
+		}
+		for (int i = 0; i < model.PatternTiles.Count; i++) possibilities[i] = Math.Pow(possibilities[i], INVERSE_TEMPERATURE);
+		return possibilities;
+	}
+
 
 	int? SelectPossibility(Model model, List<Pattern>[] patterns)
 	{
@@ -407,7 +485,37 @@ public partial class ProceduralGenerator : Node
 		return null;
 	}
 
+	int? SelectPossibility(TransitionModel model, List<TransitionPattern>[] patterns)
+	{
+		double[] possibilities = CollectPossibilities(model, patterns);
+		double totalFrequency = possibilities.Sum();
+		if (totalFrequency == 0) return null;
+		double randomValue = RNG.NextDouble() * totalFrequency;
+		double slidingWindow = 0;
+		for (int tile = 0; tile < model.PatternTiles.Count; tile++) {
+			double slidingWindowNext = slidingWindow + possibilities[tile];
+			if (slidingWindow <= randomValue && randomValue < slidingWindowNext) return tile;
+			slidingWindow = slidingWindowNext;
+		}
+		GD.Print($"this shouldnt happen! [{string.Join(", ", possibilities)}], {randomValue}");
+		return null;
+	}
+
 	double GetEntropy(Model model, List<Pattern>[] patterns)
+	{
+		double entropy = 0;
+		double[] possibilities = CollectPossibilities(model, patterns);
+		double scale = 1/possibilities.Sum();
+		foreach (double possibility in possibilities)
+		{
+			double chance = possibility*scale;
+			if (chance < 0.01) continue;
+			entropy -= chance * Math.Log(chance);
+		}
+		return entropy * 1000 + RNG.NextDouble() * 8;
+	}
+
+	double GetEntropy(TransitionModel model, List<TransitionPattern>[] patterns)
 	{
 		double entropy = 0;
 		double[] possibilities = CollectPossibilities(model, patterns);
@@ -510,36 +618,32 @@ abstract class TileCache<T>
 	readonly public TileMapLayer TileMap;
 	readonly protected Vector2I TotalSize;
 	readonly protected T[] Tiles;
-	readonly protected int[] SourceIds;
+	readonly protected int? SourceId;
 
-	public TileCache(Rect2I rect, Vector2I margin, TileMapLayer tileMap)
+	public TileCache(Rect2I rect, Vector2I margin, TileMapLayer tileMap, int? sourceId)
 	{
 		Rect = rect;
 		Margin = margin;
 		TileMap = tileMap;
 		TotalSize = new(Rect.Size.X+2*Margin.X, Rect.Size.Y+2*Margin.Y);
 		Tiles = new T[TotalSize.X*TotalSize.Y];
-		SourceIds = new int[TotalSize.X*TotalSize.Y];
+		SourceId = sourceId;
 	}
 
 	public T GetTile(Vector2I absolutePosition) => Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
-	public int GetSourceId(Vector2I absolutePosition) => SourceIds[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
-	public void SetTile(Vector2I absolutePosition, T to, int sourceId) {
+	public void SetTile(Vector2I absolutePosition, T to) {
 		Tiles[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = to;
-		SourceIds[Fold(absolutePosition-Rect.Position+Margin,TotalSize)] = sourceId;
 	}
 }
 
 class TileExistsCache : TileCache<bool>
 {
     public TileExistsCache(Rect2I rect, Vector2I margin, TileMapLayer tileMap)
-		: base(rect, margin, tileMap)
+		: base(rect, margin, tileMap, 0)
 	{
 		for (int x = 0; x < TotalSize.X; x++)
-		for (int y = 0; y < TotalSize.Y; y++) {
+		for (int y = 0; y < TotalSize.Y; y++)
 			Tiles[Fold(x,y,TotalSize)] = TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)) != Vector2I.One * -1;
-			SourceIds[Fold(x,y,TotalSize)] = TileMap.GetCellSourceId(Rect.Position - Margin + new Vector2I(x,y));
-		}
 	}
 
 	public void WriteTileMap(bool canWriteTransition)
@@ -549,7 +653,7 @@ class TileExistsCache : TileCache<bool>
 		if (canWriteTransition ||
 			!(ProceduralGenerator.START_POOLS_TRANSITION*ProceduralGenerator.PATTERN_CHUNK_SIZE <= y+Rect.Position.Y
 			&& y+Rect.Position.Y < (ProceduralGenerator.START_POOLS_TRANSITION+1)*ProceduralGenerator.PATTERN_CHUNK_SIZE))
-			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceIds[Fold(x+Margin.X,y+Margin.Y,TotalSize)],
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), (int)SourceId!,
 				Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)] ? Vector2I.Zero : Vector2I.One * -1
 			);
 	}
@@ -559,15 +663,16 @@ class TileSetCache : TileCache<int>
 {
 	readonly public EnumeratedTileSet TileSet;
 
-    public TileSetCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap)
-		: base(rect, margin, tileMap)
+    public TileSetCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int? sourceId)
+		: base(rect, margin, tileMap, sourceId)
 	{
 		TileSet = tileSet;
 		for (int x = 0; x < TotalSize.X; x++)
-		for (int y = 0; y < TotalSize.Y; y++) {
+		for (int y = 0; y < TotalSize.Y; y++)
+		if (tileSet is TransitionEnumeratedTileSet tileset)
+			Tiles[Fold(x,y,TotalSize)] = tileset.Convert(GetTileDetails(TileMap, Rect.Position - Margin + new Vector2I(x,y)));
+		else
 			Tiles[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(Rect.Position - Margin + new Vector2I(x,y)));
-			SourceIds[Fold(x,y,TotalSize)] = TileMap.GetCellSourceId(Rect.Position - Margin + new Vector2I(x,y));
-		}
 	}
 
     public bool AnyEmpty()
@@ -583,22 +688,26 @@ class TileSetCache : TileCache<int>
 		if (canWriteTransition ||
 			!(ProceduralGenerator.START_POOLS_TRANSITION*ProceduralGenerator.PATTERN_CHUNK_SIZE <= y+Rect.Position.Y
 			&& y+Rect.Position.Y < (ProceduralGenerator.START_POOLS_TRANSITION+1)*ProceduralGenerator.PATTERN_CHUNK_SIZE))
-			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceIds[Fold(x+Margin.X,y+Margin.Y,TotalSize)],
-				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)])
-			);
+		if (SourceId is int sourceId)
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), sourceId,
+				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]));
+		else {
+			Vector3I result = ((TransitionEnumeratedTileSet)TileSet).Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), result.Z, xy(result));
+		}
 	}
 }
 
 class RotateableTileSetCache : TileSetCache
 {
 	readonly int[] TileRotations;
-    public RotateableTileSetCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap)
-		: base(rect, margin, tileSet, tileMap)
+    public RotateableTileSetCache(Rect2I rect, Vector2I margin, EnumeratedTileSet tileSet, TileMapLayer tileMap, int? sourceId)
+		: base(rect, margin, tileSet, tileMap, sourceId)
 	{
 		TileRotations = new int[TotalSize.X*TotalSize.Y];
 		for (int x = 0; x < TotalSize.X; x++)
 		for (int y = 0; y < TotalSize.Y; y++)
-			TileRotations[Fold(x,y,TotalSize)] = TileSet.Convert(TileMap.GetCellAtlasCoords(rect.Position - Margin + new Vector2I(x,y)));
+			TileRotations[Fold(x,y,TotalSize)] = TileMap.GetCellAlternativeTile(rect.Position - Margin + new Vector2I(x,y));
 	}
 
 	public int GetTileRotation(Vector2I absolutePosition) => TileRotations[Fold(absolutePosition-Rect.Position+Margin,TotalSize)];
@@ -611,8 +720,12 @@ class RotateableTileSetCache : TileSetCache
 		if (canWriteTransition ||
 			!(ProceduralGenerator.START_POOLS_TRANSITION*ProceduralGenerator.CONVERTED_CHUNK_SIZE <= y+Rect.Position.Y
 			&& y+Rect.Position.Y < (ProceduralGenerator.START_POOLS_TRANSITION+1)*ProceduralGenerator.CONVERTED_CHUNK_SIZE))
-			TileMap.SetCell(Rect.Position + new Vector2I(x,y), SourceIds[Fold(x+Margin.X,y+Margin.Y,TotalSize)],
-				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]
-			);
+		if (SourceId is int sourceId)
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), sourceId,
+				TileSet.Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
+		else {
+			Vector3I result = ((TransitionEnumeratedTileSet)TileSet).Convert(Tiles[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
+			TileMap.SetCell(Rect.Position + new Vector2I(x,y), result.Z, xy(result), TileRotations[Fold(x+Margin.X,y+Margin.Y,TotalSize)]);
+		}
 	}
 }
